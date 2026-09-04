@@ -1,0 +1,17 @@
+.venv/
+.pytest_cache/
+.ruff_cache/
+**/__pycache__/
+**/*.egg-info/
+*.py[cod]
+
+logs/
+outputs/
+videos/
+wandb/
+
+.vscode/settings.json
+.vscode/launch.json
+
+# Large clinical gait corpus (31 MB) - regenerate with the outer repo's data/batch_parse_gait.py
+source/humanoid_pathological_gait/humanoid_pathological_gait/tasks/humanoid_pathological_gait/data/stroke_gait_dataset.npz
