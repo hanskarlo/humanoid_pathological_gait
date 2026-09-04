@@ -1,0 +1,536 @@
+# Copyright (c) 2022-2026, The Isaac Lab Project Developers (https://github.com/isaac-sim/IsaacLab/blob/main/CONTRIBUTORS.md).
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""Capture a full evaluation rollout of a trained checkpoint, for the paper's figures.
+
+``play.py`` prints four summary numbers. This writes the underlying per-step tensors to
+disk, so every figure and table in the paper is generated from one archived rollout
+rather than from a separate simulation run per figure -- which is what makes the numbers
+in the text and the curves in the figures agree.
+
+What it captures that the superseded analytical evaluator could not:
+
+* **Real support polygons.** The margin of stability comes from the environment's own
+  ``compute_xcom_and_mos``: whole-body centre of mass, and a support polygon built from
+  the feet whose contact sensors are actually loaded. The analytical evaluator placed
+  synthetic feet at +/- 0.15 m from the root and assumed permanent double support, so its
+  MoS was a function of the root pose alone.
+* **Contact-derived gait events.** Stance and swing come from foot contact forces, so
+  step time, stance fraction and temporal asymmetry are measured, not inferred from a
+  forward-kinematics height threshold.
+* **A deterministic, balanced paretic-side split.** Exactly half the environments are
+  left-paretic and half right-paretic, fixed for the whole rollout, so per-limb averages
+  are not contaminated by an unbalanced draw.
+
+Every environment is mirrored into a common **paretic/sound** frame before averaging,
+using the layout's own tested mirror map. Averaging left- and right-paretic environments
+without that step cancels exactly the asymmetry the paper is about.
+
+Outputs, under ``--output_dir``:
+
+===========================  ==========================================================
+``rollout.npz``              Per-step tensors, both raw and paretic/sound standardized.
+``gait_cycle.npz``           Cycle-normalized (0-100%) mean and SD per joint per limb.
+``metrics.json``             Every scalar metric, machine-readable.
+``metrics.csv``              The same metrics as a table, for the paper's results table.
+===========================  ==========================================================
+
+.. note::
+    The simulation app is launched before any task import; see ``zero_agent.py`` for why.
+"""
+
+import argparse
+
+import warp as wp
+
+wp.config.enable_backward = False
+
+from isaaclab.app import AppLauncher
+
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument("--checkpoint", type=str, required=True, help="Path to a train_amp.py checkpoint (.pt).")
+parser.add_argument("--task", type=str, default="Isaac-H1-Pathological-Gait-Play-v0")
+parser.add_argument("--num_envs", type=int, default=64, help="Environments; rounded down to an even number.")
+parser.add_argument("--num_steps", type=int, default=1000, help="Control steps to record after warmup.")
+parser.add_argument(
+    "--warmup_steps",
+    type=int,
+    default=100,
+    help="Steps to discard before recording, letting the reset transient settle.",
+)
+parser.add_argument("--output_dir", type=str, default=None, help="Defaults to <checkpoint dir>/evaluation.")
+parser.add_argument("--label", type=str, default=None, help="Name for this condition in the metrics table.")
+parser.add_argument("--seed", type=int, default=0, help="Seed for the environment.")
+parser.add_argument(
+    "--stochastic", action="store_true", help="Sample actions instead of taking the policy mean (not for the paper)."
+)
+parser.add_argument(
+    "--presets", type=str, nargs="*", default=(), help="Preset variants to select, e.g. --presets newton_mjwarp."
+)
+AppLauncher.add_app_launcher_args(parser)
+args_cli = parser.parse_args()
+
+app_launcher = AppLauncher(args_cli)
+simulation_app = app_launcher.app
+
+"""Everything below runs only once the simulation app is up."""
+
+import csv
+import importlib
+import json
+from datetime import datetime
+from pathlib import Path
+
+import gymnasium as gym
+import numpy as np
+import torch
+
+from isaaclab_tasks.utils import load_cfg_from_registry, resolve_presets
+
+importlib.import_module("humanoid_pathological_gait.tasks")
+
+from gait_analysis import (  # noqa: E402
+    NUM_CYCLE_BINS,
+    contact_gait_metrics,
+    cycle_normalize,
+    standardize_to_paretic_frame,
+)
+
+from isaaclab.managers import SceneEntityCfg  # noqa: E402
+
+from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
+from humanoid_pathological_gait.tasks.humanoid_pathological_gait.h1_joints import (  # noqa: E402
+    CLINICAL_JOINT_ORDER,
+    FOOT_BODY_NAMES,
+)
+from humanoid_pathological_gait.tasks.humanoid_pathological_gait.mdp.rewards import compute_xcom_and_mos  # noqa: E402
+
+GRAVITY = 9.81
+
+
+class NoSurvivingEnvironments(RuntimeError):
+    """Raised when every environment fell, leaving no gait to summarize."""
+
+
+class RolloutRecorder:
+    """Accumulates per-step tensors on the CPU and stacks them at the end.
+
+    Recording lands on the CPU each step rather than growing GPU buffers: the whole point
+    of this script is to run alongside whatever else is using the card, and a 1000-step
+    rollout of 64 environments is only a few tens of megabytes in host memory.
+    """
+
+    def __init__(self):
+        self._buffers: dict[str, list[np.ndarray]] = {}
+
+    def add(self, **tensors: torch.Tensor) -> None:
+        """Record one step's worth of named tensors."""
+        for name, tensor in tensors.items():
+            self._buffers.setdefault(name, []).append(tensor.detach().cpu().numpy().copy())
+
+    def stack(self) -> dict[str, np.ndarray]:
+        """Stack every buffer along a leading time axis."""
+        return {name: np.stack(frames, axis=0) for name, frames in self._buffers.items()}
+
+
+def assign_balanced_paretic_sides(env, num_envs: int) -> torch.Tensor:
+    """Fix the first half of the environments left-paretic and the second half right-paretic.
+
+    The play config still draws the paretic side at random on every reset. That is fine
+    for a demo and wrong for a measurement: a rollout with, say, 40 right-paretic and 24
+    left-paretic environments weights the two mirror images unequally, and an environment
+    that flips side mid-rollout contributes half a stride to each. Pinning the assignment
+    and disabling the redraw makes each environment a stable, reproducible subject.
+    """
+    side = torch.ones(num_envs, device=env.device)
+    side[: num_envs // 2] = -1.0  # -1 is left-paretic
+    env.reference_gait.paretic_side[:] = side
+    if env.cfg.events.reset_to_reference is not None:
+        env.cfg.events.reset_to_reference.params["randomize_paretic_side"] = False
+        env.event_manager.get_term_cfg("reset_to_reference").params["randomize_paretic_side"] = False
+    return side
+
+
+def assign_phase_offsets(env, num_envs: int) -> None:
+    """Give every environment a distinct, deterministic starting phase.
+
+    The Play config phase-locks every environment to the same trace (fixed
+    ``start_phase``, no randomization), which a demo wants and a measurement cannot use:
+    with ``stride_duration_s / dt`` an exact integer -- 1.2 s / 20 ms = 60 -- the gait
+    phase only ever takes 60 distinct values, which round to 60 of the 101 cycle bins.
+    No number of recorded steps changes that; the missing 41 bins are unreachable, not
+    merely unsampled, because every environment is retracing the identical 60-point orbit.
+
+    Spreading a deterministic offset ``i / num_envs`` across environments turns that one
+    orbit into ``num_envs`` phase-shifted copies of it, and their union fills in the gaps
+    -- with enough environments, densely. It stays fully reproducible: the offsets are a
+    function of environment count alone, not of any random draw.
+
+    The physical joints are moved onto the reference pose at each environment's new phase
+    to match; without that they would sit at the phase-0 pose returned by the reset event
+    while ``gait_phase`` reports otherwise, until the policy's own tracking closes the gap.
+    That transient is why this must run before, not instead of, the warmup window.
+    """
+    offsets = torch.arange(num_envs, device=env.device, dtype=torch.float32) / num_envs
+    env.reference_gait.gait_phase[:] = offsets
+    if env.cfg.events.reset_to_reference is not None:
+        env.event_manager.get_term_cfg("reset_to_reference").params["randomize_phase"] = False
+
+    robot = env.scene["robot"]
+    q_ref, v_ref = env.reference_gait.sample()
+    limits = robot.data.soft_joint_pos_limits.torch
+    q_ref = torch.clamp(q_ref, limits[..., 0], limits[..., 1])
+    robot.write_joint_state_to_sim(q_ref, v_ref)
+
+
+def main() -> int:
+    num_envs = max(2, args_cli.num_envs - args_cli.num_envs % 2)
+    if num_envs != args_cli.num_envs:
+        print(f"[evaluate] rounding {args_cli.num_envs} environments down to {num_envs} for a balanced paretic split")
+
+    env_cfg = load_cfg_from_registry(args_cli.task.split(":")[-1], "env_cfg_entry_point")
+    env_cfg = resolve_presets(env_cfg, selected=tuple(args_cli.presets))
+    env_cfg.sim.device = args_cli.device
+    env_cfg.scene.num_envs = num_envs
+    env_cfg.seed = args_cli.seed
+    # Long enough that the recording window is one uninterrupted episode: a timeout
+    # mid-rollout would put a reset transient in the middle of the averaged curves.
+    env_cfg.episode_length_s = max(env_cfg.episode_length_s, (args_cli.num_steps + args_cli.warmup_steps + 10) * 0.02)
+
+    torch.manual_seed(args_cli.seed)
+    np.random.seed(args_cli.seed)
+
+    env = gym.make(args_cli.task, cfg=env_cfg).unwrapped
+    robot = env.scene["robot"]
+    layout = env.joint_layout
+    dt = float(env.step_dt)
+
+    paretic_side = assign_balanced_paretic_sides(env, num_envs)
+    is_right_paretic = (paretic_side > 0).cpu().numpy()
+
+    policy = ActorCritic(
+        obs_dim=int(env.observation_space["policy"].shape[-1]),
+        action_dim=int(env.action_space.shape[-1]),
+        actor_hidden_dims=(512, 256, 128),
+        critic_hidden_dims=(512, 256, 128),
+    ).to(env.device)
+    checkpoint = torch.load(args_cli.checkpoint, map_location=env.device, weights_only=False)
+    policy.load_state_dict(checkpoint["policy_state_dict"])
+    policy.eval()
+    iteration = checkpoint.get("iteration", "?")
+
+    output_dir = Path(args_cli.output_dir or Path(args_cli.checkpoint).resolve().parent / "evaluation")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    label = args_cli.label or Path(args_cli.checkpoint).stem
+
+    print("=" * 78)
+    print(f"  Evaluation rollout -- {label} (checkpoint iteration {iteration})")
+    print("=" * 78)
+    print(f"  task {args_cli.task} | {num_envs} envs | {args_cli.num_steps} steps @ {dt * 1000:.0f} ms")
+    print(f"  output -> {output_dir}", flush=True)
+
+    foot_asset_cfg = SceneEntityCfg("robot", body_names=list(FOOT_BODY_NAMES), preserve_order=True)
+    foot_asset_cfg.resolve(env.scene)
+    foot_sensor_cfg = SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True)
+    foot_sensor_cfg.resolve(env.scene)
+
+    obs, _ = env.reset()
+    assign_phase_offsets(env, num_envs)
+    obs = obs["policy"]
+
+    recorder = RolloutRecorder()
+    # An environment that terminates once is excluded from every later step: post-fall
+    # kinematics are not gait, and letting them into the averages is what makes a fallen
+    # policy look like it has an unusual gait pattern rather than no gait at all.
+    ever_terminated = torch.zeros(num_envs, dtype=torch.bool, device=env.device)
+
+    total_steps = args_cli.warmup_steps + args_cli.num_steps
+    for step in range(total_steps):
+        with torch.no_grad():
+            actions = policy.act(obs)[0] if args_cli.stochastic else policy.actor(obs)
+
+        q_ref, v_ref = env.reference_gait.sample()
+        gait_phase = env.reference_gait.gait_phase.clone()
+
+        obs, reward, terminated, truncated, _ = env.step(actions)
+        obs = obs["policy"]
+        ever_terminated |= terminated
+
+        if step < args_cli.warmup_steps:
+            continue
+
+        xcom, mos, in_contact = compute_xcom_and_mos(env, foot_asset_cfg, foot_sensor_cfg)
+        foot_force = torch.norm(
+            env.scene["contact_forces"].data.net_forces_w.torch[:, foot_sensor_cfg.body_ids], dim=-1
+        )
+        recorder.add(
+            joint_pos=robot.data.joint_pos.torch,
+            joint_vel=robot.data.joint_vel.torch,
+            joint_ref_pos=q_ref,
+            joint_ref_vel=v_ref,
+            applied_torque=robot.data.applied_torque.torch,
+            spastic_torque=env.applied_spastic_torque,
+            root_pos=robot.data.root_link_pos_w.torch - env.scene.env_origins,
+            root_quat=robot.data.root_link_quat_w.torch,
+            root_lin_vel_b=robot.data.root_lin_vel_b.torch,
+            root_ang_vel_b=robot.data.root_ang_vel_b.torch,
+            foot_pos=robot.data.body_link_pos_w.torch[:, foot_asset_cfg.body_ids] - env.scene.env_origins[:, None, :],
+            foot_force=foot_force,
+            foot_contact=(foot_force > 1.0),
+            xcom=xcom,
+            mos=mos,
+            gait_phase=gait_phase,
+            reward=reward,
+            terminated=terminated,
+            truncated=truncated,
+            alive=~ever_terminated,
+        )
+
+        if (step + 1) % 200 == 0:
+            print(f"[evaluate] step {step + 1 - args_cli.warmup_steps}/{args_cli.num_steps}", flush=True)
+
+    data = recorder.stack()
+    warn_if_undersampled(data, env.reference_gait.stride_duration_s, dt)
+    # Read anything that lives behind a simulation handle before closing: the articulation
+    # data views are weak references into the physics backend and raise once the app is
+    # torn down. The layout tensors are already plain torch, so they survive.
+    total_mass = float(robot.data.body_mass.torch[0].sum())
+    env.close()
+
+    try:
+        metrics = summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration)
+    except NoSurvivingEnvironments as error:
+        # A policy that falls in every environment is a legitimate result -- an early
+        # checkpoint, or an ablation that does not learn to walk. Report it as a failed
+        # condition rather than a traceback, so a batch of conditions keeps going.
+        print(f"[evaluate] cannot summarize {label}: {error}", flush=True)
+        np.savez_compressed(output_dir / "rollout.npz", **data, is_right_paretic=is_right_paretic, label=label)
+        print(f"[evaluate] raw rollout kept at {output_dir / 'rollout.npz'} for inspection")
+        return 1
+
+    write_outputs(output_dir, data, metrics, layout, is_right_paretic, label)
+    report(metrics)
+    return 0
+
+
+def warn_if_undersampled(data, stride_duration_s: float, dt: float) -> None:
+    """Warn when the recording is too short to support the cycle-resolved metrics.
+
+    The play config phase-locks every environment (``randomize_phase=False``), so cycle
+    coverage comes from elapsed time alone -- 64 environments at the same phase fill the
+    same bin. A rollout of one or two strides leaves most of the 101 cycle bins empty and
+    yields too few complete stance periods for the timing metrics, which is how a short
+    run produces a nonsensical toe-off percentage.
+    """
+    steps = data["gait_phase"].shape[0]
+    strides = steps * dt / max(stride_duration_s, 1e-6)
+    filled = len(np.unique(np.clip((data["gait_phase"] * (NUM_CYCLE_BINS - 1)).round().astype(int), 0, 100)))
+
+    if strides < 8.0:
+        print(
+            f"[evaluate] WARNING: recorded only {strides:.1f} gait cycles; cycle-resolved curves and"
+            f" the timing metrics want more. Use --num_steps >= {int(np.ceil(10 * stride_duration_s / dt))}"
+            " for ~10 strides.",
+            flush=True,
+        )
+    elif filled < NUM_CYCLE_BINS:
+        print(
+            f"[evaluate] WARNING: only {filled}/{NUM_CYCLE_BINS} cycle bins were sampled despite"
+            f" {strides:.1f} recorded gait cycles. With --num_envs={data['gait_phase'].shape[1]}, phase"
+            " offsets of 1/num_envs apart leave gaps; more --num_envs gives denser cycle coverage.",
+            flush=True,
+        )
+
+
+def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) -> dict[str, object]:
+    """Reduce a recorded rollout to the scalar metrics the paper reports."""
+    mirror_index = layout.mirror_index.cpu().numpy()
+    mirror_sign = layout.mirror_sign.cpu().numpy()
+    left_ids = layout.left_leg_ids.cpu().numpy()
+    right_ids = layout.right_leg_ids.cpu().numpy()
+
+    # After standardization the paretic limb is always in the left slots.
+    q = standardize_to_paretic_frame(data["joint_pos"], is_right_paretic, mirror_index, mirror_sign)
+    q_ref = standardize_to_paretic_frame(data["joint_ref_pos"], is_right_paretic, mirror_index, mirror_sign)
+
+    valid = data["alive"].astype(bool)
+    valid_steps = int(valid.sum())
+    if valid_steps == 0:
+        raise NoSurvivingEnvironments("every environment fell during the rollout; there is no gait to measure")
+
+    rad2deg = 180.0 / np.pi
+    error = (q - q_ref)[valid]
+    joint_rmse_deg = np.sqrt(np.mean(np.square(error), axis=0)) * rad2deg
+
+    # Gait Profile Score: the RMS of the lower-limb gait variable scores (Baker et al.).
+    leg_ids = np.concatenate([left_ids, right_ids])
+    gps_deg = float(np.sqrt(np.mean(np.square(joint_rmse_deg[leg_ids]))))
+
+    # Cost of transport, from the robot's own mass and its actual displacement. The
+    # actuators are implicit, so applied_torque is Isaac Lab's PD estimate rather than a
+    # solver readback; the spastic feed-forward is added explicitly because it is real
+    # work done against the paretic limb.
+    torque = data["applied_torque"] + data["spastic_torque"]
+    mechanical_power = np.abs(torque * data["joint_vel"]).sum(axis=-1)
+    displacement = np.linalg.norm(data["root_pos"][-1, :, :2] - data["root_pos"][0, :, :2], axis=-1)
+    alive_envs = valid[-1]
+    work = (mechanical_power * valid).sum(axis=0) * dt
+    with np.errstate(divide="ignore", invalid="ignore"):
+        cot = work / (total_mass * GRAVITY * np.maximum(displacement, 1e-3))
+    cost_of_transport = float(np.mean(cot[alive_envs])) if alive_envs.any() else float("nan")
+
+    # Contact-derived timing, with the feet reordered so index 0 is the paretic one.
+    contact = data["foot_contact"].astype(bool)
+    paretic_first = np.where(is_right_paretic[None, :, None], contact[:, :, ::-1], contact)
+    timing = contact_gait_metrics(paretic_first, valid, dt)
+
+    knee_paretic = layout.index_of("left_knee")
+    knee_sound = layout.index_of("right_knee")
+    ankle_paretic = layout.index_of("left_ankle")
+
+    # Range of motion per environment, then a symmetry index across limbs. Taking the ROM
+    # of the environment-averaged trace instead would understate it: environments at
+    # different gait phases average toward a flatter curve.
+    def rom(joint_index: int) -> np.ndarray:
+        trace = np.where(valid, q[:, :, joint_index], np.nan)
+        return (np.nanmax(trace, axis=0) - np.nanmin(trace, axis=0)) * rad2deg
+
+    knee_rom_paretic = rom(knee_paretic)
+    knee_rom_sound = rom(knee_sound)
+    knee_si = 200.0 * np.abs(knee_rom_paretic - knee_rom_sound) / (knee_rom_paretic + knee_rom_sound + 1e-6)
+
+    mos = data["mos"][valid]
+    speed = data["root_lin_vel_b"][:, :, 0][valid]
+    spastic = np.abs(data["spastic_torque"])
+    survival = 100.0 * float(valid[-1].mean())
+
+    return {
+        "label": label,
+        "checkpoint_iteration": iteration,
+        "recorded_at": datetime.now().isoformat(timespec="seconds"),
+        "num_envs": int(valid.shape[1]),
+        "num_steps": int(valid.shape[0]),
+        "valid_step_fraction": valid_steps / valid.size,
+        # -- imitation fidelity
+        "gait_profile_score_deg": gps_deg,
+        "overall_joint_rmse_deg": float(np.mean(joint_rmse_deg)),
+        "paretic_knee_rmse_deg": float(joint_rmse_deg[knee_paretic]),
+        "sound_knee_rmse_deg": float(joint_rmse_deg[knee_sound]),
+        "paretic_ankle_rmse_deg": float(joint_rmse_deg[ankle_paretic]),
+        # -- clinical asymmetry
+        "paretic_knee_rom_deg": float(np.nanmean(knee_rom_paretic)),
+        "sound_knee_rom_deg": float(np.nanmean(knee_rom_sound)),
+        "knee_symmetry_index_pct": float(np.nanmean(knee_si)),
+        **timing,
+        # -- locomotion
+        "mean_forward_speed_ms": float(np.mean(speed)),
+        "cost_of_transport": cost_of_transport,
+        "total_mass_kg": total_mass,
+        # -- balance
+        "mean_mos_m": float(np.mean(mos)),
+        "min_mos_m": float(np.min(mos)),
+        "mos_positive_pct": float(100.0 * np.mean(mos > 0.0)),
+        # -- pathology
+        "peak_spastic_torque_nm": float(spastic.max()),
+        "mean_spastic_torque_nm": float(spastic[valid].mean()),
+        "spastic_work_j_per_env": float(
+            (np.abs(data["spastic_torque"] * data["joint_vel"]).sum(axis=-1) * valid).sum() * dt / valid.shape[1]
+        ),
+        "survival_pct": survival,
+        "per_joint_rmse_deg": {name: float(joint_rmse_deg[index]) for index, name in enumerate(layout.sim_names)},
+    }
+
+
+def write_outputs(output_dir: Path, data, metrics, layout, is_right_paretic, label) -> None:
+    """Write the rollout archive, the cycle-normalized curves, and the metrics tables."""
+    mirror_index = layout.mirror_index.cpu().numpy()
+    mirror_sign = layout.mirror_sign.cpu().numpy()
+    valid = data["alive"].astype(bool)
+
+    standardized = {
+        f"{name}_std": standardize_to_paretic_frame(data[name], is_right_paretic, mirror_index, mirror_sign)
+        for name in ("joint_pos", "joint_vel", "joint_ref_pos", "joint_ref_vel", "spastic_torque", "applied_torque")
+    }
+
+    np.savez_compressed(
+        output_dir / "rollout.npz",
+        **data,
+        **standardized,
+        is_right_paretic=is_right_paretic,
+        sim_joint_names=np.array(layout.sim_names),
+        clinical_joint_names=np.array(CLINICAL_JOINT_ORDER),
+        label=label,
+    )
+
+    phase = data["gait_phase"]
+    cycle = {}
+    for name in ("joint_pos_std", "joint_ref_pos_std", "joint_vel_std", "spastic_torque_std"):
+        mean, std = cycle_normalize(standardized[name], phase, valid)
+        cycle[f"{name}_mean"] = mean
+        cycle[f"{name}_std"] = std
+    mos_mean, mos_std = cycle_normalize(data["mos"][..., None], phase, valid)
+    contact_mean, _ = cycle_normalize(
+        np.where(is_right_paretic[None, :, None], data["foot_contact"][:, :, ::-1], data["foot_contact"]).astype(float),
+        phase,
+        valid,
+    )
+    np.savez_compressed(
+        output_dir / "gait_cycle.npz",
+        cycle_pct=np.linspace(0.0, 100.0, NUM_CYCLE_BINS),
+        mos_mean=mos_mean[:, 0],
+        mos_std=mos_std[:, 0],
+        # Contact probability per cycle bin; where it crosses 0.5 is toe-off, which is
+        # what the swing shading in the kinematics figures keys off.
+        paretic_contact_prob=contact_mean[:, 0],
+        sound_contact_prob=contact_mean[:, 1],
+        sim_joint_names=np.array(layout.sim_names),
+        label=label,
+        **cycle,
+    )
+
+    (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2, default=str))
+
+    flat = {key: value for key, value in metrics.items() if not isinstance(value, dict)}
+    with (output_dir / "metrics.csv").open("w", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["metric", "value"])
+        writer.writerows(flat.items())
+        writer.writerow([])
+        writer.writerow(["joint", "rmse_deg"])
+        writer.writerows(metrics["per_joint_rmse_deg"].items())
+
+    print(f"[evaluate] wrote rollout.npz, gait_cycle.npz, metrics.json, metrics.csv -> {output_dir}")
+
+
+def report(metrics: dict) -> None:
+    """Print the headline numbers."""
+    rows = [
+        ("Gait Profile Score", "gait_profile_score_deg", "deg"),
+        ("Overall joint RMSE", "overall_joint_rmse_deg", "deg"),
+        ("Paretic knee ROM", "paretic_knee_rom_deg", "deg"),
+        ("Sound knee ROM", "sound_knee_rom_deg", "deg"),
+        ("Knee symmetry index", "knee_symmetry_index_pct", "%"),
+        ("Temporal asymmetry", "temporal_asymmetry_pct", "%"),
+        ("Paretic stance fraction", "paretic_stance_fraction", ""),
+        ("Sound stance fraction", "sound_stance_fraction", ""),
+        ("Forward speed", "mean_forward_speed_ms", "m/s"),
+        ("Cost of transport", "cost_of_transport", ""),
+        ("Mean lateral MoS", "mean_mos_m", "m"),
+        ("Time with MoS > 0", "mos_positive_pct", "%"),
+        ("Peak spastic torque", "peak_spastic_torque_nm", "Nm"),
+        ("Survival", "survival_pct", "%"),
+    ]
+    print("\n" + "=" * 78)
+    print(f"  {metrics['label']} -- {metrics['num_envs']} envs, {metrics['num_steps']} steps")
+    print("=" * 78)
+    for title, key, unit in rows:
+        print(f"  {title:<26}: {metrics.get(key, float('nan')):10.4f} {unit}")
+    print("=" * 78)
+
+
+if __name__ == "__main__":
+    exit_code = main()
+    simulation_app.close()
+    raise SystemExit(exit_code)

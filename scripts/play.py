@@ -13,6 +13,13 @@ policy robust, not to describe the gait.
 Actions are the policy mean rather than a sample, so repeated runs of the same checkpoint
 are comparable.
 
+This is the quick-look tool. For the paper, use the two scripts that archive their output:
+``evaluate.py`` writes the per-step rollout, the cycle-normalized curves and the metrics
+tables that every figure is drawn from, and ``record_video.py`` records clips from a
+camera that follows the robot. ``--video`` here records the Kit perspective camera, which
+the PhysX backend positions once and never moves, so the robot walks out of frame within
+a few seconds.
+
 .. note::
     The simulation app is launched before any task import; see ``zero_agent.py`` for why.
 """
@@ -30,7 +37,12 @@ parser.add_argument("--checkpoint", type=str, required=True, help="Path to a tra
 parser.add_argument("--task", type=str, default="Isaac-H1-Pathological-Gait-Play-v0")
 parser.add_argument("--num_envs", type=int, default=16, help="Number of parallel environments.")
 parser.add_argument("--num_steps", type=int, default=600, help="Control steps to roll out.")
-parser.add_argument("--video", action="store_true", help="Record a video of the rollout.")
+parser.add_argument(
+    "--video",
+    action="store_true",
+    help="Record a quick rollout video from a STATIC camera. For anything the paper uses, "
+    "run scripts/record_video.py instead -- it follows the robot.",
+)
 parser.add_argument("--video_length", type=int, default=400, help="Video length in control steps.")
 parser.add_argument(
     "--presets", type=str, nargs="*", default=(), help="Preset variants to select, e.g. --presets newton_mjwarp."
