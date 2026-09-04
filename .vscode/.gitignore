@@ -1,10 +1,16 @@
 # Note: These files are kept for development purposes only.
+#
+# Order matters: in gitignore the last matching pattern wins, so the broad ignore
+# has to come before the negations that re-include the files we do want tracked.
+# (The generated template had these reversed, which silently ignored all of them.)
+
+# Ignore generated per-developer settings
+.python.env
+*.json
+
+# ...but keep the checked-in templates and shared configuration
 !tools/launch.template.json
 !tools/settings.template.json
 !tools/setup_vscode.py
 !extensions.json
 !tasks.json
-
-# Ignore all other files
-.python.env
-*.json
