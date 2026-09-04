@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Train Template-Humanoid-Pathological-Gait with rsl_rl (PPO)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "isaaclab",
+            "args": [
+                "train",
+                "--rl_library", "rsl_rl",
+                "--task", "Template-Humanoid-Pathological-Gait",
+                "--num_envs", "4096"            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Play Template-Humanoid-Pathological-Gait with rsl_rl (PPO)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "isaaclab",
+            "args": [
+                "play",
+                "--rl_library", "rsl_rl",
+                "--task", "Template-Humanoid-Pathological-Gait",
+                "--num_envs", "32"            ],
+            "console": "integratedTerminal"
+        },
+    ]
+}
