@@ -178,9 +178,14 @@ strength, because a policy that begins on the floor never learns to walk:
 - **spasticity** — the TSRT reflex gain ramps 0 → 1.
 - **push magnitude** — balance perturbations ramp 0 → configured strength.
 
-They are step-based, not iteration-based, so **changing `--envs` changes how many iterations
-the ramp spans**. At 4096 envs the ramp is ~6 iterations; at 64 it is ~375. If you train at a
-small `--envs` for a long run, lengthen `num_steps` on those curriculum terms to match.
+They are counted by `env.common_step_counter`, which increments once per simulated step
+regardless of `--envs` (all environments step in parallel under one call) — so **the ramp
+length in iterations depends on `--num_steps_per_env`, not on `--envs`**. At the default
+`--num_steps_per_env 24`, 24 000 steps is exactly 1000 iterations no matter how many
+environments you train with, so the default `--iters 3500` always gives ~1000 iterations of
+ramp-in followed by ~2500 of full-pathology consolidation. Only changing `--num_steps_per_env`
+(or editing `num_steps` on the curriculum terms directly) changes how many iterations the ramp
+spans; `--envs` alone does not.
 
 Playback evaluation always runs both at full strength — they are the phenomenon under study,
 not a training aid.
@@ -225,6 +230,13 @@ repeated runs of one checkpoint are comparable.
 `--envs` is bounded by VRAM. 4096 is comfortable on 16 GB for this scene. If you hit CUDA
 OOM, halve it. Fewer environments means noisier gradients, so consider raising
 `--num_steps_per_env` to keep the batch size up.
+
+To measure your own GPU's ceiling instead of guessing, run `scripts/find_optimal_envs.sh`.
+It runs a 3-iteration smoke test at increasing `--envs`, bisects between the last size that
+fit and the first that didn't, and prints a recommended value with ~10% headroom for a full
+run. Scene setup time grows with `--envs` (minutes, not seconds, past a few thousand), so
+each test is capped by `TEST_TIMEOUT_S` (default 600s) rather than blocking indefinitely if a
+size hangs near the VRAM limit — raise it if your GPU is just slow rather than stuck.
 
 ### 7.2 Knobs worth turning
 
@@ -284,8 +296,9 @@ The discriminator has lost or won outright. See [§5](#5-reading-the-training-ou
 
 ### Reflex torque is zero in playback
 
-The spasticity curriculum never ramped, most likely because the run was too short at a high
-`--envs`. See the curriculum note in [§5](#the-curricula). Playback of the `-Play-v0` task
+The spasticity curriculum never ramped, most likely because the run had fewer than the ~1000
+iterations the ramp takes to complete (e.g. the `smoke` or `short` presets). `--envs` does not
+affect this — see the curriculum note in [§5](#the-curricula). Playback of the `-Play-v0` task
 holds spasticity at full strength regardless, so a zero here points at the checkpoint's
 training conditions rather than at playback.
 
