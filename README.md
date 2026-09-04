@@ -64,13 +64,55 @@ caches. The first boot takes several minutes; later ones take about ten seconds.
 | `scripts/setup.sh` | One-time environment setup and cache warm-up. |
 | `scripts/verify.sh` | Preflight gate: registration, NaN-free rollouts, pathology assertions, a 5-iteration learning check. |
 | `scripts/train.sh` | PPO+AMP training. Presets `smoke` / `short` / `full`. |
+| `scripts/train_and_evaluate_seeds.sh` | Multi-seed training + evaluation for the paper's figures. Resumable per seed. |
 | `scripts/play.sh` | Playback with clinical gait metrics; optional video. |
 | `scripts/list_envs.py` | Registered tasks and their physics presets. |
 | `scripts/zero_agent.py` | Zero-action rollout; checks observations and rewards for NaNs. |
 | `scripts/check_pathology.py` | Eleven assertions that the pathology machinery is live. |
 | `scripts/train_amp.py` | The PPO+AMP loop itself. |
 | `scripts/train_rsl_rl.py` | Stock RSL-RL PPO — environment sanity check only, no AMP support. |
-| `scripts/play.py` | The playback loop itself. |
+| `scripts/play.py` | Quick-look playback with clinical gait metrics printed to the console. |
+| `scripts/evaluate.py` | **Paper data capture.** Archives the per-step rollout, cycle-normalized curves and metrics tables. |
+| `scripts/record_video.py` | **Paper video capture.** Tracking-camera clips and the one-cycle filmstrip. |
+| `scripts/gait_analysis.py` | The rollout reductions, pure NumPy — importable without Isaac Sim. |
+| `scripts/gait_camera.py` | Canonical gait camera views and the follow-the-robot camera. |
+
+## Producing results for the paper
+
+Every figure and table comes from one archived rollout per condition, so the numbers in
+the text and the curves in the figures cannot drift apart.
+
+```bash
+# 1. Train. metrics.csv is written every iteration, alongside a TensorBoard event file.
+uv run python scripts/train_amp.py --num_envs 4096 --max_iterations 1200 --seed 1 --headless
+
+# ...and if a run dies, continue it. Point --resume at the run directory (newest
+# checkpoint is picked) or at a specific model_*.pt. Policy, discriminator and both
+# optimizer states are restored, and metrics.csv is continued rather than truncated.
+uv run python scripts/train_amp.py --num_envs 4096 --max_iterations 1200 --seed 1 \
+    --run_dir logs/ppo_amp/<run> --resume logs/ppo_amp/<run> --headless
+
+# 2. Capture one deterministic rollout: rollout.npz, gait_cycle.npz, metrics.{json,csv}
+uv run python scripts/evaluate.py --checkpoint logs/ppo_amp/<run>/model_3500.pt \
+    --num_envs 64 --num_steps 1000 --label "PPO-AMP" --headless
+
+# 3. Capture the supplementary video and the one-cycle filmstrip
+uv run python scripts/record_video.py --checkpoint logs/ppo_amp/<run>/model_3500.pt \
+    --views sagittal frontal --filmstrip --headless
+```
+
+Then draw the figures from the repository root, which needs only NumPy and matplotlib —
+no Isaac Sim:
+
+```bash
+cd ..
+python -m scripts.plotting.plot_training_curves --run humanoid_pathological_gait/logs/ppo_amp/<run>:PPO-AMP
+python -m scripts.plotting.plot_gait_cycle --data humanoid_pathological_gait/logs/ppo_amp/<run>/evaluation/gait_cycle.npz --double_column
+python -m scripts.plotting.plot_stability  --eval_dir humanoid_pathological_gait/logs/ppo_amp/<run>/evaluation --double_column
+```
+
+A run that predates the `metrics.csv` writer can still be plotted: `python -m
+scripts.plotting.parse_train_log --run_dir <run>` recovers the same schema from `train.log`.
 
 ## Two things that will bite you
 
