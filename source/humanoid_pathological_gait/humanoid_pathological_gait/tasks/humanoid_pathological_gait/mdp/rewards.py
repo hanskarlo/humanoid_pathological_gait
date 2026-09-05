@@ -90,19 +90,42 @@ def _whole_body_com(asset: Articulation) -> tuple[torch.Tensor, torch.Tensor]:
     return com_pos, com_vel
 
 
+#: Lateral width of one H1 foot's contact patch, in metres. Measured from the collision
+#: geometry of the ``mujoco_menagerie`` H1 (``robot_descriptions.h1_mj_description``),
+#: taking capsule radii and axis orientations into account: the ankle link's colliders span
+#: y = -0.0440..+0.0440. The value used before was 0.12, which is 36% too wide and inflated
+#: every margin by exactly half the difference -- 16 mm, against a median margin of 72 mm.
+H1_FOOT_WIDTH_M = 0.088
+
+
 def compute_xcom_and_mos(
     env: H1PathologicalGaitEnv,
     asset_cfg: SceneEntityCfg,
     sensor_cfg: SceneEntityCfg,
-    foot_width: float = 0.12,
+    foot_width: float = H1_FOOT_WIDTH_M,
     contact_threshold: float = 1.0,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Extrapolated centre of mass and mediolateral margin of stability.
 
     Everything is expressed in the robot's yaw frame, so "lateral" stays lateral
-    however the robot is heading. The support polygon spans the feet whose contact
-    force exceeds ``contact_threshold``; in flight, both feet define it, which yields
-    the negative margin that a flight phase deserves.
+    however the robot is heading. The support polygon spans the feet whose contact force
+    exceeds ``contact_threshold``.
+
+    **With no foot loaded there is no base of support and Hof's margin is undefined**, so
+    a convention is needed. This used to fall back on the polygon spanned by both feet, on
+    the reasoning that it "yields the negative margin a flight phase deserves". Measured
+    over a 51,200-sample rollout, it does the opposite: 3.9% of samples have no foot
+    loaded, and 89.8% of those report a *positive* margin, median +0.183 m against an
+    overall median of +0.072 m. The feet are furthest apart in mid-swing, so the fabricated
+    polygon is widest exactly when nothing is supporting it, and the stability reward pays
+    out in full for leaving the ground.
+
+    The convention here instead reports how far the centre of mass sits from the nearest
+    foot it could land on, negated -- zero when the XCoM is still over a foot's patch,
+    increasingly negative as it escapes. It is never positive, it is continuous with the
+    supported case at the contact transition, and it is a limiting-case convention rather
+    than a Hof margin. Callers reporting MoS statistics should exclude these samples or
+    state their share; ``scripts/evaluate.py`` reports the share.
 
     Args:
         env: The environment.
@@ -142,18 +165,23 @@ def compute_xcom_and_mos(
     # Support polygon: lateral extent of the loaded feet, widened by half a foot each side.
     net_force = torch.norm(sensor.data.net_forces_w.torch[:, sensor_cfg.body_ids], dim=-1)
     in_contact = net_force > contact_threshold
-    any_contact = in_contact.any(dim=-1, keepdim=True)
-    # In flight no foot is loaded; fall back to both so the margin still measures how far
-    # the XCoM sits outside where the feet are, rather than going undefined.
-    weights = torch.where(any_contact, in_contact, torch.ones_like(in_contact))
+    any_contact = in_contact.any(dim=-1)
 
     foot_y = foot_pos[..., 1]
-    lower_edge = torch.where(weights, foot_y - 0.5 * foot_width, torch.full_like(foot_y, float("inf")))
-    upper_edge = torch.where(weights, foot_y + 0.5 * foot_width, torch.full_like(foot_y, float("-inf")))
-    mos_lateral = torch.minimum(
+    half_width = 0.5 * foot_width
+    lower_edge = torch.where(in_contact, foot_y - half_width, torch.full_like(foot_y, float("inf")))
+    upper_edge = torch.where(in_contact, foot_y + half_width, torch.full_like(foot_y, float("-inf")))
+    supported = torch.minimum(
         upper_edge.max(dim=-1).values - xcom[:, 1],
         xcom[:, 1] - lower_edge.min(dim=-1).values,
     )
+
+    # Flight: no base of support, so report the (negated) lateral distance to the nearest
+    # foot's patch instead. Never positive; zero while the XCoM is still over a foot.
+    escape = torch.clamp((xcom[:, 1].unsqueeze(-1) - foot_y).abs() - half_width, min=0.0)
+    airborne = -escape.min(dim=-1).values
+
+    mos_lateral = torch.where(any_contact, supported, airborne)
     return xcom, mos_lateral, in_contact
 
 
@@ -163,7 +191,7 @@ def margin_of_stability(
     sensor_cfg: SceneEntityCfg,
     target_margin: float = 0.04,
     std: float = 0.05,
-    foot_width: float = 0.12,
+    foot_width: float = H1_FOOT_WIDTH_M,
     tipping_penalty_scale: float = 5.0,
 ) -> torch.Tensor:
     """Reward a mediolateral margin of stability at or above ``target_margin``.
@@ -171,6 +199,12 @@ def margin_of_stability(
     Margins beyond the target score the full reward; shortfalls decay as a Gaussian,
     and a margin that goes negative -- the XCoM outside the support polygon, i.e. the
     robot committed to a fall it cannot arrest without a step -- is penalised quadratically.
+
+    ``target_margin`` is a *true* margin. It was calibrated while ``foot_width`` was 0.12 m,
+    which inflated every margin by 16 mm, so the 0.04 m target was really asking for about
+    0.024 m; with the measured 0.088 m width it now asks for what it says. Expect this term
+    to be harder to satisfy than it was, and any policy trained before this to have been
+    scored against the looser target.
     """
     _, mos_lateral, _ = compute_xcom_and_mos(env, asset_cfg, sensor_cfg, foot_width=foot_width)
     shortfall = torch.clamp(target_margin - mos_lateral, min=0.0)

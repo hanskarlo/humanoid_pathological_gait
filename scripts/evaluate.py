@@ -406,6 +406,12 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     knee_si = 200.0 * np.abs(knee_rom_paretic - knee_rom_sound) / (knee_rom_paretic + knee_rom_sound + 1e-6)
 
     mos = data["mos"][valid]
+    # With no foot loaded there is no base of support and Hof's margin is undefined; the
+    # value carried for those samples is a limiting-case convention (see
+    # compute_xcom_and_mos). Report the supported samples separately so a mean MoS is not
+    # quietly an average over frames where the robot was in the air.
+    grounded = data["foot_contact"].any(axis=-1)[valid]
+    mos_grounded = mos[grounded]
     speed = data["root_lin_vel_b"][:, :, 0][valid]
     spastic = np.abs(data["spastic_torque"])
     survival = 100.0 * float(valid[-1].mean())
@@ -433,9 +439,13 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
         "cost_of_transport": cost_of_transport,
         "total_mass_kg": total_mass,
         # -- balance
-        "mean_mos_m": float(np.mean(mos)),
-        "min_mos_m": float(np.min(mos)),
-        "mos_positive_pct": float(100.0 * np.mean(mos > 0.0)),
+        "mean_mos_m": float(np.mean(mos_grounded)) if mos_grounded.size else float("nan"),
+        "min_mos_m": float(np.min(mos_grounded)) if mos_grounded.size else float("nan"),
+        "mos_positive_pct": float(100.0 * np.mean(mos_grounded > 0.0)) if mos_grounded.size else float("nan"),
+        # Share of samples excluded from the three figures above, because no foot was
+        # loaded. A large value makes them unrepresentative rather than merely noisy.
+        "airborne_pct": float(100.0 * (1.0 - np.mean(grounded))),
+        "mean_mos_all_samples_m": float(np.mean(mos)),
         # -- pathology
         "peak_spastic_torque_nm": float(spastic.max()),
         "mean_spastic_torque_nm": float(spastic[valid].mean()),
@@ -521,8 +531,9 @@ def report(metrics: dict) -> None:
         ("Sound stance fraction", "sound_stance_fraction", ""),
         ("Forward speed", "mean_forward_speed_ms", "m/s"),
         ("Cost of transport", "cost_of_transport", ""),
-        ("Mean lateral MoS", "mean_mos_m", "m"),
-        ("Time with MoS > 0", "mos_positive_pct", "%"),
+        ("Mean lateral MoS (grounded)", "mean_mos_m", "m"),
+        ("Time with MoS > 0 (grounded)", "mos_positive_pct", "%"),
+        ("Time airborne (MoS undefined)", "airborne_pct", "%"),
         ("Peak spastic torque", "peak_spastic_torque_nm", "Nm"),
         ("Survival", "survival_pct", "%"),
     ]
