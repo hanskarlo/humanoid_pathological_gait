@@ -35,6 +35,12 @@ run_check() {
     fi
 }
 
+# First, because it needs no simulator and catches the failures that only show up as a
+# wasted training run: a reference stride that does not say which leg is paretic, or an
+# expert prior the discriminator can separate on without looking at the motion.
+run_check "clinical data is fit to train against" \
+    "${PY_RUN[@]}" "${SCRIPT_DIR}/check_clinical_data.py"
+
 run_check "task registration" \
     "${PY_RUN[@]}" "${SCRIPT_DIR}/list_envs.py" --show_presets
 
