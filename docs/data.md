@@ -72,7 +72,10 @@ retargeter solved. Committed to this repository (6.1 MB). Regenerate with
 | `root_lin_vel`, `root_ang_vel` | `(N, 3)` | Root velocity in the body frame. |
 | `stride_offsets` | `(S+1,)` | Start index of each stride in the concatenated arrays. |
 | `stride_lengths`, `stride_durations_s` | `(S,)` | Per stride. |
-| `subject_ids`, `stride_indices`, `paretic_sides` | `(S,)` | Provenance. |
+| `subject_ids`, `stride_indices` | `(S,)` | Provenance. |
+| `impaired_sides` | `(S,)` | `"left"`/`"right"`/`"unknown"`: which leg carries the pathology, inferred from the motion. |
+| `impaired_side_confidence` | `(S,)` | Normalised knee-range separation; ranks how safely a stride can be called. |
+| `paretic_sides` | `(S,)` | The dataset's own label. Kept for provenance; it disagrees — see below. |
 
 Strides are concatenated with an index rather than padded to a rectangular array, because
 they genuinely differ in length and padding would put fabricated frames into the expert
@@ -94,6 +97,30 @@ The prior this replaces had four such gaps, all now closed:
 
 `AMPExpertMotionBuffer` reports any expert feature dimension that never varies, at
 construction, so a regression here is visible in the training log rather than silent.
+
+### Which limb is paretic
+
+**Do not use `paretic_sides` for this.** It is the dataset's own label, derived from
+`LesionLeft` → contralateral limb → the MAT's `Pside`/`Nside` grouping. The `.xlsx` data
+dictionary states that `Pside` holds the paretic limb; measured against the motion, it does
+not, for 41 of 50 subjects — 28 of them unanimously across event detection, marker
+kinematics, inverse dynamics and force plates.
+
+Use `impaired_sides`, which is inferred per stride from knee flexion range and carries no
+dependence on the labels. Over this corpus the two agree on 12% of the 319 strides that can
+be called. The remaining 88 of 407 are too symmetric to call and are marked `"unknown"`;
+**anything grouping by paretic versus sound limb has to decide what to do with those**, and
+dropping them is usually right — assigning a side at random inverts that stride's asymmetry
+half the time.
+
+The discriminator itself never sees a side label, so none of this changes the AMP prior. It
+matters for evaluation, where keying off the labels would cancel the asymmetry being
+measured. `scripts/check_clinical_data.py` verifies that the recorded side still matches the
+retargeted knee kinematics (currently 92%; the gap is strides near the decision margin).
+
+The upstream case file is
+`research_log/2026-09-05-the-paretic-side-labels-are-inverted.md`. The dataset authors have
+not been contacted.
 
 The "before" column is the prior as it actually stood. The raw-clinical fallback still in
 the code measures 28 rather than 38 today, because its channel mapping and signs were

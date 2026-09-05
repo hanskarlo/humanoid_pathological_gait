@@ -120,6 +120,42 @@ def main() -> int:
             f"only {callable_fraction:.0%} of strides could be assigned a side",
         )
 
+        # The recorded side comes from the clinical knee traces; the corpus stores what the
+        # retargeter produced. They are two measurements of the same thing through
+        # different chains, so a large disagreement means the retargeting is moving the
+        # pathology to the other leg -- which no amount of correct labelling would fix.
+        offsets = np.asarray(corpus["stride_offsets"])
+        joints = [str(n) for n in corpus["joint_names"]]
+        q = np.asarray(corpus["q"])
+        left, right = joints.index("left_knee"), joints.index("right_knee")
+        agree = total = 0
+        for i, side in enumerate(sides):
+            if side == "unknown":
+                continue
+            stride = q[offsets[i] : offsets[i + 1]]
+            observed = "left" if np.ptp(stride[:, left]) < np.ptp(stride[:, right]) else "right"
+            total += 1
+            agree += observed == side
+        fraction = agree / total if total else 0.0
+        check(
+            fraction > 0.85,
+            f"recorded side matches the retargeted knee kinematics on {fraction:.0%} of strides",
+            f"recorded side matches the retargeted kinematics on only {fraction:.0%} of strides; "
+            "the retargeting may be inverting the pathology",
+        )
+
+        arm_joints = [i for i, n in enumerate(joints) if "shoulder" in n or "elbow" in n]
+        per_stride_max = [
+            max(float(np.ptp(q[offsets[i] : offsets[i + 1], j])) for j in arm_joints)
+            for i in range(offsets.size - 1)
+        ]
+        static = int(np.sum(np.degrees(per_stride_max) < 1.0))
+        check(
+            static == 0,
+            f"arms are driven on every stride (median {np.median(np.degrees(per_stride_max)):.1f} deg)",
+            f"{static} strides hold every arm joint static, which is a constant feature for those samples",
+        )
+
     if "stride_durations_s" in corpus and "stride_lengths" in corpus:
         durations = np.asarray(corpus["stride_durations_s"], dtype=np.float64)
         lengths = np.asarray(corpus["stride_lengths"], dtype=np.float64)
