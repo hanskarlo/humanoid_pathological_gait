@@ -56,17 +56,24 @@ while Warp compiles kernels; later boots take ~10 s.
 
 ### Clinical data
 
-Two files drive the task. See [data.md](data.md) for schemas and regeneration.
+Three files drive the task. See [data.md](data.md) for schemas and regeneration.
 
 | File | Role | Required? |
 | --- | --- | --- |
 | `retargeted_h1_stride.npz` | The reference stride the policy tracks and resets onto. | **Yes.** Committed to this repo. |
-| `stroke_gait_dataset.npz` | The AMP expert motion corpus. | No, but strongly recommended. Git-ignored at 31 MB. |
+| `amp_expert_corpus.npz` | The AMP expert motion prior: 407 retargeted strides at the control rate. | No, but effectively yes — see below. Committed at 6.1 MB. |
+| `stroke_gait_dataset.npz` | Raw parsed clinical corpus; the last-resort prior. | No. Git-ignored at 31 MB. |
 
-Without the corpus, the AMP discriminator falls back to the single reference stride and then
-to a synthetic prior. Training still runs, but the adversarial term is far weaker and the
-resulting gait is correspondingly less faithful to real post-stroke kinematics. `setup.sh`
-tells you which case you are in.
+The discriminator falls back from the corpus to the single reference stride and then to a
+synthetic prior. **The raw-clinical fallback does not work as a prior**: it has no floating
+base, so 28 of the 48 AMP feature dimensions never vary and the discriminator separates
+expert from agent on those alone. Measured directly — 512 envs, seed 0, identical otherwise —
+it reaches `expert_acc` 1.000 by iteration 25 and stays there, which is a flat gradient and
+no style signal. `AMPExpertMotionBuffer` warns at construction when any dimension is
+constant, and `run_config.json` records which prior the run resolved. `setup.sh` tells you
+which case you are in.
+
+`--amp_prior <path>` overrides the choice, which is how the comparison above is reproduced.
 
 ---
 

@@ -8,12 +8,15 @@
 Two data products are needed, both produced by an upstream clinical-motion-capture
 pipeline (originally ``sw-humanoid-strokegait``):
 
-* ``retargeted_h1_stride.npz`` -- one Pinocchio-QP-retargeted 19-DoF stride, the
-  reference trajectory the policy tracks and resets onto. Required.
+* ``retargeted_h1_stride.npz`` -- one retargeted 19-DoF stride, the reference trajectory
+  the policy tracks and resets onto. Required. Produced by the GMR arm from Vicon's own
+  measured segment frames; it declares which of its two legs carries the pathology in
+  ``impaired_side``, which ``ReferenceGaitManager`` needs in order to put the paretic
+  limb on the right side of the robot.
 * ``amp_expert_corpus.npz`` -- many retargeted strides at this task's control rate, each
   carrying the floating-base state the retargeter solved. This is the AMP expert motion
-  prior. Optional but strongly preferred: the fallbacks below cannot supply a floating
-  base, which leaves ten of the forty-eight AMP feature dimensions constant and lets the
+  prior. Optional but strongly preferred: the raw-clinical fallback below has no floating
+  base, which leaves 28 of the 48 AMP feature dimensions constant and lets the
   discriminator separate expert from agent without looking at the motion at all.
 * ``stroke_gait_dataset.npz`` -- the raw parsed post-stroke corpus. Last-resort AMP prior;
   it has no floating base and no retargeting.
@@ -36,7 +39,7 @@ DATA_DIR = Path(__file__).parent / "data"
 """Directory holding the staged clinical data files."""
 
 REFERENCE_STRIDE_FILE = "retargeted_h1_stride.npz"
-"""Retargeted 19-DoF H1 reference stride (1000 samples over 1.2 s)."""
+"""Retargeted 19-DoF H1 reference stride, at the source stride's own measured duration."""
 
 EXPERT_DATASET_FILE = "stroke_gait_dataset.npz"
 """Raw parsed post-stroke gait corpus; the last-resort AMP prior."""
@@ -90,7 +93,8 @@ def amp_expert_prior_path() -> Path:
     ``amp_expert_corpus.npz`` is the one to use: retargeted onto this robot, sampled at the
     control rate, with a solved floating base. The reference stride is a corpus of one but
     still carries a floating base when the GMR arm produced it. The raw clinical corpus is
-    the last resort and leaves ten AMP feature dimensions constant.
+    the last resort and leaves 28 of the 48 AMP feature dimensions constant; the buffer
+    warns at construction when it has to fall back that far.
     """
     for file_name in (AMP_EXPERT_CORPUS_FILE, REFERENCE_STRIDE_FILE, EXPERT_DATASET_FILE):
         try:

@@ -16,29 +16,46 @@ which searches in this order:
 
 ### `retargeted_h1_stride.npz` — required
 
-One post-stroke gait cycle retargeted onto the H1's 19 joints by a Pinocchio QP solver with a
-foot-clearance constraint. This is the reference the policy tracks, and the pose it resets
-onto. Committed to this repository (88 KB).
+One post-stroke gait cycle retargeted onto the H1's 19 joints by the GMR solver, from
+Vicon's own measured segment frames. This is the reference the policy tracks, and the pose
+it resets onto. Committed to this repository (115 KB).
 
 | Key | Shape | Meaning |
 | --- | --- | --- |
-| `q_trajectory` | `(1000, 19)` | Joint positions, rad, in clinical order. |
-| `v_trajectory` | `(1000, 19)` | Joint velocities, rad/s. Derived by finite difference if absent. |
-| `time_vector` | `(1000,)` | Seconds; spans the stride's own measured duration. |
+| `q_trajectory` | `(1001, 19)` | Joint positions, rad, in clinical order. |
+| `v_trajectory` | `(1001, 19)` | Joint velocities, rad/s. Derived by finite difference if absent. |
+| `time_vector` | `(1001,)` | Seconds; spans the stride's own measured duration. |
 | `joint_names` | `(19,)` | Clinical joint order, for provenance. |
 | `stride_duration_s` | scalar | Measured from the initial-contact events. |
+| `impaired_side` | scalar | `"left"`/`"right"`: which leg carries the pathology. |
+| `paretic_side_label` | scalar | The dataset's own label. It disagrees — see below. |
+| `root_translation`, `root_quaternion` | `(1001, 3)`, `(1001, 4)` | The floating base the solver resolved. |
+| `ground_offset`, `general_scale` | scalar | Retargeting provenance. |
 
-> **Regenerated 2026-09-05.** Two corrections landed upstream and any copy older than this
+> **Regenerated 2026-09-05.** Three corrections landed upstream and any copy older than this
 > is wrong. Hip roll and hip yaw were inverted on both limbs (the clinical traces are
 > anatomical while the H1's roll and yaw axes are shared between limbs, so the multipliers
 > must differ by side), which moved the reference by 40% and 57% of the hip-yaw joint's
-> range. And the stride duration was assumed to be 1.2 s for every stride where the measured
-> spread is 0.97-5.73 s, making reference velocities about 33% too fast at the median.
+> range. The stride duration was assumed to be 1.2 s for every stride where the measured
+> spread is 0.97-5.73 s, making reference velocities about 33% too fast at the median. And
+> the source changed from the reconstructed skeleton to the measured segment frames, which
+> corrects a 43% over-statement of root vertical oscillation — the quantity the
+> centre-of-mass and margin-of-stability estimates are built on.
 
-The stride is from a **left-paretic** subject. Environments assigned a right-paretic side read
-a sagittally mirrored copy, so one policy learns both presentations. The mirror negates the
+`ReferenceGaitManager` reads `impaired_side` to decide which of the stride's two legs the
+environment's paretic limb should track; environments assigned the other side read a
+sagittally mirrored copy, so one policy learns both presentations. The mirror negates the
 yaw- and roll-axis joints and the torso, and leaves the pitch-axis joints alone — see
 `h1_joints.py`.
+
+> **The dataset's paretic-side label disagrees with the data.** `impaired_side` is measured
+> from the retargeted trajectory (the limb with the stiffer knee); `paretic_side_label` is
+> what the dataset's `LesionLeft` → contralateral → `Pside` chain says. For the reference
+> stride they come out `left` and `right` respectively. Four independent biomechanical
+> markers back the measurement — see
+> `research_log/2026-09-05-the-paretic-side-labels-disagree-with-four-biomechanical-markers.md`.
+> The field exists so this is decided by measurement at build time rather than by an
+> assumption in the loader, which is how it used to work.
 
 ### `amp_expert_corpus.npz` — the AMP expert prior
 
@@ -77,6 +94,11 @@ The prior this replaces had four such gaps, all now closed:
 
 `AMPExpertMotionBuffer` reports any expert feature dimension that never varies, at
 construction, so a regression here is visible in the training log rather than silent.
+
+The "before" column is the prior as it actually stood. The raw-clinical fallback still in
+the code measures 28 rather than 38 today, because its channel mapping and signs were
+fixed at the same time; it remains unusable as a prior, and `--amp_prior` can point a run
+at it to reproduce the saturation comparison.
 
 ### `stroke_gait_dataset.npz` — last-resort AMP prior — optional but recommended
 

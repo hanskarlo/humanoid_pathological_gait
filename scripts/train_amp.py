@@ -52,6 +52,14 @@ parser.add_argument(
     "--no_tensorboard", action="store_true", help="Skip the TensorBoard event file; metrics.csv is always written."
 )
 parser.add_argument(
+    "--amp_prior",
+    type=str,
+    default=None,
+    help="Expert motion prior to train the discriminator against. Defaults to the best "
+    "staged one (the retargeted corpus). Point it at an older prior to reproduce the "
+    "discriminator-saturation A/B; the run's choice is recorded in run_config.json.",
+)
+parser.add_argument(
     "--resume",
     type=str,
     default=None,
@@ -217,7 +225,8 @@ class PPOAMPTrainer:
 
         # The best staged prior is the expert motion source. Passing the path explicitly
         # keeps the buffer off its relative-path fallbacks.
-        self.expert_buffer = AMPExpertMotionBuffer(dataset_path=str(amp_expert_prior_path()), device=device)
+        self.amp_prior_path = str(args_cli.amp_prior) if args_cli.amp_prior else str(amp_expert_prior_path())
+        self.expert_buffer = AMPExpertMotionBuffer(dataset_path=self.amp_prior_path, device=device)
         self.agent_buffer = AMPAgentReplayBuffer(capacity=50_000, device=device)
 
         obs, _ = self.env.reset()
@@ -429,6 +438,11 @@ def main() -> int:
         "resumed_from_iteration": start_iteration,
         "device": str(env.device),
         "num_expert_trajectories": len(trainer.expert_buffer.trajectories),
+        # The resolved prior, not just the --amp_prior flag, which is usually None. Which
+        # prior a run used is the difference between a saturated discriminator and a
+        # working one, so it belongs in the run's own provenance.
+        "amp_prior_resolved": trainer.amp_prior_path,
+        "amp_constant_feature_dims": list(trainer.expert_buffer.constant_feature_dims),
         "reward_terms": {
             name: env.reward_manager.get_term_cfg(name).weight for name in env.reward_manager.active_terms
         },

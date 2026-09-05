@@ -10,13 +10,20 @@ paretic and where in the stride that environment currently is. Sampling the stri
 at an environment's phase gives the joint targets the action term drives toward and
 the reward terms score against.
 
-The stored stride was retargeted from a **left-paretic** subject. Environments
-whose paretic side is the right one read a sagittally mirrored copy, so a single
-policy learns both presentations.
+Which of the stride's two legs carries the pathology is read from the archive's
+``impaired_side`` field, not assumed. Environments whose paretic side is the other
+one read a sagittally mirrored copy, so a single policy learns both presentations.
+
+That field exists because the answer used to be hard-coded here as "left". It was
+right for the stride that happened to be at ``--stride-idx 0``, and would have
+silently inverted the paretic side -- weakening the leg the reference walks
+*normally* on -- for any other stride. An archive written before the field existed
+still loads, with the old assumption applied explicitly and a warning.
 """
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -40,8 +47,9 @@ class ReferenceGaitManager:
         self.num_envs = num_envs
         self.device = torch.device(device)
 
-        q_clinical, v_clinical, data_duration_s = self._load(Path(stride_path))
+        q_clinical, v_clinical, data_duration_s, impaired_side = self._load(Path(stride_path))
         self.stride_duration_s = float(data_duration_s if data_duration_s > 0.0 else stride_duration_s)
+        self.impaired_side = impaired_side
 
         # Store in simulation joint order so every consumer can compare elementwise
         # against ``robot.data.joint_pos`` without another permutation.
@@ -50,6 +58,13 @@ class ReferenceGaitManager:
         self.ref_q_mirrored = layout.mirror(self.ref_q)
         self.ref_v_mirrored = layout.mirror(self.ref_v)
         self.num_samples = self.ref_q.shape[0]
+
+        # ``sample`` hands back the unmirrored stride to left-paretic environments, so the
+        # tables are swapped once here if the stride's impaired leg is the right one. Doing
+        # it at load time keeps the per-step path free of the branch.
+        if self.impaired_side == "right":
+            self.ref_q, self.ref_q_mirrored = self.ref_q_mirrored, self.ref_q
+            self.ref_v, self.ref_v_mirrored = self.ref_v_mirrored, self.ref_v
 
         # Per-environment state.
         self.gait_phase = torch.zeros(num_envs, dtype=torch.float32, device=self.device)
@@ -60,12 +75,25 @@ class ReferenceGaitManager:
             -torch.ones(num_envs, device=self.device),
         )
 
-    def _load(self, path: Path) -> tuple[torch.Tensor, torch.Tensor, float]:
+    def _load(self, path: Path) -> tuple[torch.Tensor, torch.Tensor, float, str]:
         """Load the stride, deriving velocities by finite difference if absent."""
         data = np.load(str(path), allow_pickle=True)
         q = torch.tensor(np.asarray(data["q_trajectory"]), dtype=torch.float32)
         if q.ndim != 2 or q.shape[1] != NUM_JOINTS:
             raise ValueError(f"Reference stride at {path} has shape {tuple(q.shape)}, expected (T, {NUM_JOINTS}).")
+
+        impaired_side = str(data["impaired_side"]) if "impaired_side" in data.files else ""
+        if impaired_side not in ("left", "right"):
+            # Either an archive predating the field, or a stride too symmetric for the
+            # stiff-knee margin to call. Fall back to what this class used to assume, but
+            # say so: getting it wrong weakens the leg the reference walks normally on.
+            warnings.warn(
+                f"Reference stride at {path} declares impaired_side={impaired_side!r}; assuming 'left'. "
+                "Regenerate it with data/batch_parse_gait.py to record the side explicitly.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            impaired_side = "left"
 
         duration_s = 0.0
         if "time_vector" in data.files:
@@ -78,7 +106,7 @@ class ReferenceGaitManager:
             dt = (duration_s if duration_s > 0.0 else 1.2) / max(q.shape[0] - 1, 1)
             v = torch.gradient(q, spacing=(dt,), dim=0)[0]
 
-        return q, v, duration_s
+        return q, v, duration_s, impaired_side
 
     def advance(self, dt: float, rate_scale: float = 1.0) -> None:
         """Advance every environment's gait phase by ``dt`` seconds of stride time."""
