@@ -90,12 +90,25 @@ def _whole_body_com(asset: Articulation) -> tuple[torch.Tensor, torch.Tensor]:
     return com_pos, com_vel
 
 
-#: Lateral width of one H1 foot's contact patch, in metres. Measured from the collision
-#: geometry of the ``mujoco_menagerie`` H1 (``robot_descriptions.h1_mj_description``),
-#: taking capsule radii and axis orientations into account: the ankle link's colliders span
-#: y = -0.0440..+0.0440. The value used before was 0.12, which is 36% too wide and inflated
-#: every margin by exactly half the difference -- 16 mm, against a median margin of 72 mm.
-H1_FOOT_WIDTH_M = 0.088
+#: Lateral width of one H1 foot's contact patch, in metres.
+#:
+#: Measured on the live Isaac stage, from the collision mesh PhysX actually uses: the
+#: ``left_ankle_link`` collider spans y = +0.1629..+0.2429 about a link origin at
+#: y = +0.2029, i.e. **0.0800 m wide and exactly centred on the link origin**. That the
+#: offset is zero is what licenses using ``body_link_pos_w`` as the foot centre in
+#: :func:`compute_xcom_and_mos`; it had been an unstated assumption.
+#:
+#: Getting this took three attempts and the first two were wrong, so: the asset is
+#: *instanceable*, and its colliders live in USD prototypes that a default ``Usd.PrimRange``
+#: skips -- both the distributed layer and the live stage report no geometry at all under
+#: the ankle unless traversed with ``Usd.TraverseInstanceProxies()``. Reading the
+#: ``mujoco_menagerie`` H1 instead gives 0.088 m, which is the right order but the wrong
+#: robot; its collision hull is not the one Isaac collides with (its foot is also 0.176 m
+#: long against this asset's 0.240 m).
+#:
+#: The value used before all this was 0.12 m -- 50% too wide, inflating every margin by
+#: exactly half the difference, 20 mm, against a true median margin of about 22 mm.
+H1_FOOT_WIDTH_M = 0.080
 
 
 def compute_xcom_and_mos(
@@ -201,10 +214,10 @@ def margin_of_stability(
     robot committed to a fall it cannot arrest without a step -- is penalised quadratically.
 
     ``target_margin`` is a *true* margin. It was calibrated while ``foot_width`` was 0.12 m,
-    which inflated every margin by 16 mm, so the 0.04 m target was really asking for about
-    0.024 m; with the measured 0.088 m width it now asks for what it says. Expect this term
-    to be harder to satisfy than it was, and any policy trained before this to have been
-    scored against the looser target.
+    which inflated every margin by 20 mm, so the 0.04 m target was really asking for about
+    0.020 m; with the measured width it now asks for what it says. Expect this term to be
+    harder to satisfy than it was, and any policy trained before this to have been scored
+    against a target half as demanding.
     """
     _, mos_lateral, _ = compute_xcom_and_mos(env, asset_cfg, sensor_cfg, foot_width=foot_width)
     shortfall = torch.clamp(target_margin - mos_lateral, min=0.0)
