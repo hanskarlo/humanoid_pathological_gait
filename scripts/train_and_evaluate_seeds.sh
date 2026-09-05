@@ -12,9 +12,15 @@
 #   MAX_ITERATIONS  PPO iterations per seed                   (default: 1200)
 #   LOG_ROOT        where seed_<n>/ directories are written   (default: logs/paper)
 #   EVAL_ENVS       environments in the post-training rollout (default: 64)
-#   EVAL_STEPS      control steps in that rollout             (default: 1000, ~14 gait
-#                   cycles at the default 1.2 s stride -- see evaluate.py's undersampling
+#   EVAL_STEPS      control steps in that rollout             (default: 1000, ~11 gait
+#                   cycles at the measured 1.83 s stride -- see evaluate.py's undersampling
 #                   warning if this is lowered)
+#
+# On gait-phase aliasing: the control step is 20 ms and the reference stride is now the
+# stride's own measured duration, so stride_duration_s / dt is 91.5 rather than the exact
+# 60 that silently collapsed cycle binning to 60 distinct phases in the 2026-09-04
+# baseline. Nothing to do; noted because a future reference with a round duration would
+# reintroduce it.
 #
 # Sequential, not parallel: one 14720-environment run already saturates the GPU, so
 # running two at once only makes both slower and risks an out-of-memory kill hours in.
