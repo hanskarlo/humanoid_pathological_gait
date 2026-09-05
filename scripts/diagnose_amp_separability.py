@@ -119,15 +119,24 @@ def main() -> None:
 
     obs, _ = env.reset()
     obs = obs["policy"]
-    policy = ActorCritic(obs.shape[-1], env.action_space.shape[-1]).to(device)
+    # Same architecture train_amp.py builds, or the state dict will not load.
+    policy = ActorCritic(
+        obs_dim=int(np.prod(env.observation_space["policy"].shape[1:])),
+        action_dim=int(np.prod(env.action_space.shape[1:])),
+        actor_hidden_dims=(512, 256, 128),
+        critic_hidden_dims=(512, 256, 128),
+    ).to(device)
     checkpoint = torch.load(args_cli.checkpoint, map_location=device, weights_only=False)
-    policy.load_state_dict(checkpoint["policy"] if "policy" in checkpoint else checkpoint)
+    policy.load_state_dict(checkpoint["policy_state_dict"])
     policy.eval()
+    print(f"loaded policy from iteration {checkpoint.get('iteration', '?')}")
 
     collected = []
     with torch.no_grad():
         for _ in range(args_cli.steps):
-            action = policy.act_inference(obs) if hasattr(policy, "act_inference") else policy(obs)[0]
+            # The distribution mean, not a sample: the question is what the learned policy
+            # looks like, and exploration noise would blur every dimension equally.
+            action = policy.actor(obs)
             obs, _, _, _, _ = env.step(action)
             obs = obs["policy"]
             collected.append(extract_amp_features(*env.get_amp_kinematic_tensors()).cpu().numpy())
