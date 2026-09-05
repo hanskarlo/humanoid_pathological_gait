@@ -17,7 +17,10 @@ history and cost a training run to discover:
   separate expert from agent without looking at the motion, which flattens the AMP
   gradient for the whole run;
 * the expert prior is sampled at this task's control period, since the discriminator
-  scores state *transitions* and a mismatched interval is a feature no policy can match.
+  scores state *transitions* and a mismatched interval is a feature no policy can match;
+* the corpus carries a per-stride impaired side inferred from the motion, because the
+  dataset's own side labels are inverted for most of the cohort and anything that groups
+  by paretic versus sound limb would otherwise cancel the asymmetry it is measuring.
 
 Needs neither Isaac Sim nor a GPU, so it runs in about a second.
 """
@@ -100,6 +103,23 @@ def main() -> int:
     )
 
     corpus = np.load(prior_path, allow_pickle=True)
+    check(
+        "impaired_sides" in corpus.files,
+        "carries a measured impaired side per stride",
+        "has no per-stride impaired side. Anything grouping the corpus by paretic versus "
+        "sound limb would have to fall back on the dataset's labels, which are inverted "
+        "for most of the cohort (see data/paretic_side.py upstream).",
+    )
+    if "impaired_sides" in corpus.files:
+        sides = np.asarray(corpus["impaired_sides"])
+        callable_fraction = float((sides != "unknown").mean())
+        check(
+            callable_fraction > 0.5,
+            f"{callable_fraction:.0%} of strides have a side the motion can call "
+            f"({int((sides == 'unknown').sum())} too symmetric)",
+            f"only {callable_fraction:.0%} of strides could be assigned a side",
+        )
+
     if "stride_durations_s" in corpus and "stride_lengths" in corpus:
         durations = np.asarray(corpus["stride_durations_s"], dtype=np.float64)
         lengths = np.asarray(corpus["stride_lengths"], dtype=np.float64)
