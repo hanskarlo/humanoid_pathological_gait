@@ -157,11 +157,15 @@ def assign_phase_offsets(env, num_envs: int) -> None:
     """Give every environment a distinct, deterministic starting phase.
 
     The Play config phase-locks every environment to the same trace (fixed
-    ``start_phase``, no randomization), which a demo wants and a measurement cannot use:
-    with ``stride_duration_s / dt`` an exact integer -- 1.2 s / 20 ms = 60 -- the gait
-    phase only ever takes 60 distinct values, which round to 60 of the 101 cycle bins.
-    No number of recorded steps changes that; the missing 41 bins are unreachable, not
-    merely unsampled, because every environment is retracing the identical 60-point orbit.
+    ``start_phase``, no randomization), which a demo wants and a measurement cannot use.
+    When ``stride_duration_s / dt`` is an exact integer the gait phase only ever takes
+    that many distinct values, which round to that many of the 101 cycle bins; no number
+    of recorded steps changes it, because every environment retraces the identical orbit.
+    The 2026-09-04 baseline hit exactly this: a 1.2 s stride at 20 ms gave 60 reachable
+    bins and 41 unreachable ones. The reference now carries the stride's own measured
+    duration, so the ratio is 91.5 rather than 60 and the degenerate case does not apply
+    at present -- but it returns for any reference whose duration is a round multiple of
+    the control step, so the offsets below are kept rather than made conditional.
 
     Spreading a deterministic offset ``i / num_envs`` across environments turns that one
     orbit into ``num_envs`` phase-shifted copies of it, and their union fills in the gaps
