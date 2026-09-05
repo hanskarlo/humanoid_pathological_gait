@@ -10,9 +10,13 @@ pipeline (originally ``sw-humanoid-strokegait``):
 
 * ``retargeted_h1_stride.npz`` -- one Pinocchio-QP-retargeted 19-DoF stride, the
   reference trajectory the policy tracks and resets onto. Required.
-* ``stroke_gait_dataset.npz`` -- a corpus of parsed post-stroke strides, used as the
-  AMP expert motion prior. Optional: without it the AMP buffer falls back to the
-  reference stride, and failing that to a synthetic prior.
+* ``amp_expert_corpus.npz`` -- many retargeted strides at this task's control rate, each
+  carrying the floating-base state the retargeter solved. This is the AMP expert motion
+  prior. Optional but strongly preferred: the fallbacks below cannot supply a floating
+  base, which leaves ten of the forty-eight AMP feature dimensions constant and lets the
+  discriminator separate expert from agent without looking at the motion at all.
+* ``stroke_gait_dataset.npz`` -- the raw parsed post-stroke corpus. Last-resort AMP prior;
+  it has no floating base and no retargeting.
 
 Both are looked up under this package's ``data/`` directory first, so a checkout that
 stages them runs standalone. ``SW_STROKEGAIT_DATA_DIR`` overrides the search for
@@ -35,7 +39,10 @@ REFERENCE_STRIDE_FILE = "retargeted_h1_stride.npz"
 """Retargeted 19-DoF H1 reference stride (1000 samples over 1.2 s)."""
 
 EXPERT_DATASET_FILE = "stroke_gait_dataset.npz"
-"""Parsed post-stroke gait corpus used as the AMP expert motion prior."""
+"""Raw parsed post-stroke gait corpus; the last-resort AMP prior."""
+
+AMP_EXPERT_CORPUS_FILE = "amp_expert_corpus.npz"
+"""Retargeted, control-rate AMP expert corpus with a solved floating base."""
 
 
 def _search_roots() -> list[Path]:
@@ -73,5 +80,24 @@ def reference_stride_path() -> Path:
 
 
 def expert_dataset_path() -> Path:
-    """Path to the AMP expert motion corpus."""
+    """Path to the raw clinical corpus (the last-resort AMP prior)."""
     return resolve_data_file(EXPERT_DATASET_FILE)
+
+
+def amp_expert_prior_path() -> Path:
+    """Path to the best AMP expert prior available, most preferred first.
+
+    ``amp_expert_corpus.npz`` is the one to use: retargeted onto this robot, sampled at the
+    control rate, with a solved floating base. The reference stride is a corpus of one but
+    still carries a floating base when the GMR arm produced it. The raw clinical corpus is
+    the last resort and leaves ten AMP feature dimensions constant.
+    """
+    for file_name in (AMP_EXPERT_CORPUS_FILE, REFERENCE_STRIDE_FILE, EXPERT_DATASET_FILE):
+        try:
+            return resolve_data_file(file_name)
+        except FileNotFoundError:
+            continue
+    raise FileNotFoundError(
+        "No AMP expert prior found. Generate one with "
+        "`python -m data.batch_parse_gait --solver gmr --corpus` in sw-humanoid-strokegait."
+    )

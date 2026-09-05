@@ -91,7 +91,7 @@ from humanoid_pathological_gait.algorithms.amp import (  # noqa: E402
     extract_amp_features,
 )
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic, RolloutBuffer  # noqa: E402
-from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import expert_dataset_path  # noqa: E402
+from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
 
 
 class MetricWriter:
@@ -215,9 +215,9 @@ class PPOAMPTrainer:
             self.discriminator, learning_rate=args_cli.lr_disc, gradient_penalty_weight=5.0
         )
 
-        # The staged post-stroke corpus is the expert motion prior. Passing the path
-        # explicitly keeps the buffer off its relative-path fallbacks.
-        self.expert_buffer = AMPExpertMotionBuffer(dataset_path=str(expert_dataset_path()), device=device)
+        # The best staged prior is the expert motion source. Passing the path explicitly
+        # keeps the buffer off its relative-path fallbacks.
+        self.expert_buffer = AMPExpertMotionBuffer(dataset_path=str(amp_expert_prior_path()), device=device)
         self.agent_buffer = AMPAgentReplayBuffer(capacity=50_000, device=device)
 
         obs, _ = self.env.reset()

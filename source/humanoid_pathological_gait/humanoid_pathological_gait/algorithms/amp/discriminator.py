@@ -241,12 +241,13 @@ class AMPExpertMotionBuffer:
             # Fall back to whatever clinical data this extension has staged. If nothing is
             # staged either, the synthetic generator below still yields a usable prior.
             from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import (
+                AMP_EXPERT_CORPUS_FILE,
                 EXPERT_DATASET_FILE,
                 REFERENCE_STRIDE_FILE,
                 resolve_data_file,
             )
 
-            for file_name in (EXPERT_DATASET_FILE, REFERENCE_STRIDE_FILE):
+            for file_name in (AMP_EXPERT_CORPUS_FILE, REFERENCE_STRIDE_FILE, EXPERT_DATASET_FILE):
                 try:
                     self._load_from_npz(str(resolve_data_file(file_name)))
                     if len(self.trajectories) > 0:
@@ -255,54 +256,207 @@ class AMPExpertMotionBuffer:
                     pass
         if len(self.trajectories) == 0:
             self._generate_synthetic_stroke_trajectories()
+        self.constant_feature_dims = self._warn_about_constant_features()
+
+    #: Control period of this task, matching ``sim.dt * decimation``. The discriminator
+    #: scores ``(s_t, s_t+1)`` pairs, so expert frames must be this far apart in time or the
+    #: expert's state-to-state delta differs from the agent's by the ratio of the two
+    #: sampling intervals -- a feature no policy can ever match.
+    CONTROL_DT_S = 0.02
 
     def _load_from_npz(self, npz_path: str):
         data = np.load(npz_path, allow_pickle=True)
-        if "q_trajectory" in data:
-            q = torch.tensor(data["q_trajectory"], dtype=torch.float32, device=self.device)
-            v = torch.tensor(data["v_trajectory"], dtype=torch.float32, device=self.device)
-            t_len = q.shape[0]
-
-            z_root = torch.ones((t_len, 1), device=self.device) * 1.05
-            proj_g = torch.tensor([0.0, 0.0, -1.0], device=self.device).repeat(t_len, 1)
-            lin_v = torch.tensor([0.6, 0.0, 0.0], device=self.device).repeat(t_len, 1)
-            ang_v = torch.zeros((t_len, 3), device=self.device)
-
-            feat = extract_amp_features(z_root, proj_g, lin_v, ang_v, q, v)
-            self.trajectories.append(feat)
+        if "stride_offsets" in data:
+            self._load_expert_corpus(data, npz_path)
+        elif "q_trajectory" in data:
+            self._load_reference_stride(data, npz_path)
         elif "LHip" in data:
-            num_strides = min(len(data["subject_ids"]), 50)
-            deg2rad = math.pi / 180.0
-            for s_idx in range(num_strides):
-                t_len = data["LHip"].shape[1]
-                q = torch.zeros((t_len, 19), device=self.device)
-                q[:, 0] = torch.tensor(data["LHip"][s_idx, :, 1] * deg2rad, device=self.device)
-                q[:, 1] = torch.tensor(data["LHip"][s_idx, :, 2] * deg2rad, device=self.device)
-                q[:, 2] = torch.tensor(-data["LHip"][s_idx, :, 0] * deg2rad, device=self.device)
-                q[:, 3] = torch.tensor(data["LKnee"][s_idx, :, 0] * deg2rad, device=self.device)
-                q[:, 4] = torch.tensor(-data["LAnkle"][s_idx, :, 0] * deg2rad, device=self.device)
+            self._load_raw_clinical(data, npz_path)
 
-                q[:, 5] = torch.tensor(-data["RHip"][s_idx, :, 1] * deg2rad, device=self.device)
-                q[:, 6] = torch.tensor(-data["RHip"][s_idx, :, 2] * deg2rad, device=self.device)
-                q[:, 7] = torch.tensor(-data["RHip"][s_idx, :, 0] * deg2rad, device=self.device)
-                q[:, 8] = torch.tensor(data["RKnee"][s_idx, :, 0] * deg2rad, device=self.device)
-                q[:, 9] = torch.tensor(-data["RAnkle"][s_idx, :, 0] * deg2rad, device=self.device)
+    def _load_expert_corpus(self, data, npz_path: str):
+        """Loads a retargeted expert corpus -- the preferred prior.
 
-                q[:, 10] = 0.0  # Torso
-                q[:, 11:15] = torch.tensor([0.0, 0.1, 0.0, 0.3], device=self.device)  # Left Arm
-                q[:, 15:19] = torch.tensor([0.0, -0.1, 0.0, 0.3], device=self.device)  # Right Arm
+        Written by ``python -m data.batch_parse_gait --solver gmr --corpus`` in the
+        ``sw-humanoid-strokegait`` pipeline. Every stride is already retargeted onto this
+        robot, sampled at the control rate, and carries the floating-base state the
+        retargeter solved, so all forty-eight feature dimensions vary the way the agent's
+        do. See ``docs/data.md``.
+        """
+        offsets = np.asarray(data["stride_offsets"])
+        q_all = torch.tensor(np.asarray(data["q"]), dtype=torch.float32, device=self.device)
+        v_all = torch.tensor(np.asarray(data["v"]), dtype=torch.float32, device=self.device)
+        height = torch.tensor(np.asarray(data["root_height"]), dtype=torch.float32, device=self.device)
+        gravity = torch.tensor(np.asarray(data["projected_gravity"]), dtype=torch.float32, device=self.device)
+        lin_vel = torch.tensor(np.asarray(data["root_lin_vel"]), dtype=torch.float32, device=self.device)
+        ang_vel = torch.tensor(np.asarray(data["root_ang_vel"]), dtype=torch.float32, device=self.device)
 
-                dt = 1.2 / (t_len - 1)
-                v = torch.gradient(q, spacing=(dt,), dim=0)[0]
-                z_root = torch.ones((t_len, 1), device=self.device) * 1.05
-                proj_g = torch.tensor([0.0, 0.0, -1.0], device=self.device).repeat(t_len, 1)
-                lin_v = torch.tensor([0.6, 0.0, 0.0], device=self.device).repeat(t_len, 1)
-                ang_v = torch.zeros((t_len, 3), device=self.device)
+        for start, stop in zip(offsets[:-1], offsets[1:]):
+            sl = slice(int(start), int(stop))
+            self.trajectories.append(
+                extract_amp_features(height[sl], gravity[sl], lin_vel[sl], ang_vel[sl], q_all[sl], v_all[sl])
+            )
+        print(
+            f"[AMPExpertMotionBuffer] Loaded retargeted corpus from {npz_path}: "
+            f"{len(self.trajectories)} strides, {int(offsets[-1])} frames "
+            f"at {1000 * float(data['control_dt_s']):.0f} ms."
+        )
 
-                feat = extract_amp_features(z_root, proj_g, lin_v, ang_v, q, v)
-                self.trajectories.append(feat)
+    def _load_reference_stride(self, data, npz_path: str):
+        """Loads a single retargeted stride.
 
-        print(f"[AMPExpertMotionBuffer] Loaded {len(self.trajectories)} expert trajectories.")
+        Usable, but a corpus of one. When the archive carries a floating base -- the GMR arm
+        resolves one, the joint-space baseline does not -- it is used; otherwise the root
+        block falls back to constants and :meth:`_warn_about_constant_features` will say so.
+        """
+        q = torch.tensor(np.asarray(data["q_trajectory"]), dtype=torch.float32, device=self.device)
+        v = torch.tensor(np.asarray(data["v_trajectory"]), dtype=torch.float32, device=self.device)
+        duration = float(data["stride_duration_s"]) if "stride_duration_s" in data else 1.2
+        q, v = self._resample_pair(q, v, duration)
+        t_len = q.shape[0]
+
+        if "root_translation" in data and "root_quaternion" in data:
+            translation = np.asarray(data["root_translation"], dtype=np.float64)
+            quaternion = np.asarray(data["root_quaternion"], dtype=np.float64)
+            kinematics = self._root_kinematics(translation, quaternion, duration, t_len)
+            feat = extract_amp_features(*kinematics, q, v)
+        else:
+            feat = extract_amp_features(*self._constant_root_block(t_len), q, v)
+        self.trajectories.append(feat)
+        print(f"[AMPExpertMotionBuffer] Loaded single reference stride from {npz_path}.")
+
+    def _load_raw_clinical(self, data, npz_path: str):
+        """Loads raw clinical joint angles -- the last-resort prior.
+
+        This path cannot supply a floating base, because no retargeting has happened: the
+        root block is constant and the discriminator can separate on it alone. It is kept
+        only so the buffer still yields something when no retargeted corpus is staged.
+
+        The mapping below is written against
+        :data:`~humanoid_pathological_gait.tasks.humanoid_pathological_gait.h1_joints.CLINICAL_JOINT_ORDER`.
+        It previously transposed hip roll and hip yaw -- writing ad/abduction into the yaw
+        slot and transverse rotation into the roll slot -- and used the same multiplier on
+        both limbs. Frontal and transverse multipliers must differ by limb: the clinical
+        traces are anatomical (adduction and internal rotation positive on both sides) while
+        the H1's hip_roll axes are both +X and its hip_yaw axes both +Z.
+        """
+        print(
+            f"[AMPExpertMotionBuffer] WARNING: falling back to raw clinical angles ({npz_path}). "
+            "This prior has no floating base, so ten of the forty-eight AMP features are "
+            "constant and the discriminator can separate expert from agent on them alone. "
+            "Stage a retargeted corpus (amp_expert_corpus.npz) instead."
+        )
+        num_strides = min(len(data["subject_ids"]), 50)
+        deg2rad = math.pi / 180.0
+        durations = np.asarray(data["stride_durations_s"]) if "stride_durations_s" in data else None
+
+        for s_idx in range(num_strides):
+            t_len = data["LHip"].shape[1]
+            q = torch.zeros((t_len, 19), device=self.device)
+            trace = lambda key, col: torch.tensor(  # noqa: E731
+                np.asarray(data[key][s_idx, :, col]) * deg2rad, dtype=torch.float32, device=self.device
+            )
+            #                                  left limb: frontal/transverse multiplier -1
+            q[:, 0] = -trace("LHip", 2)   # left_hip_yaw   <- internal/external rotation
+            q[:, 1] = -trace("LHip", 1)   # left_hip_roll  <- ad/abduction
+            q[:, 2] = -trace("LHip", 0)   # left_hip_pitch <- flexion/extension
+            q[:, 3] = trace("LKnee", 0)   # left_knee      <- flexion (opposite sagittal sign)
+            q[:, 4] = -trace("LAnkle", 0)  # left_ankle    <- dorsiflexion
+            #                                  right limb: frontal/transverse multiplier +1
+            q[:, 5] = trace("RHip", 2)    # right_hip_yaw
+            q[:, 6] = trace("RHip", 1)    # right_hip_roll
+            q[:, 7] = -trace("RHip", 0)   # right_hip_pitch
+            q[:, 8] = trace("RKnee", 0)   # right_knee
+            q[:, 9] = -trace("RAnkle", 0)  # right_ankle
+
+            q[:, 10] = 0.0  # torso
+            q[:, 11:15] = torch.tensor([0.0, 0.1, 0.0, 0.3], device=self.device)  # left arm
+            q[:, 15:19] = torch.tensor([0.0, -0.1, 0.0, 0.3], device=self.device)  # right arm
+
+            duration = 1.2
+            if durations is not None and s_idx < durations.size and np.isfinite(durations[s_idx]):
+                duration = float(durations[s_idx])
+            dt = duration / (t_len - 1)
+            v = torch.gradient(q, spacing=(dt,), dim=0)[0]
+            q, v = self._resample_pair(q, v, duration)
+            self.trajectories.append(extract_amp_features(*self._constant_root_block(q.shape[0]), q, v))
+
+    # -- helpers ------------------------------------------------------------
+
+    def _resample_pair(self, q: torch.Tensor, v: torch.Tensor, duration_s: float):
+        """Resamples a stride onto this task's control rate."""
+        target = max(int(round(duration_s / self.CONTROL_DT_S)) + 1, 8)
+        if q.shape[0] == target:
+            return q, v
+        source_grid = torch.linspace(0.0, 1.0, q.shape[0], device=self.device)
+        target_grid = torch.linspace(0.0, 1.0, target, device=self.device)
+        index = torch.searchsorted(source_grid, target_grid).clamp(1, q.shape[0] - 1)
+        lower, upper = index - 1, index
+        weight = ((target_grid - source_grid[lower]) / (source_grid[upper] - source_grid[lower])).unsqueeze(-1)
+        return (
+            q[lower] * (1.0 - weight) + q[upper] * weight,
+            v[lower] * (1.0 - weight) + v[upper] * weight,
+        )
+
+    def _constant_root_block(self, t_len: int):
+        """The placeholder root block, for priors that carry no floating base."""
+        return (
+            torch.ones((t_len, 1), device=self.device) * 1.05,
+            torch.tensor([0.0, 0.0, -1.0], device=self.device).repeat(t_len, 1),
+            torch.tensor([0.6, 0.0, 0.0], device=self.device).repeat(t_len, 1),
+            torch.zeros((t_len, 3), device=self.device),
+        )
+
+    def _root_kinematics(self, translation: np.ndarray, quaternion: np.ndarray, duration_s: float, t_len: int):
+        """Body-frame root state from a retargeted floating base, resampled to ``t_len``."""
+        from scipy.spatial.transform import Rotation
+
+        def resample(values):
+            source = np.linspace(0.0, 1.0, values.shape[0])
+            target = np.linspace(0.0, 1.0, t_len)
+            return np.stack([np.interp(target, source, values[:, c]) for c in range(values.shape[1])], axis=-1)
+
+        translation = resample(np.asarray(translation, dtype=np.float64))
+        quaternion = resample(np.asarray(quaternion, dtype=np.float64))
+        quaternion /= np.linalg.norm(quaternion, axis=1, keepdims=True)
+        rotations = Rotation.from_quat(np.column_stack([quaternion[:, 1:], quaternion[:, 0]])).as_matrix()
+
+        dt = duration_s / max(t_len - 1, 1)
+        linear = np.einsum("tji,tj->ti", rotations, np.gradient(translation, dt, axis=0))
+        relative = np.einsum("tji,tjk->tik", rotations[:-1], rotations[1:])
+        angular = np.zeros_like(translation)
+        angular[:-1] = Rotation.from_matrix(relative).as_rotvec() / dt
+        if len(angular) > 1:
+            angular[-1] = angular[-2]
+        gravity = np.einsum("tji,j->ti", rotations, np.array([0.0, 0.0, -1.0]))
+
+        as_tensor = lambda a: torch.tensor(a, dtype=torch.float32, device=self.device)  # noqa: E731
+        return (
+            as_tensor(translation[:, 2:3]),
+            as_tensor(gravity),
+            as_tensor(linear),
+            as_tensor(angular),
+        )
+
+    def _warn_about_constant_features(self) -> list[int]:
+        """Reports feature dimensions that never vary across the expert set.
+
+        A constant expert dimension is a free win for the discriminator: the agent's value
+        of that dimension is continuous and essentially never lands on the constant, so a
+        hyperplane separates the two perfectly and the AMP style reward stops carrying
+        gradient. This is the diagnostic that would have caught the hard-coded root block,
+        so it runs at construction and says so out loud.
+        """
+        if not self.trajectories:
+            return []
+        stacked = torch.cat(self.trajectories, dim=0)
+        constant = torch.nonzero(stacked.std(dim=0) < 1e-8).flatten().tolist()
+        if constant:
+            print(
+                f"[AMPExpertMotionBuffer] WARNING: {len(constant)} of {stacked.shape[1]} expert feature "
+                f"dimensions are constant (indices {constant}). The discriminator can separate "
+                "expert from agent on these alone, which flattens the AMP gradient."
+            )
+        return constant
 
     def _generate_synthetic_stroke_trajectories(self, num_trajs: int = 10, traj_len: int = 200):
         for i in range(num_trajs):
