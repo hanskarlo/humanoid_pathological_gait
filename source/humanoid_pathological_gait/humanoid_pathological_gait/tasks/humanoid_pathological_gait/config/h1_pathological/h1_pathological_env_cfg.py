@@ -253,7 +253,14 @@ class RewardsCfg:
     forward_velocity = RewTerm(
         func=mdp.track_forward_velocity, weight=2.0, params={"target_velocity": None, "std": 0.5}
     )
-    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": 1.05, "std": 0.15})
+    # std was 0.15 m, which made the crouch nearly free: the reference stride's own paretic
+    # foot clearance is only 68 mm, so a 46 mm crouch already eats two thirds of the
+    # clearance budget, yet at std=0.15 it still collected 0.910 of this term. Measured
+    # policies sat 24-47 mm below the reference's 1.052 m pelvis and the paretic foot then
+    # lifted 1-16 mm during its scheduled swing -- it scuffed, and contact fragmented into
+    # 2-3 touches per cycle. At std=0.04 the same 46 mm crouch pays 0.266. Resets place the
+    # robot on the reference pose, so episodes start inside the narrower basin.
+    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": 1.05, "std": 0.04})
 
     # -- dynamic balance
     margin_of_stability = RewTerm(
