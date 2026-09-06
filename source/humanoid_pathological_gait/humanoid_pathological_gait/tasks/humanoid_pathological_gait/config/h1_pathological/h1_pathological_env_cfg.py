@@ -143,7 +143,7 @@ class ActionsCfg:
 
 @configclass
 class ObservationsCfg:
-    """107-dimensional clinical state space."""
+    """109-dimensional clinical state space."""
 
     @configclass
     class PolicyCfg(ObsGroup):
@@ -159,9 +159,13 @@ class ObservationsCfg:
         # clinical reference target (38)
         reference_joint_pos = ObsTerm(func=mdp.reference_joint_pos)
         reference_joint_vel = ObsTerm(func=mdp.reference_joint_vel)
-        # gait conditioning (3)
+        # gait conditioning (5)
         paretic_side = ObsTerm(func=mdp.paretic_side)
         gait_phase = ObsTerm(func=mdp.gait_phase)
+        # Along-track and cross-track distance from where the reference's root should be at
+        # this phase. The policy has no memory and never observes its own displacement, so
+        # without this the root-tracking reward is not actable.
+        root_progression_error = ObsTerm(func=mdp.root_progression_error)
         # action history (19)
         actions = ObsTerm(func=mdp.last_action)
 
@@ -292,6 +296,10 @@ class RewardsCfg:
             "paretic_weight": 2.0,
         },
     )
+
+    # Ties position to phase. swing_timing says when each foot should be down; this says
+    # where the robot should be by then, which is what fixes cadence and stride length.
+    root_progression = RewTerm(func=mdp.track_root_progression, weight=6.0, params={"std": 0.15})
 
     # -- shaping
     alive = RewTerm(func=mdp.is_alive, weight=2.0)

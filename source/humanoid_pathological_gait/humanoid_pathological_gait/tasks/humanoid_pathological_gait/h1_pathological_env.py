@@ -85,12 +85,41 @@ class H1PathologicalGaitEnv(ManagerBasedRLEnv):
     def step(self, action: torch.Tensor):
         """Advance the gait clock, then step the environment."""
         self.reference_gait.advance(self.step_dt, self.cfg.gait_phase_rate_scale)
+        # The reference's root displacement restarts at zero each stride, so the robot's
+        # origin has to restart with it -- otherwise the tracking error grows without bound
+        # across cycles instead of measuring progress within one.
+        wrapped = self.reference_gait.cycle_wrapped
+        if wrapped.any():
+            self._anchor_root_cycle(wrapped.nonzero(as_tuple=False).squeeze(-1))
         return super().step(action)
+
+    def _anchor_root_cycle(self, env_ids) -> None:
+        """Pin the root-displacement origin to where these environments are now."""
+        robot = self.scene["robot"]
+        position = robot.data.root_link_pos_w.torch[env_ids, :2] - self.scene.env_origins[env_ids, :2]
+        quat = robot.data.root_link_quat_w.torch[env_ids]
+        # Isaac Lab quaternions are (x, y, z, w) in this release.
+        x, y, z, w = quat[:, 0], quat[:, 1], quat[:, 2], quat[:, 3]
+        yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+        self.reference_gait.set_cycle_anchor(position, yaw, env_ids)
+
+    def root_progression_error(self) -> torch.Tensor | None:
+        """``(N, 2)`` along-track and cross-track error against the reference root."""
+        robot = self.scene["robot"]
+        position = robot.data.root_link_pos_w.torch[:, :2] - self.scene.env_origins[:, :2]
+        quat = robot.data.root_link_quat_w.torch
+        x, y, z, w = quat[:, 0], quat[:, 1], quat[:, 2], quat[:, 3]
+        yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+        return self.reference_gait.root_progression_error(position, yaw)
 
     def _reset_idx(self, env_ids: Sequence[int]):
         """Reset the given environments; gait phase and paretic side are reset by events."""
         super()._reset_idx(env_ids)
         self.applied_spastic_torque[env_ids] = 0.0
+        # Events have already placed the robot and drawn a new start phase, so anchor here
+        # rather than in the event: the reference displacement is measured from phase 0 and
+        # a randomised start phase would otherwise be scored against the wrong origin.
+        self._anchor_root_cycle(env_ids)
 
     """
     Accessors used by the external PPO+AMP training loop.

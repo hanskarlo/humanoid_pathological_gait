@@ -154,6 +154,35 @@ def swing_timing(
     return (agreement * class_weight * foot_weight).sum(dim=-1) / foot_weight.sum()
 
 
+def track_root_progression(
+    env: H1PathologicalGaitEnv,
+    std: float = 0.15,
+    cross_track_weight: float = 0.5,
+) -> torch.Tensor:
+    """Reward the root being where the reference's root is, at the phase the reference is at.
+
+    The joint reference says which pose to hold at each phase; it says nothing about where
+    the robot should *be*. A policy can satisfy it while standing still, which the
+    2026-09-05 baseline did, or while taking three short steps per cycle instead of one long
+    one, which the class-balanced ``swing_timing`` run did -- 3.58 stance periods per cycle
+    and a 0.185 m stride against the reference's 0.447 m, at roughly three times its
+    cadence. Both are the same underlying freedom: nothing tied position to phase.
+
+    The reference's own floating base, solved by the retargeter and stored in the archive,
+    states the constraint directly. Error is measured from the start of the current gait
+    cycle in the heading the environment had then, so it is progress *within* a stride
+    rather than accumulated drift, and it is invariant to which way the robot is facing.
+
+    Along-track error is what carries cadence and stride length; cross-track is weighted
+    lower because veering is already penalised by the heading and orientation terms.
+    """
+    error = env.root_progression_error()
+    if error is None:
+        return torch.zeros(env.num_envs, device=env.device)
+    weighted = torch.square(error[:, 0]) + cross_track_weight * torch.square(error[:, 1])
+    return torch.exp(-weighted / std**2)
+
+
 def track_base_height(
     env: H1PathologicalGaitEnv,
     target_height: float = 1.05,

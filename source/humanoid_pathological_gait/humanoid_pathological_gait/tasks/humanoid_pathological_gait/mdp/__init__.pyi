@@ -53,6 +53,7 @@ from .observations import (
     reference_joint_pos,
     reference_joint_pos_error,
     reference_joint_vel,
+    root_progression_error,
 )
 from .rewards import (
     H1_FOOT_WIDTH_M,
@@ -64,6 +65,7 @@ from .rewards import (
     spastic_torque_l2,
     swing_timing,
     track_base_height,
+    track_root_progression,
     track_forward_velocity,
 )
 from .terminations import reference_tracking_divergence

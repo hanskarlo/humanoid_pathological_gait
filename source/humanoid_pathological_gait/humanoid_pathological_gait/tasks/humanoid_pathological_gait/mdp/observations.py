@@ -48,3 +48,18 @@ def gait_phase(env: H1PathologicalGaitEnv) -> torch.Tensor:
     """Gait phase as a ``(sin, cos)`` pair so it stays continuous across the stride wrap."""
     angle = 2.0 * math.pi * env.reference_gait.gait_phase
     return torch.stack([torch.sin(angle), torch.cos(angle)], dim=-1)
+
+
+def root_progression_error(env: H1PathologicalGaitEnv) -> torch.Tensor:
+    """``(N, 2)`` along-track and cross-track distance from the reference root, in metres.
+
+    Without this the root-tracking reward is not actable: the policy is a feed-forward MLP
+    with no memory, it observes its velocity but never its displacement, so it cannot know
+    whether it is ahead of or behind the reference's root at the current phase. Zeros when
+    the archive carries no root trajectory, so an older reference degrades to the previous
+    observation content rather than erroring.
+    """
+    error = env.root_progression_error()
+    if error is None:
+        return torch.zeros(env.num_envs, 2, device=env.device)
+    return error

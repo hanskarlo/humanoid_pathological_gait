@@ -47,7 +47,15 @@ class ReferenceGaitManager:
         self.num_envs = num_envs
         self.device = torch.device(device)
 
-        q_clinical, v_clinical, data_duration_s, impaired_side, contact, speed = self._load(Path(stride_path))
+        (
+            q_clinical,
+            v_clinical,
+            data_duration_s,
+            impaired_side,
+            contact,
+            speed,
+            root_translation,
+        ) = self._load(Path(stride_path))
         self.stride_duration_s = float(data_duration_s if data_duration_s > 0.0 else stride_duration_s)
         self.impaired_side = impaired_side
 
@@ -88,6 +96,30 @@ class ReferenceGaitManager:
             self.ref_contact.mean(dim=0) if self.ref_contact is not None else None
         )
 
+        #: ``(T, 2)`` planar displacement of the reference root from the start of the
+        #: stride, in the stride's own heading frame. This is what pins *cadence and stride
+        #: length*: the joint reference alone says which pose to hold at each phase, which a
+        #: policy can satisfy while taking three short steps per cycle instead of one long
+        #: one -- measured at 3.58 stance periods per cycle and a 0.185 m stride against the
+        #: reference's 0.447 m. Requiring the root to be where the reference's root is, at
+        #: the phase the reference is at, states that constraint directly.
+        self.ref_root_disp = None
+        if root_translation is not None:
+            planar = torch.tensor(root_translation[:, :2], dtype=torch.float32, device=self.device)
+            heading = planar[-1] - planar[0]
+            angle = torch.atan2(heading[1], heading[0])
+            cos, sin = torch.cos(-angle), torch.sin(-angle)
+            rotation = torch.tensor([[cos, -sin], [sin, cos]], device=self.device)
+            self.ref_root_disp = (planar - planar[0]) @ rotation.T
+
+        #: Per-environment anchor: root position and heading at the last phase wrap. The
+        #: reference displacement is measured from the start of *its* stride, so the robot's
+        #: has to be measured from the start of the cycle it is currently in.
+        self.cycle_anchor_pos = torch.zeros(num_envs, 2, dtype=torch.float32, device=self.device)
+        self.cycle_anchor_yaw = torch.zeros(num_envs, dtype=torch.float32, device=self.device)
+        #: Set by :meth:`advance` for the environments whose phase wrapped this step.
+        self.cycle_wrapped = torch.zeros(num_envs, dtype=torch.bool, device=self.device)
+
         # Per-environment state.
         self.gait_phase = torch.zeros(num_envs, dtype=torch.float32, device=self.device)
         self.stride_duration = torch.full((num_envs,), self.stride_duration_s, dtype=torch.float32, device=self.device)
@@ -97,7 +129,9 @@ class ReferenceGaitManager:
             -torch.ones(num_envs, device=self.device),
         )
 
-    def _load(self, path: Path) -> tuple[torch.Tensor, torch.Tensor, float, str, "np.ndarray | None", float]:
+    def _load(
+        self, path: Path
+    ) -> tuple[torch.Tensor, torch.Tensor, float, str, "np.ndarray | None", float, "np.ndarray | None"]:
         """Load the stride, deriving velocities by finite difference if absent."""
         data = np.load(str(path), allow_pickle=True)
         q = torch.tensor(np.asarray(data["q_trajectory"]), dtype=torch.float32)
@@ -135,11 +169,26 @@ class ReferenceGaitManager:
             )
         speed = float(data["reference_speed_ms"]) if "reference_speed_ms" in data.files else float("nan")
 
-        return q, v, duration_s, impaired_side, contact, speed
+        root_translation = (
+            np.asarray(data["root_translation"]) if "root_translation" in data.files else None
+        )
+        if root_translation is not None and root_translation.shape[0] != q.shape[0]:
+            raise ValueError(
+                f"root_translation at {path} has {root_translation.shape[0]} frames, expected {q.shape[0]}"
+            )
+
+        return q, v, duration_s, impaired_side, contact, speed, root_translation
 
     def advance(self, dt: float, rate_scale: float = 1.0) -> None:
-        """Advance every environment's gait phase by ``dt`` seconds of stride time."""
-        self.gait_phase = torch.remainder(self.gait_phase + rate_scale * dt / self.stride_duration, 1.0)
+        """Advance every environment's gait phase by ``dt`` seconds of stride time.
+
+        Also flags the environments whose phase wrapped, so the caller can re-anchor their
+        root displacement: the reference's displacement restarts at zero each stride, and
+        the robot's has to restart with it.
+        """
+        previous = self.gait_phase
+        self.gait_phase = torch.remainder(previous + rate_scale * dt / self.stride_duration, 1.0)
+        self.cycle_wrapped = self.gait_phase < previous
 
     def reset(self, env_ids: torch.Tensor, phase: torch.Tensor | float, paretic_side: torch.Tensor) -> None:
         """Reset gait phase and paretic side for the given environments."""
@@ -175,6 +224,34 @@ class ReferenceGaitManager:
         q_ref = torch.where(is_right_paretic, interpolate(self.ref_q_mirrored), interpolate(self.ref_q))
         v_ref = torch.where(is_right_paretic, interpolate(self.ref_v_mirrored), interpolate(self.ref_v))
         return q_ref, v_ref
+
+    def set_cycle_anchor(self, position_xy: torch.Tensor, yaw: torch.Tensor, env_ids=None) -> None:
+        """Re-anchor the root-displacement origin for the given environments."""
+        if env_ids is None:
+            self.cycle_anchor_pos[:] = position_xy
+            self.cycle_anchor_yaw[:] = yaw
+        else:
+            self.cycle_anchor_pos[env_ids] = position_xy
+            self.cycle_anchor_yaw[env_ids] = yaw
+
+    def root_progression_error(self, position_xy: torch.Tensor, yaw: torch.Tensor) -> torch.Tensor | None:
+        """``(N, 2)`` how far the root is from where the reference's root would be.
+
+        Both displacements are expressed in the heading the environment had when its cycle
+        began, so the error is ``(along-track, cross-track)`` in metres and does not depend
+        on which way the robot happens to be facing now.
+        """
+        if self.ref_root_disp is None:
+            return None
+        index = torch.round(self.gait_phase * (self.num_samples - 1)).long().clamp_(0, self.num_samples - 1)
+        target = self.ref_root_disp[index]
+
+        delta = position_xy - self.cycle_anchor_pos
+        cos, sin = torch.cos(-self.cycle_anchor_yaw), torch.sin(-self.cycle_anchor_yaw)
+        actual = torch.stack(
+            [cos * delta[:, 0] - sin * delta[:, 1], sin * delta[:, 0] + cos * delta[:, 1]], dim=-1
+        )
+        return actual - target
 
     def sample_contact(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
         """Reference contact state at each environment's phase, as ``(N, 2)`` in ``[0, 1]``.
