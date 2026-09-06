@@ -35,19 +35,28 @@ def standardize_to_paretic_frame(values: np.ndarray, is_right_paretic: np.ndarra
     return np.where(is_right_paretic[None, :, None], mirrored, values)
 
 
-def contact_gait_metrics(contact: np.ndarray, valid: np.ndarray, dt: float) -> dict[str, float]:
+def contact_gait_metrics(
+    contact: np.ndarray, valid: np.ndarray, dt: float, gait_phase: np.ndarray | None = None
+) -> dict[str, float]:
     """Stance/swing timing and temporal asymmetry from a per-foot contact mask.
 
     Args:
         contact: ``(steps, num_envs, 2)`` boolean, ordered ``(paretic, sound)``.
         valid: ``(steps, num_envs)`` boolean; steps in an episode that never terminated.
         dt: Control timestep in seconds.
+        gait_phase: ``(steps, num_envs)`` in ``[0, 1)``, used only to count gait cycles so
+            that stance periods per cycle can be reported. Optional; without it the
+            fragmentation guard below cannot fire.
 
     Returns:
         Stance fraction and mean single-support step time per limb, plus the temporal
-        symmetry index. The index is the standard ``|Tp - Ts| / (Tp + Ts) * 100``: 0% for
-        a symmetric gait, and rising with the shortened paretic stance that characterizes
-        hemiparetic walking.
+        symmetry index, **signed** as ``(Tp - Ts) / (Tp + Ts) * 100``: 0% for a symmetric
+        gait and *negative* for the shortened paretic stance that characterizes hemiparetic
+        walking. The sign is the clinically meaningful part and the unsigned form cannot
+        distinguish hemiparesis from its mirror image, so both are returned.
+
+        ``double_support_fraction`` is returned alongside because the asymmetry indices say
+        nothing about whether the robot is stepping at all.
     """
     valid_steps = valid.sum()
     if valid_steps == 0:
@@ -75,14 +84,50 @@ def contact_gait_metrics(contact: np.ndarray, valid: np.ndarray, dt: float) -> d
 
     paretic_time, sound_time = step_times
     denominator = paretic_time + sound_time
-    asymmetry = 100.0 * abs(paretic_time - sound_time) / denominator if np.isfinite(denominator) else float("nan")
+    # Signed, paretic minus sound. Hemiparetic gait shortens paretic stance, so a genuinely
+    # hemiparetic policy is NEGATIVE here. The unsigned form this replaces could not tell
+    # hemiparesis from its mirror image: the 2026-09-05 baseline scored a clinically
+    # plausible 16.4% on a seed whose paretic limb bore weight *longer* than its sound one.
+    signed = 100.0 * (paretic_time - sound_time) / denominator if np.isfinite(denominator) else float("nan")
+
+    # Stance time above is the mean duration of a contact run, which equals the clinical
+    # stance time only when each foot makes exactly ONE contact per gait cycle. A shuffling
+    # policy breaks that: the 2026-09-05 baseline made 2.3-2.7 contacts per cycle on two of
+    # three seeds, and there the run-duration and stance-fraction definitions of asymmetry
+    # came out with OPPOSITE signs. Counting the runs is what tells a reader which regime
+    # they are in, so the asymmetry is withheld rather than reported misleadingly.
+    periods_per_cycle = [float("nan"), float("nan")]
+    if gait_phase is not None:
+        cycles = float(np.sum(np.diff(gait_phase, axis=0) < -0.5))
+        if cycles > 0:
+            for foot in range(contact.shape[2]):
+                runs = int(np.sum(np.diff(masked[:, :, foot].astype(np.int8), axis=0) == 1))
+                periods_per_cycle[foot] = runs / cycles
+
+    fragmented = any(np.isfinite(v) and not (0.6 <= v <= 1.6) for v in periods_per_cycle)
+    if fragmented:
+        signed = float("nan")
 
     return {
+        "paretic_stance_periods_per_cycle": periods_per_cycle[0],
+        "sound_stance_periods_per_cycle": periods_per_cycle[1],
+        # True when the contact pattern is not one-stance-per-cycle, which makes the
+        # clinical stance-time definition inapplicable and blanks the asymmetry above.
+        "contact_pattern_fragmented": bool(fragmented),
         "paretic_stance_fraction": float(stance_fraction[0]),
         "sound_stance_fraction": float(stance_fraction[1]),
         "paretic_stance_time_s": paretic_time,
         "sound_stance_time_s": sound_time,
-        "temporal_asymmetry_pct": float(asymmetry),
+        # Negative = paretic stance shorter = the hemiparetic direction.
+        "temporal_asymmetry_pct": float(signed),
+        # Magnitude only, for comparison against literature that reports it unsigned.
+        "temporal_asymmetry_magnitude_pct": float(abs(signed)),
+        # Fraction of the cycle with both feet loaded. Normal walking is 0.20-0.25; this
+        # cohort's own patients sit at 0.37; a shuffling policy runs far higher, and none
+        # of the other metrics here reveal that on their own.
+        # Restricted to `valid` like every other metric here; counting post-termination
+        # steps would fold a collapsed robot's two grounded feet into the walking statistic.
+        "double_support_fraction": float(np.mean(contact.all(axis=-1)[valid])) if valid.any() else float("nan"),
     }
 
 

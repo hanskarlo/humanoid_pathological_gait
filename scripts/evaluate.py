@@ -388,7 +388,7 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     # Contact-derived timing, with the feet reordered so index 0 is the paretic one.
     contact = data["foot_contact"].astype(bool)
     paretic_first = np.where(is_right_paretic[None, :, None], contact[:, :, ::-1], contact)
-    timing = contact_gait_metrics(paretic_first, valid, dt)
+    timing = contact_gait_metrics(paretic_first, valid, dt, gait_phase=data["gait_phase"])
 
     knee_paretic = layout.index_of("left_knee")
     knee_sound = layout.index_of("right_knee")
@@ -526,7 +526,9 @@ def report(metrics: dict) -> None:
         ("Paretic knee ROM", "paretic_knee_rom_deg", "deg"),
         ("Sound knee ROM", "sound_knee_rom_deg", "deg"),
         ("Knee symmetry index", "knee_symmetry_index_pct", "%"),
-        ("Temporal asymmetry", "temporal_asymmetry_pct", "%"),
+        ("Temporal asymmetry (signed)", "temporal_asymmetry_pct", "%"),
+        ("Double support fraction", "double_support_fraction", ""),
+        ("Stance periods per cycle (paretic)", "paretic_stance_periods_per_cycle", ""),
         ("Paretic stance fraction", "paretic_stance_fraction", ""),
         ("Sound stance fraction", "sound_stance_fraction", ""),
         ("Forward speed", "mean_forward_speed_ms", "m/s"),
