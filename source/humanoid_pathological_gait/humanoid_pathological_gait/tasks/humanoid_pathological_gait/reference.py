@@ -117,6 +117,14 @@ class ReferenceGaitManager:
         #: has to be measured from the start of the cycle it is currently in.
         self.cycle_anchor_pos = torch.zeros(num_envs, 2, dtype=torch.float32, device=self.device)
         self.cycle_anchor_yaw = torch.zeros(num_envs, dtype=torch.float32, device=self.device)
+        #: Gait phase at which each anchor was set. The reference's displacement is measured
+        #: from phase 0, but an anchor is not always laid at phase 0: resets randomise the
+        #: start phase in training, and ``evaluate.py`` deliberately spreads phases across
+        #: environments. Subtracting the reference displacement *at the anchor's phase* is
+        #: what makes the error mean "progress since the anchor" rather than "distance from
+        #: where a stride that began at phase 0 would be" -- which charged an environment
+        #: resetting at phase 0.75 with 0.34 m of debt it could not repay.
+        self.cycle_anchor_phase = torch.zeros(num_envs, dtype=torch.float32, device=self.device)
         #: Set by :meth:`advance` for the environments whose phase wrapped this step.
         self.cycle_wrapped = torch.zeros(num_envs, dtype=torch.bool, device=self.device)
 
@@ -226,13 +234,12 @@ class ReferenceGaitManager:
         return q_ref, v_ref
 
     def set_cycle_anchor(self, position_xy: torch.Tensor, yaw: torch.Tensor, env_ids=None) -> None:
-        """Re-anchor the root-displacement origin for the given environments."""
+        """Re-anchor the root-displacement origin, recording the phase it was laid at."""
         if env_ids is None:
-            self.cycle_anchor_pos[:] = position_xy
-            self.cycle_anchor_yaw[:] = yaw
-        else:
-            self.cycle_anchor_pos[env_ids] = position_xy
-            self.cycle_anchor_yaw[env_ids] = yaw
+            env_ids = slice(None)
+        self.cycle_anchor_pos[env_ids] = position_xy
+        self.cycle_anchor_yaw[env_ids] = yaw
+        self.cycle_anchor_phase[env_ids] = self.gait_phase[env_ids]
 
     def root_progression_error(self, position_xy: torch.Tensor, yaw: torch.Tensor) -> torch.Tensor | None:
         """``(N, 2)`` how far the root is from where the reference's root would be.
@@ -243,8 +250,14 @@ class ReferenceGaitManager:
         """
         if self.ref_root_disp is None:
             return None
-        index = torch.round(self.gait_phase * (self.num_samples - 1)).long().clamp_(0, self.num_samples - 1)
-        target = self.ref_root_disp[index]
+        def displacement_at(phase: torch.Tensor) -> torch.Tensor:
+            index = torch.round(phase * (self.num_samples - 1)).long().clamp_(0, self.num_samples - 1)
+            return self.ref_root_disp[index]
+
+        # Progress the reference makes between the anchor's phase and the current one. The
+        # anchor's own displacement has to come off, or an environment that started
+        # mid-stride is charged for the part of the stride it never ran.
+        target = displacement_at(self.gait_phase) - displacement_at(self.cycle_anchor_phase)
 
         delta = position_xy - self.cycle_anchor_pos
         cos, sin = torch.cos(-self.cycle_anchor_yaw), torch.sin(-self.cycle_anchor_yaw)
