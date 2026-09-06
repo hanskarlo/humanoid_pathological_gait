@@ -47,7 +47,7 @@ class ReferenceGaitManager:
         self.num_envs = num_envs
         self.device = torch.device(device)
 
-        q_clinical, v_clinical, data_duration_s, impaired_side = self._load(Path(stride_path))
+        q_clinical, v_clinical, data_duration_s, impaired_side, contact, speed = self._load(Path(stride_path))
         self.stride_duration_s = float(data_duration_s if data_duration_s > 0.0 else stride_duration_s)
         self.impaired_side = impaired_side
 
@@ -65,6 +65,20 @@ class ReferenceGaitManager:
         if self.impaired_side == "right":
             self.ref_q, self.ref_q_mirrored = self.ref_q_mirrored, self.ref_q
             self.ref_v, self.ref_v_mirrored = self.ref_v_mirrored, self.ref_v
+            if contact is not None:
+                contact = contact[:, ::-1].copy()
+
+        #: Mean forward speed of the stride itself, m/s. The reward tracks this rather than
+        #: a fixed constant: the previous 0.5 m/s target was twice what the reference walks
+        #: at, and joint tracking outweighs the velocity term 15 to 2, so the two objectives
+        #: simply fought. ``nan`` when the archive predates the field.
+        self.reference_speed = speed
+
+        #: ``(T, 2)`` contact schedule in **paretic/sound** order, or ``None``. Column 0 is
+        #: the impaired limb, matching ``ref_q``'s left slots after the swap above.
+        self.ref_contact = (
+            torch.tensor(contact, dtype=torch.float32, device=self.device) if contact is not None else None
+        )
 
         # Per-environment state.
         self.gait_phase = torch.zeros(num_envs, dtype=torch.float32, device=self.device)
@@ -75,7 +89,7 @@ class ReferenceGaitManager:
             -torch.ones(num_envs, device=self.device),
         )
 
-    def _load(self, path: Path) -> tuple[torch.Tensor, torch.Tensor, float, str]:
+    def _load(self, path: Path) -> tuple[torch.Tensor, torch.Tensor, float, str, "np.ndarray | None", float]:
         """Load the stride, deriving velocities by finite difference if absent."""
         data = np.load(str(path), allow_pickle=True)
         q = torch.tensor(np.asarray(data["q_trajectory"]), dtype=torch.float32)
@@ -106,7 +120,14 @@ class ReferenceGaitManager:
             dt = (duration_s if duration_s > 0.0 else 1.2) / max(q.shape[0] - 1, 1)
             v = torch.gradient(q, spacing=(dt,), dim=0)[0]
 
-        return q, v, duration_s, impaired_side
+        contact = np.asarray(data["reference_contact"]) if "reference_contact" in data.files else None
+        if contact is not None and (contact.ndim != 2 or contact.shape != (q.shape[0], 2)):
+            raise ValueError(
+                f"reference_contact at {path} has shape {contact.shape}, expected {(q.shape[0], 2)}"
+            )
+        speed = float(data["reference_speed_ms"]) if "reference_speed_ms" in data.files else float("nan")
+
+        return q, v, duration_s, impaired_side, contact, speed
 
     def advance(self, dt: float, rate_scale: float = 1.0) -> None:
         """Advance every environment's gait phase by ``dt`` seconds of stride time."""
@@ -146,3 +167,22 @@ class ReferenceGaitManager:
         q_ref = torch.where(is_right_paretic, interpolate(self.ref_q_mirrored), interpolate(self.ref_q))
         v_ref = torch.where(is_right_paretic, interpolate(self.ref_v_mirrored), interpolate(self.ref_v))
         return q_ref, v_ref
+
+    def sample_contact(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
+        """Reference contact state at each environment's phase, as ``(N, 2)`` in ``[0, 1]``.
+
+        Column order is ``(paretic, sound)`` for every environment, matching the frame the
+        gait-analysis code standardises to. **The caller must put the robot's own contact
+        into that order before comparing**: the robot reports ``(left, right)``, so a
+        right-paretic environment needs its two columns swapped.
+
+        Nearest-neighbour rather than interpolated: contact is binary, and a blended value
+        midway through a transition would ask the foot to be half-loaded.
+        """
+        if self.ref_contact is None:
+            return None
+        if env_ids is None:
+            env_ids = slice(None)
+        position = self.gait_phase[env_ids] * (self.num_samples - 1)
+        index = torch.round(position).long().clamp_(0, self.num_samples - 1)
+        return self.ref_contact[index]

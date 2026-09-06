@@ -55,12 +55,14 @@ from .observations import (
     reference_joint_vel,
 )
 from .rewards import (
+    H1_FOOT_WIDTH_M,
     compute_xcom_and_mos,
     joint_pos_tracking,
     joint_vel_tracking,
     margin_of_stability,
     paretic_foot_clearance,
     spastic_torque_l2,
+    swing_timing,
     track_base_height,
     track_forward_velocity,
 )

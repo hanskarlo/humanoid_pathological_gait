@@ -21,6 +21,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import math
+
 import torch
 
 from isaaclab.managers import SceneEntityCfg
@@ -59,14 +61,74 @@ def joint_vel_tracking(
 
 def track_forward_velocity(
     env: H1PathologicalGaitEnv,
-    target_velocity: float = 0.5,
+    target_velocity: float | None = None,
     std: float = 0.5,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
-    """RBF reward on forward walking speed in the robot's own frame."""
+    """RBF reward on forward walking speed in the robot's own frame.
+
+    ``target_velocity=None`` (the default) takes the speed the **reference stride itself
+    travels at**, from the floating base the retargeter solved. That is the honest target:
+    the previous hard-coded 0.5 m/s was twice the reference's own 0.244 m/s, and since joint
+    tracking outweighs this term 15.0 to 2.0, the two objectives simply fought -- the policy
+    settled near the reference speed and collected a permanent shortfall here. Post-stroke
+    gait is slow; asking for a speed the reference does not contain asks the policy to stop
+    tracking it.
+
+    Pass a float to override, e.g. to study speed as an independent variable.
+    """
     asset: Articulation = env.scene[asset_cfg.name]
     forward_speed = asset.data.root_lin_vel_b.torch[:, 0]
+    if target_velocity is None:
+        target_velocity = env.reference_gait.reference_speed
+        if not math.isfinite(target_velocity):
+            raise ValueError(
+                "target_velocity=None needs reference_speed_ms in the reference archive; "
+                "regenerate it with data/batch_parse_gait.py --solver gmr --source measured."
+            )
     return torch.exp(-torch.square(forward_speed - target_velocity) / std**2)
+
+
+def swing_timing(
+    env: H1PathologicalGaitEnv,
+    sensor_cfg: SceneEntityCfg,
+    contact_threshold: float = 1.0,
+    paretic_weight: float = 2.0,
+) -> torch.Tensor:
+    """Reward each foot being loaded (or not) when the reference says it should be.
+
+    This is the term the 2026-09-05 baseline was missing, and its absence is why two of
+    three seeds shuffled: nothing asked a foot to leave the ground. ``paretic_foot_clearance``
+    is gated on the foot *already* being airborne, so a policy that plants the paretic foot
+    forgoes that term and is otherwise unpenalised -- both feet down is a local optimum, and
+    it was found. Measured double support ran to 0.82-0.89 of the cycle against 0.37 in this
+    cohort's own patients.
+
+    The reference schedule comes from ``reference_contact`` in the stride archive: each
+    limb's swing *fraction* is measured from its own toe-off events, and the retargeted foot
+    kinematics decide *when* within the cycle (see
+    ``kinematics.gmr_solver.contact_schedule`` for why neither source suffices alone).
+
+    Scores agreement per foot in the paretic/sound frame, weighting the paretic foot more
+    since its swing is the deficit under study. Returns 0 when the archive carries no
+    schedule, so an older reference degrades to the previous behaviour rather than erroring.
+    """
+    schedule = env.reference_gait.sample_contact()
+    if schedule is None:
+        return torch.zeros(env.num_envs, device=env.device)
+
+    sensor: ContactSensor = env.scene[sensor_cfg.name]
+    force = torch.norm(sensor.data.net_forces_w.torch[:, sensor_cfg.body_ids], dim=-1)
+    loaded = (force > contact_threshold).float()
+
+    # body_ids are ordered (left, right); the schedule is (paretic, sound), so swap the
+    # robot's columns for right-paretic environments before comparing.
+    is_right_paretic = (env.reference_gait.paretic_side > 0).unsqueeze(-1)
+    loaded = torch.where(is_right_paretic, loaded.flip(-1), loaded)
+
+    agreement = 1.0 - torch.abs(loaded - schedule)
+    weights = torch.tensor([paretic_weight, 1.0], device=env.device)
+    return (agreement * weights).sum(dim=-1) / weights.sum()
 
 
 def track_base_height(

@@ -243,7 +243,12 @@ class RewardsCfg:
     # -- clinical imitation
     joint_pos_tracking = RewTerm(func=mdp.joint_pos_tracking, weight=15.0, params={"std": 0.35})
     joint_vel_tracking = RewTerm(func=mdp.joint_vel_tracking, weight=2.0, params={"std": 2.0})
-    forward_velocity = RewTerm(func=mdp.track_forward_velocity, weight=2.0, params={"target_velocity": 0.5, "std": 0.5})
+    # target_velocity=None tracks the reference stride's own speed (0.244 m/s for the
+    # current stride) instead of a constant. The 0.5 that was here is twice that, and lost
+    # to joint tracking at weight 15.0, so it only ever contributed a fixed shortfall.
+    forward_velocity = RewTerm(
+        func=mdp.track_forward_velocity, weight=2.0, params={"target_velocity": None, "std": 0.5}
+    )
     base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": 1.05, "std": 0.15})
 
     # -- dynamic balance
@@ -265,6 +270,20 @@ class RewardsCfg:
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
             "target_height": 0.10,
             "std": 0.04,
+        },
+    )
+
+    # Asks each foot to be off the ground when the reference says it should be. Without
+    # this nothing requires a step at all: paretic_foot_clearance only pays once the foot
+    # is already airborne, so planting it costs almost nothing, and the 2026-09-05 baseline
+    # duly shuffled at 0.82-0.89 double support against 0.37 in the patients.
+    swing_timing = RewTerm(
+        func=mdp.swing_timing,
+        weight=3.0,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
+            "contact_threshold": 1.0,
+            "paretic_weight": 2.0,
         },
     )
 

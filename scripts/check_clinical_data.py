@@ -84,6 +84,29 @@ def main() -> int:
         "has no usable stride duration, so reference velocities fall back to a 1.2 s assumption",
     )
 
+    schedule = np.asarray(archive["reference_contact"]) if "reference_contact" in archive.files else None
+    check(
+        schedule is not None,
+        "carries a contact schedule (which foot is down, when)",
+        "has no reference_contact. Nothing then requires the policy to take a step: the "
+        "joint reference is satisfiable standing still, which is what the 2026-09-05 "
+        "baseline did at 0.82-0.89 double support against 0.37 in the patients.",
+    )
+    if schedule is not None:
+        check(
+            (~schedule).all(axis=1).mean() == 0.0,
+            f"schedule has no flight phase (double support {schedule.all(axis=1).mean():.2f})",
+            "schedule has frames with neither foot down, which the robot cannot track",
+        )
+    check(
+        "reference_speed_ms" in archive.files and 0.05 < float(archive["reference_speed_ms"]) < 0.9,
+        f"declares its own speed ({float(archive['reference_speed_ms']):.3f} m/s)"
+        if "reference_speed_ms" in archive.files
+        else "declares its own speed",
+        "has no plausible reference_speed_ms; the forward-velocity reward falls back on a "
+        "constant that may contradict the stride it is tracking.",
+    )
+
     prior_path = amp_expert_prior_path()
     print(f"\nAMP expert prior: {prior_path}")
     check(
