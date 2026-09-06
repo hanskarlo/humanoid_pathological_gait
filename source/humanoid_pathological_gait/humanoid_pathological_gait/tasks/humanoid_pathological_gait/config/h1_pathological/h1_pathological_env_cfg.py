@@ -277,9 +277,15 @@ class RewardsCfg:
     # this nothing requires a step at all: paretic_foot_clearance only pays once the foot
     # is already airborne, so planting it costs almost nothing, and the 2026-09-05 baseline
     # duly shuffled at 0.82-0.89 double support against 0.37 in the patients.
+    # Weight 6.0, not the 3.0 of the first attempt. Two changes at once, deliberately: the
+    # class rebalance took the contestable share of this term from 0.317 to 0.5, and the
+    # weight doubles what that share is worth, so the incentive to step is ~3.0 reward units
+    # against joint tracking's 15.0 rather than ~0.95. The first run failed because the term
+    # could not be heard; testing the rebalance alone at 3.0 would risk the same null result
+    # for the same reason.
     swing_timing = RewTerm(
         func=mdp.swing_timing,
-        weight=3.0,
+        weight=6.0,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
             "contact_threshold": 1.0,

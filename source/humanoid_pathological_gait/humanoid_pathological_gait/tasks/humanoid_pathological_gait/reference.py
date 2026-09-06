@@ -80,6 +80,14 @@ class ReferenceGaitManager:
             torch.tensor(contact, dtype=torch.float32, device=self.device) if contact is not None else None
         )
 
+        #: ``(2,)`` fraction of the cycle each limb is meant to be **down**, paretic first.
+        #: The reward uses it to cancel the class imbalance: the schedule says "down" far
+        #: more often than "up", so unweighted agreement pays a policy that simply never
+        #: lifts a foot. See ``mdp.rewards.swing_timing``.
+        self.contact_stance_fraction = (
+            self.ref_contact.mean(dim=0) if self.ref_contact is not None else None
+        )
+
         # Per-environment state.
         self.gait_phase = torch.zeros(num_envs, dtype=torch.float32, device=self.device)
         self.stride_duration = torch.full((num_envs,), self.stride_duration_s, dtype=torch.float32, device=self.device)

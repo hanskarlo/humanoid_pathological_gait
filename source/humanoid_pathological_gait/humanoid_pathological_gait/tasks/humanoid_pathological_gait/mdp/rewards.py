@@ -94,6 +94,7 @@ def swing_timing(
     sensor_cfg: SceneEntityCfg,
     contact_threshold: float = 1.0,
     paretic_weight: float = 2.0,
+    max_class_weight: float = 4.0,
 ) -> torch.Tensor:
     """Reward each foot being loaded (or not) when the reference says it should be.
 
@@ -112,6 +113,19 @@ def swing_timing(
     Scores agreement per foot in the paretic/sound frame, weighting the paretic foot more
     since its swing is the deficit under study. Returns 0 when the archive carries no
     schedule, so an older reference degrades to the previous behaviour rather than erroring.
+
+    **Class-balanced, and it has to be.** The schedule says "down" 61% of the cycle for the
+    paretic foot and 84% for the sound one, so plain agreement hands a policy that never
+    lifts either foot **0.683 of the maximum for free**, leaving only 0.317 contestable
+    against joint tracking at weight 15.0. The first full-scale run with the unbalanced form
+    ended at 0.635 -- *below* the do-nothing floor -- and double support went from 0.820 to
+    0.837, slightly worse than the baseline it was meant to fix.
+
+    Each frame is therefore weighted by the inverse frequency of its own class, so stance
+    frames and swing frames contribute equally in expectation. A constant policy -- always
+    down or always up -- scores exactly 0.5, a perfect one 1.0, and the whole upper half is
+    contestable. The per-frame weight is capped (see ``max_class_weight``) because a limb
+    with a short swing would otherwise produce large single-step spikes.
     """
     schedule = env.reference_gait.sample_contact()
     if schedule is None:
@@ -127,8 +141,17 @@ def swing_timing(
     loaded = torch.where(is_right_paretic, loaded.flip(-1), loaded)
 
     agreement = 1.0 - torch.abs(loaded - schedule)
-    weights = torch.tensor([paretic_weight, 1.0], device=env.device)
-    return (agreement * weights).sum(dim=-1) / weights.sum()
+
+    # Inverse-frequency class balancing. `stance` is each foot's share of the cycle spent
+    # down, so a stance frame is worth 1/(2*stance) and a swing frame 1/(2*(1-stance)):
+    # each class then contributes 0.5 in expectation and a constant policy scores 0.5.
+    stance = env.reference_gait.contact_stance_fraction.clamp(1e-3, 1.0 - 1e-3)
+    stance_weight = (0.5 / stance).clamp(max=max_class_weight)
+    swing_weight = (0.5 / (1.0 - stance)).clamp(max=max_class_weight)
+    class_weight = torch.where(schedule > 0.5, stance_weight, swing_weight)
+
+    foot_weight = torch.tensor([paretic_weight, 1.0], device=env.device)
+    return (agreement * class_weight * foot_weight).sum(dim=-1) / foot_weight.sum()
 
 
 def track_base_height(
