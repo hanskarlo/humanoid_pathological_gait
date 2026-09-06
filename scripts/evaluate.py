@@ -83,6 +83,9 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+import os
+import sys
+import traceback
 import gymnasium as gym
 import numpy as np
 import torch
@@ -548,6 +551,21 @@ def report(metrics: dict) -> None:
 
 
 if __name__ == "__main__":
-    exit_code = main()
+    # Isaac registers atexit handlers that force a zero exit status, so an unhandled
+    # exception here used to surface as SUCCESS: this script exited 0 while printing a
+    # traceback. verify.sh gates on `$?` and train_and_evaluate_seeds.sh checks it too, so a
+    # crashed run read as a passing one. Catch, close the app, flush, then bypass atexit.
+    try:
+        exit_code = main()
+    except BaseException:  # noqa: BLE001 - the status must survive any failure, including SystemExit
+        traceback.print_exc()
+        exit_code = 1
+    # Order matters: ``simulation_app.close()`` terminates the process itself with status 0,
+    # so on the failure path it must not run -- otherwise the crash is reported as success.
+    # os._exit is safe here; the OS reclaims everything the app was holding.
+    sys.stdout.flush()
+    sys.stderr.flush()
+    if exit_code:
+        os._exit(int(exit_code))
     simulation_app.close()
-    raise SystemExit(exit_code)
+    os._exit(0)
