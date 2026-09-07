@@ -257,12 +257,18 @@ class RewardsCfg:
     # pelvis rises and falls 30.0 mm over the stride, so a constant target asked the policy
     # to hold still vertically while every other term asked it to walk.
     #
-    # std stays at 0.15. Narrowing it to 0.04 to charge harder for crouching was measured
-    # over a matched 14720-env run and made everything worse, including pelvis height:
-    # mean 1.028 -> 1.012 m, oscillation 44.5 -> 82.3 mm, speed 0.151 -> -0.039 m/s. Past
-    # ~80 mm of error the Gaussian is flat, so the term stopped shaping height at all.
-    # See research_log/2026-09-07. Fix the target first; revisit the width only after.
-    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": None, "std": 0.15})
+    # std 0.06, tightened from 0.15 only *after* the target was fixed. The order matters.
+    # Narrowing to 0.04 against the old constant target made everything worse -- pelvis
+    # 1.028 -> 1.012 m, oscillation 44.5 -> 82.3 mm, speed 0.151 -> -0.039 -- because a
+    # constant target the reference itself misses by 15 mm twice a stride becomes unreachable
+    # when sharpened, and the term stopped shaping height at all. Against a per-phase target
+    # the reference scores 1.0 at any width, so narrowing now charges only for the crouch.
+    #
+    # 0.15 could not pay for that crouch: the audit scores a policy sitting 39 mm low at
+    # 0.936 against the reference's 1.000, a gap of 0.064 -- the term had a correct target
+    # and no discriminating power. At 0.06 the same crouch scores 0.660, a gap of 0.340.
+    # Not 0.04: that costs gradient far from the target for little extra separation.
+    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": None, "std": 0.06})
 
     # -- dynamic balance
     margin_of_stability = RewTerm(
