@@ -186,17 +186,21 @@ def track_root_progression(
 def track_base_height(
     env: H1PathologicalGaitEnv,
     target_height: float = 1.05,
-    std: float = 0.04,
+    std: float = 0.15,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
-    """RBF reward keeping the pelvis near its nominal standing height.
+    """RBF reward keeping the pelvis near a constant nominal standing height.
 
-    ``std`` has to be read against foot clearance, not against how much pelvis travel
-    looks reasonable on its own. The reference stride clears its paretic foot by only
-    68 mm, so every millimetre the pelvis drops comes straight out of that budget: a
-    crouch of 46 mm leaves 22 mm, and the foot scuffs through what should be swing.
-    A permissive ``std`` therefore buys a fragmented contact pattern rather than a
-    softer posture constraint, which is why this defaults tight.
+    Two things about this term are worth knowing before tuning it.
+
+    The target is a *constant*, but the reference pelvis rises and falls 30 mm over the
+    stride, so the best a policy can do here is sit at the mean and be charged for the
+    oscillation the reference itself demands. That is the term's real defect.
+
+    Narrowing ``std`` does not fix it. Going 0.15 -> 0.04 to charge harder for crouching
+    was measured and made every gait metric worse, including the pelvis height it was
+    meant to raise: a spike that sharp is one the policy cannot hold, so the term stops
+    shaping anything. Fix the target before touching the width.
     """
     asset: Articulation = env.scene[asset_cfg.name]
     height = asset.data.root_link_pos_w.torch[:, 2]

@@ -253,14 +253,17 @@ class RewardsCfg:
     forward_velocity = RewTerm(
         func=mdp.track_forward_velocity, weight=2.0, params={"target_velocity": None, "std": 0.5}
     )
-    # std was 0.15 m, which made the crouch nearly free: the reference stride's own paretic
-    # foot clearance is only 68 mm, so a 46 mm crouch already eats two thirds of the
-    # clearance budget, yet at std=0.15 it still collected 0.910 of this term. Measured
-    # policies sat 24-47 mm below the reference's 1.052 m pelvis and the paretic foot then
-    # lifted 1-16 mm during its scheduled swing -- it scuffed, and contact fragmented into
-    # 2-3 touches per cycle. At std=0.04 the same 46 mm crouch pays 0.266. Resets place the
-    # robot on the reference pose, so episodes start inside the narrower basin.
-    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": 1.05, "std": 0.04})
+    # std stays at 0.15 deliberately. Tightening it to 0.04 to charge the policy for
+    # crouching was tried (see research_log/2026-09-07) and made everything worse: mean
+    # pelvis fell 1.028 -> 1.012 m, vertical oscillation nearly doubled to 82 mm against
+    # the reference's own 30 mm, forward speed collapsed 0.151 -> -0.039 m/s and cost of
+    # transport went 1.33 -> 3.25. A narrower RBF did not buy more pressure, it bought a
+    # spike too sharp to hold, so the term stopped shaping height at all.
+    #
+    # The remaining defect is real but is in the *target*, not the width: target_height is
+    # a constant while the reference pelvis rises and falls 30 mm over the stride. Fixing
+    # that means tracking reference height per phase, not narrowing a constant.
+    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": 1.05, "std": 0.15})
 
     # -- dynamic balance
     margin_of_stability = RewTerm(
