@@ -387,15 +387,16 @@ def paretic_foot_clearance(
     only 11 mm scored 0.807. The term preferred the under-lift. 0.131 m is the reference's
     own mean, so reproducing the patient is what maximises it.
 
-    **The gate.** It keyed on *measured* contact, which makes the reward unreachable
-    exactly when it is needed: a foot that never leaves the ground is never "in swing", so
-    the term reads zero and offers no gradient to lift it. Measured, the paretic foot was
-    unloaded 6.4% of the time against a 39.4% schedule. Gating on the reference schedule
-    instead means a planted foot is scored against where the reference's foot would be,
-    which is what makes "lift it" the improving direction. This mirrors
-    :func:`swing_timing`, which already gates on the schedule.
-
-    Falls back to the measured-contact gate when the stride archive carries no schedule.
+    **The gate stays on measured contact, and that is deliberate.** It looks like a defect:
+    a foot that never leaves the ground is never "in swing", so the term reads zero and
+    offers no gradient to lift it. Switching it to the reference schedule was tried and
+    regressed everything -- double support 0.824 -> 0.875, forward speed 0.163 -> 0.088 m/s,
+    cost of transport 0.93 -> 3.19 -- while the paretic foot ended up *more* planted, loaded
+    98.0% of scheduled swing against 94.8% before. Scoring height without requiring the foot
+    to be unloaded pays the policy for raising the ankle link while the foot still bears
+    load, which is expensive and is not a step. Requiring genuine unloading is what stops
+    that; :func:`swing_timing` is the term that supplies the pressure to unload in the first
+    place.
     """
     asset: Articulation = env.scene[asset_cfg.name]
     sensor: ContactSensor = env.scene[sensor_cfg.name]
@@ -407,14 +408,9 @@ def paretic_foot_clearance(
     index = is_right_paretic.unsqueeze(-1)
     paretic_height = torch.gather(foot_height, 1, index).squeeze(-1)
 
-    schedule = env.reference_gait.sample_contact()
-    if schedule is not None:
-        # Column 0 is the paretic limb; the schedule is 1 for "down".
-        in_swing = 1.0 - schedule[:, 0]
-    else:
-        net_force = torch.norm(sensor.data.net_forces_w.torch[:, sensor_cfg.body_ids], dim=-1)
-        paretic_force = torch.gather(net_force, 1, index).squeeze(-1)
-        in_swing = (paretic_force <= 1.0).float()
+    net_force = torch.norm(sensor.data.net_forces_w.torch[:, sensor_cfg.body_ids], dim=-1)
+    paretic_force = torch.gather(net_force, 1, index).squeeze(-1)
+    in_swing = (paretic_force <= 1.0).float()
 
     return torch.exp(-torch.square(paretic_height - target_height) / std**2) * in_swing
 

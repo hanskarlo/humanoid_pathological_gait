@@ -50,7 +50,14 @@ wp.config.enable_backward = False
 from isaaclab.app import AppLauncher
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-parser.add_argument("--checkpoint", type=str, required=True, help="Path to a train_amp.py checkpoint (.pt).")
+parser.add_argument("--checkpoint", type=str, default=None, help="Path to a train_amp.py checkpoint (.pt).")
+parser.add_argument(
+    "--zero_actions",
+    action="store_true",
+    help="Skip the checkpoint and drive zero actions, which commands the reference pose exactly. "
+    "This measures what the reference stride itself scores on every gait metric -- the ceiling any "
+    "policy tracking it can reach.",
+)
 parser.add_argument("--task", type=str, default="Isaac-H1-Pathological-Gait-Play-v0")
 parser.add_argument("--num_envs", type=int, default=64, help="Environments; rounded down to an even number.")
 parser.add_argument("--num_steps", type=int, default=1000, help="Control steps to record after warmup.")
@@ -223,14 +230,30 @@ def main() -> int:
         actor_hidden_dims=(512, 256, 128),
         critic_hidden_dims=(512, 256, 128),
     ).to(env.device)
-    checkpoint = torch.load(args_cli.checkpoint, map_location=env.device, weights_only=False)
-    policy.load_state_dict(checkpoint["policy_state_dict"])
-    policy.eval()
-    iteration = checkpoint.get("iteration", "?")
+    if not args_cli.zero_actions and not args_cli.checkpoint:
+        raise SystemExit("evaluate.py needs either --checkpoint or --zero_actions")
 
-    output_dir = Path(args_cli.output_dir or Path(args_cli.checkpoint).resolve().parent / "evaluation")
+    if args_cli.zero_actions:
+        # The action term is a residual on the reference pose, so zero actions command the
+        # reference exactly. Rolling that out answers the question every reward term should
+        # be checked against: what does the reference itself score here? A target the
+        # reference cannot reach is one no policy tracking it can reach either.
+        policy.eval()
+        iteration = "reference"
+        if args_cli.output_dir is None:
+            raise SystemExit("--zero_actions needs an explicit --output_dir")
+    else:
+        checkpoint = torch.load(args_cli.checkpoint, map_location=env.device, weights_only=False)
+        policy.load_state_dict(checkpoint["policy_state_dict"])
+        policy.eval()
+        iteration = checkpoint.get("iteration", "?")
+
+    if args_cli.output_dir is None:
+        output_dir = Path(args_cli.checkpoint).resolve().parent / "evaluation"
+    else:
+        output_dir = Path(args_cli.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    label = args_cli.label or Path(args_cli.checkpoint).stem
+    label = args_cli.label or ("reference" if args_cli.zero_actions else Path(args_cli.checkpoint).stem)
 
     print("=" * 78)
     print(f"  Evaluation rollout -- {label} (checkpoint iteration {iteration})")
@@ -256,7 +279,10 @@ def main() -> int:
     total_steps = args_cli.warmup_steps + args_cli.num_steps
     for step in range(total_steps):
         with torch.no_grad():
-            actions = policy.act(obs)[0] if args_cli.stochastic else policy.actor(obs)
+            if args_cli.zero_actions:
+                actions = torch.zeros_like(env.action_manager.action)
+            else:
+                actions = policy.act(obs)[0] if args_cli.stochastic else policy.actor(obs)
 
         q_ref, v_ref = env.reference_gait.sample()
         gait_phase = env.reference_gait.gait_phase.clone()

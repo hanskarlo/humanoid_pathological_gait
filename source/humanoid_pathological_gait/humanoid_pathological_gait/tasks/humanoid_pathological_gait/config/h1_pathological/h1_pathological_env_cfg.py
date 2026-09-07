@@ -275,16 +275,19 @@ class RewardsCfg:
             "std": 0.05,
         },
     )
-    # weight was 1.0, which was moot while the term was mis-specified: at its old 0.10 m
-    # target it scored a policy lifting 11 mm (0.807) above the reference's own 33 mm swing
-    # height (0.540), so more weight would only have bought more under-clearance. Now that
-    # the target is the reference's measured 0.131 m and the gate is the reference schedule
-    # rather than measured contact, the term points the right way and needs enough weight
-    # to matter: the paretic foot was loaded 93.6% of the time against a 60.6% schedule,
-    # which is what holds double support at 0.82 against the reference's 0.442.
+    # target_height is 0.131 m, the reference's own measured mean paretic ankle-link height
+    # through swing -- not the 0.10 m that was here, at which the reference's own motion
+    # scored 0.540 while a policy lifting 11 mm scored 0.807. Only airborne samples are
+    # scored, so this constant matters on ~5% of steps; it is corrected because it was
+    # measurably wrong, not because it is expected to move a metric on its own.
+    #
+    # Weight stays 1.0 and the gate stays on measured contact. Raising the weight to 3.0 and
+    # gating on the reference schedule instead was tried and regressed everything (see
+    # research_log/2026-09-07): it pays for raising the ankle link without unloading the
+    # foot, so the policy toe-stood -- more planted, slower, and 3.4x the cost of transport.
     paretic_foot_clearance = RewTerm(
         func=mdp.paretic_foot_clearance,
-        weight=3.0,
+        weight=1.0,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
