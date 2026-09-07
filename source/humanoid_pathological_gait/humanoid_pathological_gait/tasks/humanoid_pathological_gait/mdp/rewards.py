@@ -367,29 +367,55 @@ def paretic_foot_clearance(
     env: H1PathologicalGaitEnv,
     asset_cfg: SceneEntityCfg,
     sensor_cfg: SceneEntityCfg,
-    target_height: float = 0.10,
+    target_height: float = 0.131,
     std: float = 0.04,
 ) -> torch.Tensor:
-    """Reward swing-phase clearance of the paretic foot.
+    """Reward clearance of the paretic foot through its *scheduled* swing.
 
-    Foot drop is the deficit this task exists to reproduce, and the reference stride
-    alone does not tell the policy when the paretic foot is meant to be off the ground.
-    The term is active only while that foot is unloaded, so it shapes swing without
-    fighting stance.
+    Foot drop is the deficit this task exists to reproduce, and the reference stride's
+    joint angles alone do not tell the policy when the paretic foot is meant to be off
+    the ground -- hence the phase gate.
+
+    Two things here were measured wrong and are worth stating, because between them they
+    made this term reward the deficit's opposite:
+
+    **The target.** It was 0.10 m. Measured by MuJoCo FK on the reference stride, the
+    paretic ankle link sits at 0.0706 m in stance and averages 0.1314 m through its
+    scheduled swing (peak 0.1420) -- and Isaac's stance height for the same link is
+    0.0704 m, so the two frames agree to 0.2 mm and the figures are directly comparable.
+    At a 0.10 m target the reference's own swing scored 0.540 while a policy that lifted
+    only 11 mm scored 0.807. The term preferred the under-lift. 0.131 m is the reference's
+    own mean, so reproducing the patient is what maximises it.
+
+    **The gate.** It keyed on *measured* contact, which makes the reward unreachable
+    exactly when it is needed: a foot that never leaves the ground is never "in swing", so
+    the term reads zero and offers no gradient to lift it. Measured, the paretic foot was
+    unloaded 6.4% of the time against a 39.4% schedule. Gating on the reference schedule
+    instead means a planted foot is scored against where the reference's foot would be,
+    which is what makes "lift it" the improving direction. This mirrors
+    :func:`swing_timing`, which already gates on the schedule.
+
+    Falls back to the measured-contact gate when the stride archive carries no schedule.
     """
     asset: Articulation = env.scene[asset_cfg.name]
     sensor: ContactSensor = env.scene[sensor_cfg.name]
 
     foot_height = asset.data.body_link_pos_w.torch[:, asset_cfg.body_ids, 2]
-    net_force = torch.norm(sensor.data.net_forces_w.torch[:, sensor_cfg.body_ids], dim=-1)
 
     # body_ids are ordered (left, right); pick the paretic one per environment.
     is_right_paretic = (env.reference_gait.paretic_side > 0).long()
     index = is_right_paretic.unsqueeze(-1)
     paretic_height = torch.gather(foot_height, 1, index).squeeze(-1)
-    paretic_force = torch.gather(net_force, 1, index).squeeze(-1)
 
-    in_swing = (paretic_force <= 1.0).float()
+    schedule = env.reference_gait.sample_contact()
+    if schedule is not None:
+        # Column 0 is the paretic limb; the schedule is 1 for "down".
+        in_swing = 1.0 - schedule[:, 0]
+    else:
+        net_force = torch.norm(sensor.data.net_forces_w.torch[:, sensor_cfg.body_ids], dim=-1)
+        paretic_force = torch.gather(net_force, 1, index).squeeze(-1)
+        in_swing = (paretic_force <= 1.0).float()
+
     return torch.exp(-torch.square(paretic_height - target_height) / std**2) * in_swing
 
 

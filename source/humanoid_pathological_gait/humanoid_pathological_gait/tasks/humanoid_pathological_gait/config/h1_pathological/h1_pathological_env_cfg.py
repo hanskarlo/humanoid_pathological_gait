@@ -275,21 +275,30 @@ class RewardsCfg:
             "std": 0.05,
         },
     )
+    # weight was 1.0, which was moot while the term was mis-specified: at its old 0.10 m
+    # target it scored a policy lifting 11 mm (0.807) above the reference's own 33 mm swing
+    # height (0.540), so more weight would only have bought more under-clearance. Now that
+    # the target is the reference's measured 0.131 m and the gate is the reference schedule
+    # rather than measured contact, the term points the right way and needs enough weight
+    # to matter: the paretic foot was loaded 93.6% of the time against a 60.6% schedule,
+    # which is what holds double support at 0.82 against the reference's 0.442.
     paretic_foot_clearance = RewTerm(
         func=mdp.paretic_foot_clearance,
-        weight=1.0,
+        weight=3.0,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
-            "target_height": 0.10,
+            "target_height": 0.131,
             "std": 0.04,
         },
     )
 
-    # Asks each foot to be off the ground when the reference says it should be. Without
-    # this nothing requires a step at all: paretic_foot_clearance only pays once the foot
-    # is already airborne, so planting it costs almost nothing, and the 2026-09-05 baseline
-    # duly shuffled at 0.82-0.89 double support against 0.37 in the patients.
+    # Asks each foot to be off the ground when the reference says it should be. This used
+    # to be the *only* term requiring a step at all, because paretic_foot_clearance paid
+    # only once the foot was already airborne and so charged nothing for planting it; the
+    # 2026-09-05 baseline duly shuffled at 0.82-0.89 double support against 0.37 in the
+    # patients. That gate is now the reference schedule too, so the two terms push together
+    # -- this one on *when* the foot leaves the ground, that one on *how high* it gets.
     # Weight 6.0, not the 3.0 of the first attempt. Two changes at once, deliberately: the
     # class rebalance took the contestable share of this term from 0.317 to 0.5, and the
     # weight doubles what that share is worth, so the incentive to step is ~3.0 reward units
