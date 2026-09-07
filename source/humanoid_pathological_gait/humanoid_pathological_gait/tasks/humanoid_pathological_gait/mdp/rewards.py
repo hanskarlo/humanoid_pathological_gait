@@ -376,8 +376,16 @@ def margin_of_stability(
     forbids single support, and it is the one candidate left after torque saturation,
     termination risk-aversion and clearance specification were each ruled out by measurement.
 
-    Now: a two-sided Gaussian about the margin the reference holds at the current gait
-    phase, so neither over- nor under-stability is free.
+    Now: a two-sided Gaussian about the margin the reference actually held **at this gait
+    phase**, read from the trajectory ``scripts/add_reference_mos.py`` stages into the stride
+    archive, so neither over- nor under-stability is free.
+
+    The two per-regime constants below are the fallback for archives that predate that
+    trajectory. They capture the regime split but not the variation inside it -- the
+    reference's within-regime spread is 0.024 and 0.029 m against this term's own 0.05 m
+    width, so scored against constants the reference itself only reaches 0.788, with half the
+    stride between 0.5 and 0.9. Against its own per-phase trajectory it reaches 1.0, which is
+    what a target describing the demonstration should do.
 
     **The regime comes from the reference schedule, not from measured contact.** Measured
     gating was tried first, on the reasoning that this term should answer "are you
@@ -405,17 +413,16 @@ def margin_of_stability(
 
     num_loaded = in_contact.sum(dim=-1)
 
-    schedule = env.reference_gait.sample_contact()
-    if schedule is not None:
-        scheduled_double = schedule.sum(dim=-1) >= 1.5
-    else:
-        scheduled_double = num_loaded >= 2
-
-    target = torch.where(
-        scheduled_double,
-        torch.full_like(mos_lateral, double_support_margin),
-        torch.full_like(mos_lateral, single_support_margin),
-    )
+    target = env.reference_gait.sample_mos_target()
+    if target is None:
+        # No per-phase trajectory staged: fall back to one constant per scheduled regime.
+        schedule = env.reference_gait.sample_contact()
+        scheduled_double = schedule.sum(dim=-1) >= 1.5 if schedule is not None else num_loaded >= 2
+        target = torch.where(
+            scheduled_double,
+            torch.full_like(mos_lateral, double_support_margin),
+            torch.full_like(mos_lateral, single_support_margin),
+        )
 
     tracking = torch.exp(-torch.square(mos_lateral - target) / std**2)
     tipping = torch.square(torch.clamp(-mos_lateral - tipping_onset, min=0.0))

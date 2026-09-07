@@ -55,6 +55,7 @@ class ReferenceGaitManager:
             contact,
             speed,
             root_translation,
+            reference_mos,
         ) = self._load(Path(stride_path))
         self.stride_duration_s = float(data_duration_s if data_duration_s > 0.0 else stride_duration_s)
         self.impaired_side = impaired_side
@@ -115,6 +116,18 @@ class ReferenceGaitManager:
         #: to charge harder for crouching was measured and made every gait metric worse --
         #: see research_log/2026-09-07. The defect was the target, not the width.
         self.ref_root_height = None
+
+        #: ``(T,)`` mediolateral margin of stability of the reference, in metres, or ``None``.
+        #:
+        #: Not swapped for a right-paretic stride, unlike ``ref_contact``. The margin is
+        #: ``min(upper_edge - xcom, xcom - lower_edge)``; under a left/right reflection the
+        #: two terms exchange places and the minimum is unchanged, so MoS is mirror-invariant
+        #: and the trajectory over phase is the same either way.
+        self.ref_mos = (
+            torch.tensor(reference_mos, dtype=torch.float32, device=self.device)
+            if reference_mos is not None
+            else None
+        )
 
         if root_translation is not None:
             planar = torch.tensor(root_translation[:, :2], dtype=torch.float32, device=self.device)
@@ -200,7 +213,13 @@ class ReferenceGaitManager:
                 f"root_translation at {path} has {root_translation.shape[0]} frames, expected {q.shape[0]}"
             )
 
-        return q, v, duration_s, impaired_side, contact, speed, root_translation
+        reference_mos = np.asarray(data["reference_mos"]) if "reference_mos" in data.files else None
+        if reference_mos is not None and reference_mos.shape[0] != q.shape[0]:
+            raise ValueError(
+                f"reference_mos at {path} has {reference_mos.shape[0]} frames, expected {q.shape[0]}"
+            )
+
+        return q, v, duration_s, impaired_side, contact, speed, root_translation, reference_mos
 
     def advance(self, dt: float, rate_scale: float = 1.0) -> None:
         """Advance every environment's gait phase by ``dt`` seconds of stride time.
@@ -299,6 +318,28 @@ class ReferenceGaitManager:
         position = self.gait_phase[env_ids] * (self.num_samples - 1)
         index = torch.round(position).long().clamp_(0, self.num_samples - 1)
         return self.ref_contact[index]
+
+    def sample_mos_target(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
+        """Reference mediolateral margin of stability at each environment's phase, in metres.
+
+        Written into the stride archive by ``scripts/add_reference_mos.py``; ``None`` when the
+        archive predates it, which lets the reward fall back to its two per-regime constants.
+
+        Those constants -- +0.19 in double support, -0.08 in single -- capture the regime
+        split but not the variation inside it: the reference's within-regime spread is
+        0.024 and 0.029 m against the reward's own 0.05 m width, so half the stride scored
+        between 0.5 and 0.9 against its own target. Per-phase tracking is what took pelvis
+        height from the same problem to a clean 1.0.
+        """
+        if self.ref_mos is None:
+            return None
+        if env_ids is None:
+            env_ids = slice(None)
+        position = self.gait_phase[env_ids] * (self.num_samples - 1)
+        lower = torch.floor(position).long().clamp_(0, self.num_samples - 1)
+        upper = (lower + 1).clamp_(max=self.num_samples - 1)
+        alpha = (position - lower.float()).clamp_(0.0, 1.0)
+        return torch.lerp(self.ref_mos[lower], self.ref_mos[upper], alpha)
 
     def sample_root_height(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
         """Reference pelvis height at each environment's phase, as ``(N,)`` in metres.
