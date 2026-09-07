@@ -49,7 +49,30 @@ class TSRTParams:
     """
 
     lambda_0_ankle: float = -0.10
-    lambda_0_knee: float = 0.35
+
+    #: Knee reflex threshold, rad. 0.25 rad is 14.3 deg, which sits just under the paretic
+    #: knee's own peak flexion in the reference stride (14.80 deg).
+    #:
+    #: It was 0.35 rad (20.05 deg) and that is *above* anything the reference does, so the
+    #: reflex could never shape the stride -- it only engaged once the policy had already
+    #: flexed past reference motion, as a late brake on gross deviation. Measured: the
+    #: reference crosses the old threshold on 0.0% of the stride, and a trained policy
+    #: reached 40 deg of paretic knee flexion against the reference's 14.8 deg, losing the
+    #: stiff-knee pathology entirely (symmetry index 40.7% against the reference's 93.2%).
+    #:
+    #: Lowering the threshold rather than raising ``k`` is the clinically canonical way to
+    #: express severity here: in Levin & Feldman's framework spasticity *is* a reduced
+    #: tonic stretch reflex threshold, recruited within the functional range of motion
+    #: instead of only at the extremes. At 0.25 rad the reference itself crosses it on 3.8%
+    #: of the stride, so reference motion stays achievable while excess flexion is resisted
+    #: from the moment it exceeds what the patient actually did.
+    lambda_0_knee: float = 0.25
+
+    #: Hip-roll reflex threshold, rad. Left at 0.20 (11.46 deg) for now, but note it has the
+    #: same defect the knee had: the reference paretic hip roll spans -7.89..-2.42 deg and
+    #: so never reaches it either, which means adductor spasticity cannot currently shape
+    #: circumduction. Not changed here only because the knee is the measured regression and
+    #: one variable at a time is what makes the result attributable.
     lambda_0_hip: float = 0.20
 
     mu_ankle: float = 0.08
