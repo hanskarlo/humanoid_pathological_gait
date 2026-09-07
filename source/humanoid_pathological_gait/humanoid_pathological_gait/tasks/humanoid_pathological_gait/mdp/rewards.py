@@ -376,13 +376,23 @@ def margin_of_stability(
     forbids single support, and it is the one candidate left after torque saturation,
     termination risk-aversion and clearance specification were each ruled out by measurement.
 
-    Now: a two-sided Gaussian about the margin the reference holds *in the support state the
-    robot is actually in*, so neither over- nor under-stability is free. Gating on measured
-    contact rather than the reference schedule is deliberate -- this term answers "are you
-    appropriately stable for the stance you are in", and :func:`swing_timing` answers "are
-    you in the right stance". Splitting them that way leaves no exploit: schedule-gating a
-    magnitude reward is what let the last attempt at :func:`paretic_foot_clearance` pay for
-    raising a foot that never left the ground.
+    Now: a two-sided Gaussian about the margin the reference holds at the current gait
+    phase, so neither over- nor under-stability is free.
+
+    **The regime comes from the reference schedule, not from measured contact.** Measured
+    gating was tried first, on the reasoning that this term should answer "are you
+    appropriately stable for the stance you are in" and leave "are you in the right stance"
+    to :func:`swing_timing`. It removed the penalty on single support but supplied no
+    pressure toward it, and the policy simply stayed in double support: 84.7% of samples,
+    double support unchanged at 0.847 against the reference's ~0.50.
+
+    Schedule-gating is safe here even though the same choice broke
+    :func:`paretic_foot_clearance`, and the difference is a measured cost asymmetry. There,
+    the policy could satisfy a height target by rising onto its toe without unloading -- the
+    fake was cheap. Here the fake would mean driving the XCoM 80 mm outside a support polygon
+    that is 0.426 m wide with both feet down: measured over a 64-env rollout, **0.000%** of
+    double-support samples reach -0.08 m, against **99.3%** of single-support samples. Genuine
+    single support is the only affordable way to satisfy the single-support target.
 
     ``tipping_onset`` keeps a fall-arrest penalty, but only past -0.20 m, which is beyond
     anything the reference reaches (worst -0.141). Termination handles actual falls.
@@ -394,8 +404,15 @@ def margin_of_stability(
     _, mos_lateral, in_contact = compute_xcom_and_mos(env, asset_cfg, sensor_cfg, foot_width=foot_width)
 
     num_loaded = in_contact.sum(dim=-1)
+
+    schedule = env.reference_gait.sample_contact()
+    if schedule is not None:
+        scheduled_double = schedule.sum(dim=-1) >= 1.5
+    else:
+        scheduled_double = num_loaded >= 2
+
     target = torch.where(
-        num_loaded >= 2,
+        scheduled_double,
         torch.full_like(mos_lateral, double_support_margin),
         torch.full_like(mos_lateral, single_support_margin),
     )
