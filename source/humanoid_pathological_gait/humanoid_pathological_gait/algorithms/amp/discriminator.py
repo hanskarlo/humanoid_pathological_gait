@@ -29,6 +29,56 @@ import torch.nn as nn
 AMP_FEATURE_DIM = 48
 AMP_TRANSITION_DIM = AMP_FEATURE_DIM * 2  # (s_t, s_{t+1}) -> 96
 
+#: Where each block sits in the 48-dimensional feature vector.
+AMP_GRAVITY_Y = 2
+AMP_LIN_VEL_Y = 5
+AMP_ANG_VEL_X, AMP_ANG_VEL_Z = 7, 9
+AMP_JOINT_POS = slice(10, 29)
+AMP_JOINT_VEL = slice(29, 48)
+
+
+def mirror_amp_features(
+    features: torch.Tensor, mirror_index: torch.Tensor, mirror_sign: torch.Tensor
+) -> torch.Tensor:
+    """Reflect AMP features through the sagittal plane, swapping left and right.
+
+    Linear quantities negate their ``y`` component. Angular velocity is a pseudovector, so
+    under the same reflection it is ``x`` and ``z`` that negate and ``y`` (pitch) that does
+    not -- getting this backwards would mirror the pose while leaving the turn rate telling
+    the discriminator which way the robot really leaned.
+    """
+    mirrored = features.clone()
+    mirrored[..., AMP_GRAVITY_Y] = -features[..., AMP_GRAVITY_Y]
+    mirrored[..., AMP_LIN_VEL_Y] = -features[..., AMP_LIN_VEL_Y]
+    mirrored[..., AMP_ANG_VEL_X] = -features[..., AMP_ANG_VEL_X]
+    mirrored[..., AMP_ANG_VEL_Z] = -features[..., AMP_ANG_VEL_Z]
+    mirrored[..., AMP_JOINT_POS] = mirror_sign * features[..., AMP_JOINT_POS][..., mirror_index]
+    mirrored[..., AMP_JOINT_VEL] = mirror_sign * features[..., AMP_JOINT_VEL][..., mirror_index]
+    return mirrored
+
+
+def to_paretic_frame(
+    features: torch.Tensor,
+    is_right_paretic: torch.Tensor,
+    mirror_index: torch.Tensor,
+    mirror_sign: torch.Tensor,
+) -> torch.Tensor:
+    """Express features in a canonical **left-paretic** frame.
+
+    The discriminator sees raw left/right joint slots and no indication of which side is
+    impaired, so a corpus mixing left- and right-paretic patients presents it with a
+    distribution that is symmetric in aggregate. Measured on this corpus: the knee range-of-
+    motion difference visible to the discriminator was **1.68 deg**, against the **10.95 deg**
+    the pathology actually carries -- mixing the sides cancelled 85% of the asymmetry, and
+    the style reward (the largest single weight at 5.0) was therefore asking for a nearly
+    symmetric gait.
+
+    Canonicalising both the expert corpus and the agent's own features to one side restores
+    it. Left is canonical to match ``reference.py``, which stores its stride left-paretic.
+    """
+    mirrored = mirror_amp_features(features, mirror_index, mirror_sign)
+    return torch.where(is_right_paretic.unsqueeze(-1), mirrored, features)
+
 
 def extract_amp_features(
     root_pos_z: torch.Tensor,  # (N, 1) or (N,)
@@ -290,15 +340,48 @@ class AMPExpertMotionBuffer:
         lin_vel = torch.tensor(np.asarray(data["root_lin_vel"]), dtype=torch.float32, device=self.device)
         ang_vel = torch.tensor(np.asarray(data["root_ang_vel"]), dtype=torch.float32, device=self.device)
 
-        for start, stop in zip(offsets[:-1], offsets[1:]):
-            sl = slice(int(start), int(stop))
-            self.trajectories.append(
-                extract_amp_features(height[sl], gravity[sl], lin_vel[sl], ang_vel[sl], q_all[sl], v_all[sl])
+        # Canonicalise every stride to a left-paretic frame. Without this the corpus mixes
+        # left- and right-impaired patients in raw left/right joint slots and the aggregate
+        # asymmetry all but cancels -- see :func:`to_paretic_frame`.
+        #
+        # The side must come from ``impaired_sides``, which is inferred from the motion, and
+        # never from ``paretic_sides``, which derives from the dataset's own labels. The two
+        # agree on only 15.5% of strides and only the inferred one puts the pathology the
+        # right way round: paretic knee ROM 36.66 deg against a sound 47.61, where the label
+        # field gives 46.71 against 37.55 -- backwards. Strides whose side could not be
+        # inferred are dropped rather than left unmirrored, which would put symmetric noise
+        # back into the prior.
+        sides = np.asarray(data["impaired_sides"]).astype(str) if "impaired_sides" in data else None
+        mirror_index = mirror_sign = None
+        if sides is not None:
+            from humanoid_pathological_gait.tasks.humanoid_pathological_gait.h1_joints import H1JointLayout
+
+            layout = H1JointLayout.from_sim_names(
+                [str(name) for name in np.asarray(data["joint_names"])], device=self.device
             )
+            mirror_index, mirror_sign = layout.mirror_index, layout.mirror_sign
+
+        skipped = 0
+        for index, (start, stop) in enumerate(zip(offsets[:-1], offsets[1:])):
+            sl = slice(int(start), int(stop))
+            features = extract_amp_features(
+                height[sl], gravity[sl], lin_vel[sl], ang_vel[sl], q_all[sl], v_all[sl]
+            )
+            if sides is not None:
+                side = sides[index]
+                if side not in ("left", "right"):
+                    skipped += 1
+                    continue
+                if side == "right":
+                    features = mirror_amp_features(features, mirror_index, mirror_sign)
+            self.trajectories.append(features)
+
+        note = "" if sides is None else f", {skipped} dropped for an un-inferable paretic side"
+        frame = "raw left/right slots -- NOT canonicalised" if sides is None else "canonical left-paretic frame"
         print(
             f"[AMPExpertMotionBuffer] Loaded retargeted corpus from {npz_path}: "
             f"{len(self.trajectories)} strides, {int(offsets[-1])} frames "
-            f"at {1000 * float(data['control_dt_s']):.0f} ms."
+            f"at {1000 * float(data['control_dt_s']):.0f} ms ({frame}{note})."
         )
 
     def _load_reference_stride(self, data, npz_path: str):

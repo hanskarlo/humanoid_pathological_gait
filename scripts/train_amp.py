@@ -106,6 +106,7 @@ from humanoid_pathological_gait.algorithms.amp import (  # noqa: E402
     AMPExpertMotionBuffer,
     AMPLossManager,
     extract_amp_features,
+    to_paretic_frame,
 )
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic, RolloutBuffer  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
@@ -257,7 +258,17 @@ class PPOAMPTrainer:
 
     def _amp_features(self) -> torch.Tensor:
         """Current AMP kinematic feature vector for every environment."""
-        return extract_amp_features(*self.env.get_amp_kinematic_tensors())
+        features = extract_amp_features(*self.env.get_amp_kinematic_tensors())
+        # Canonicalise to the same left-paretic frame the expert corpus is stored in. Both
+        # sides of the comparison have to be in one frame or the discriminator is matching a
+        # mixture against a mixture and the asymmetry cancels on both sides.
+        layout = self.env.joint_layout
+        return to_paretic_frame(
+            features,
+            self.env.reference_gait.paretic_side > 0,
+            layout.mirror_index,
+            layout.mirror_sign,
+        )
 
     def train_iteration(self) -> dict[str, float]:
         """Collect one rollout, update the policy, then update the discriminator."""

@@ -10,6 +10,8 @@ from .discriminator import (
     AMPExpertMotionBuffer,
     AMPLossManager,
     extract_amp_features,
+    mirror_amp_features,
+    to_paretic_frame,
 )
 
 __all__ = [
@@ -20,4 +22,6 @@ __all__ = [
     "AMPLossManager",
     "AMPExpertMotionBuffer",
     "AMPAgentReplayBuffer",
+    "mirror_amp_features",
+    "to_paretic_frame",
 ]
