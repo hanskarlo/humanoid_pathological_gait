@@ -271,7 +271,13 @@ class RewardsCfg:
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
-            "target_margin": 0.04,
+            # Reference-measured margins per support state (MuJoCo FK, same convention as
+            # the reward): +0.191 +/- 0.024 in double support, -0.082 +/- 0.029 in single.
+            # The single 0.04 that was here was the reference's *mean*, a value it never
+            # actually holds -- and paired with a one-sided formulation it made the shuffle
+            # score better than the patient. See research_log/2026-09-07.
+            "double_support_margin": 0.19,
+            "single_support_margin": -0.08,
             "std": 0.05,
         },
     )

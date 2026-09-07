@@ -340,27 +340,69 @@ def margin_of_stability(
     env: H1PathologicalGaitEnv,
     asset_cfg: SceneEntityCfg,
     sensor_cfg: SceneEntityCfg,
-    target_margin: float = 0.04,
+    double_support_margin: float = 0.19,
+    single_support_margin: float = -0.08,
     std: float = 0.05,
     foot_width: float = H1_FOOT_WIDTH_M,
     tipping_penalty_scale: float = 5.0,
+    tipping_onset: float = 0.20,
 ) -> torch.Tensor:
-    """Reward a mediolateral margin of stability at or above ``target_margin``.
+    """Track the reference's mediolateral margin of stability *for the current support state*.
 
-    Margins beyond the target score the full reward; shortfalls decay as a Gaussian,
-    and a margin that goes negative -- the XCoM outside the support polygon, i.e. the
-    robot committed to a fall it cannot arrest without a step -- is penalised quadratically.
+    Walking is not a single balance regime and this term used to treat it as one. Measured
+    on the reference stride by MuJoCo FK, through the same convention
+    :func:`compute_xcom_and_mos` uses:
 
-    ``target_margin`` is a *true* margin. It was calibrated while ``foot_width`` was 0.12 m,
-    which inflated every margin by 20 mm, so the 0.04 m target was really asking for about
-    0.020 m; with the measured width it now asks for what it says. Expect this term to be
-    harder to satisfy than it was, and any policy trained before this to have been scored
-    against a target half as demanding.
+    ========================  ==============  ==================
+    regime                    share of cycle  reference MoS
+    ========================  ==============  ==================
+    double support            44.2%           **+0.191** +/- 0.024
+    single support            55.8%           **-0.082** +/- 0.029
+    ========================  ==============  ==================
+
+    The two ranges do not overlap at all (+0.152..+0.233 against -0.141..-0.039), and
+    contact state accounts for essentially all the variance: pooled within-regime standard
+    deviation is 0.027 against 0.138 for the trajectory as a whole. One constant per regime
+    therefore captures 96% of it.
+
+    **What was wrong.** The old target was a single 0.04 m -- which is very close to the
+    reference's *mean* (+0.0385), but the reference never sits at its mean; it alternates
+    between two regimes the old term scored near zero. Worse, the formulation was one-sided:
+    any margin at or above target scored a full 1.0, so over-stability was free and there
+    was no gradient to come down, and a quadratic tipping penalty charged for *every*
+    negative margin -- including the ones single support requires. Scored properly, the
+    reference's own gait earned about 0.425 per stride against a shuffling policy's 0.601:
+    **the term preferred the shuffle to the patient.** That is the shape of a reward that
+    forbids single support, and it is the one candidate left after torque saturation,
+    termination risk-aversion and clearance specification were each ruled out by measurement.
+
+    Now: a two-sided Gaussian about the margin the reference holds *in the support state the
+    robot is actually in*, so neither over- nor under-stability is free. Gating on measured
+    contact rather than the reference schedule is deliberate -- this term answers "are you
+    appropriately stable for the stance you are in", and :func:`swing_timing` answers "are
+    you in the right stance". Splitting them that way leaves no exploit: schedule-gating a
+    magnitude reward is what let the last attempt at :func:`paretic_foot_clearance` pay for
+    raising a foot that never left the ground.
+
+    ``tipping_onset`` keeps a fall-arrest penalty, but only past -0.20 m, which is beyond
+    anything the reference reaches (worst -0.141). Termination handles actual falls.
+
+    Airborne samples score zero rather than being scored against either target: with no foot
+    loaded there is no support state to be appropriate to, and the reference has no flight
+    phase to imitate.
     """
-    _, mos_lateral, _ = compute_xcom_and_mos(env, asset_cfg, sensor_cfg, foot_width=foot_width)
-    shortfall = torch.clamp(target_margin - mos_lateral, min=0.0)
-    tipping = torch.square(torch.clamp(-mos_lateral, min=0.0))
-    return torch.exp(-torch.square(shortfall) / std**2) - tipping_penalty_scale * tipping
+    _, mos_lateral, in_contact = compute_xcom_and_mos(env, asset_cfg, sensor_cfg, foot_width=foot_width)
+
+    num_loaded = in_contact.sum(dim=-1)
+    target = torch.where(
+        num_loaded >= 2,
+        torch.full_like(mos_lateral, double_support_margin),
+        torch.full_like(mos_lateral, single_support_margin),
+    )
+
+    tracking = torch.exp(-torch.square(mos_lateral - target) / std**2)
+    tipping = torch.square(torch.clamp(-mos_lateral - tipping_onset, min=0.0))
+    return (tracking - tipping_penalty_scale * tipping) * (num_loaded > 0).float()
 
 
 def paretic_foot_clearance(
