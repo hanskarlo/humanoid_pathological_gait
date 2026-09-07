@@ -257,7 +257,17 @@ class RewardsCfg:
     # pelvis rises and falls 30.0 mm over the stride, so a constant target asked the policy
     # to hold still vertically while every other term asked it to walk.
     #
-    # std 0.06, tightened from 0.15 only *after* the target was fixed. The order matters.
+    # std is back at 0.15 for the multi-seed baseline, which reproduces the `audited` run.
+    #
+    # 0.06 was tried and is the better-*designed* value -- the audit's discrimination check
+    # scores a policy 39 mm low at 0.936 here against 0.660 there, so at 0.15 this term has a
+    # correct target and almost no power to act on it. But tightening it moved the pelvis by
+    # 1 mm (39 -> 38) while swinging knee symmetry -22.8% and temporal asymmetry -254%, which
+    # is variance, not effect. The crouch is not reward-limited, so the width is not the
+    # lever, and the two settings are probably statistically indistinguishable. Revisit once
+    # the seed spread is known.
+    #
+    # The history below is still the reason not to reach for 0.04.
     # Narrowing to 0.04 against the old constant target made everything worse -- pelvis
     # 1.028 -> 1.012 m, oscillation 44.5 -> 82.3 mm, speed 0.151 -> -0.039 -- because a
     # constant target the reference itself misses by 15 mm twice a stride becomes unreachable
@@ -268,7 +278,7 @@ class RewardsCfg:
     # 0.936 against the reference's 1.000, a gap of 0.064 -- the term had a correct target
     # and no discriminating power. At 0.06 the same crouch scores 0.660, a gap of 0.340.
     # Not 0.04: that costs gradient far from the target for little extra separation.
-    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": None, "std": 0.06})
+    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": None, "std": 0.15})
 
     # -- dynamic balance
     margin_of_stability = RewTerm(
