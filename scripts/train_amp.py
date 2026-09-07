@@ -40,6 +40,12 @@ parser.add_argument("--log_interval", type=int, default=10, help="Console loggin
 parser.add_argument("--amp_weight", type=float, default=5.0, help="Weight on the AMP style reward.")
 parser.add_argument("--lr_policy", type=float, default=3e-4, help="Policy/value learning rate.")
 parser.add_argument("--lr_disc", type=float, default=1e-4, help="Discriminator learning rate.")
+parser.add_argument(
+    "--desired_kl",
+    type=float,
+    default=0.01,
+    help="Target policy KL per update; the policy LR adapts to hold it. 0 disables and pins the LR.",
+)
 parser.add_argument("--seed", type=int, default=None, help="Seed for the environment and the learner.")
 parser.add_argument("--log_dir", type=str, default="logs/ppo_amp", help="Root directory for run logs.")
 parser.add_argument(
@@ -201,6 +207,20 @@ class PPOAMPTrainer:
         self.entropy_coef = 0.005
         self.amp_weight = args_cli.amp_weight
 
+        # Adaptive policy learning rate, KL-targeted (the RSL-RL scheme, which every Isaac
+        # Lab locomotion baseline uses and which this trainer was missing).
+        #
+        # A fixed 3e-4 was the cause of the periodic training collapses: roughly every
+        # 300-600 iterations one update landed too far, policy loss spiked to ~0.3, value
+        # loss went 5x, and episode length fell from ~480 to <50 before clawing back over
+        # ~30 iterations. Nothing in the curriculum steps at those points -- spasticity and
+        # push ramp smoothly -- and grad-norm clipping at 1.0 plus normalized advantages
+        # were already in place, so the update *size* was the remaining free variable.
+        # Damping the LR when the step is too large is the standard fix.
+        self.desired_kl = args_cli.desired_kl if args_cli.desired_kl > 0.0 else None
+        self.learning_rate = args_cli.lr_policy
+        self.lr_min, self.lr_max = 1e-5, 1e-2
+
         obs_dim = int(np.prod(env.observation_space["policy"].shape[1:]))
         action_dim = int(np.prod(env.action_space.shape[1:]))
         print(f"[train_amp] observation dim {obs_dim}, action dim {action_dim}")
@@ -295,7 +315,7 @@ class PPOAMPTrainer:
 
         # -- PPO update
         self.policy.train()
-        policy_losses, value_losses, entropies = [], [], []
+        policy_losses, value_losses, entropies, kls = [], [], [], []
         for _ in range(self.num_epochs):
             for batch in self.rollout_buffer.get_mini_batch_generator(self.num_mini_batches):
                 batch_obs, batch_actions, batch_old_log_probs, batch_advantages, batch_returns, _ = batch
@@ -309,6 +329,22 @@ class PPOAMPTrainer:
                 policy_loss = -surrogate.mean()
                 value_loss = 0.5 * torch.mean(torch.square(values - batch_returns))
                 loss = policy_loss + self.value_loss_coef * value_loss - self.entropy_coef * entropy.mean()
+
+                # Schulman's k3 estimator: non-negative, low variance, and computable from
+                # the log-prob ratio alone, so the rollout buffer does not have to carry the
+                # old mean and std the exact Gaussian KL would need.
+                with torch.no_grad():
+                    log_ratio = log_probs - batch_old_log_probs
+                    approx_kl = torch.mean(torch.expm1(log_ratio) - log_ratio)
+                kls.append(float(approx_kl))
+
+                if self.desired_kl is not None:
+                    if approx_kl > 2.0 * self.desired_kl:
+                        self.learning_rate = max(self.lr_min, self.learning_rate / 1.5)
+                    elif approx_kl < 0.5 * self.desired_kl:
+                        self.learning_rate = min(self.lr_max, self.learning_rate * 1.5)
+                    for group in self.optimizer_policy.param_groups:
+                        group["lr"] = self.learning_rate
 
                 self.optimizer_policy.zero_grad()
                 loss.backward()
@@ -347,6 +383,10 @@ class PPOAMPTrainer:
             # Policy exploration noise: a collapsing action_std with a flat reward is the
             # signature of premature convergence, and is invisible in the reward curve.
             "action_std": float(torch.exp(self.policy.log_std).mean()),
+            # The KL and the LR it drives: a run that collapses should show the KL spiking
+            # and the LR being cut in response, which is what makes the damping auditable.
+            "approx_kl": float(np.mean(kls)) if kls else float("nan"),
+            "learning_rate": self.learning_rate,
             **disc_metrics,
             **{key: total / term_counts[key] for key, total in term_totals.items()},
         }

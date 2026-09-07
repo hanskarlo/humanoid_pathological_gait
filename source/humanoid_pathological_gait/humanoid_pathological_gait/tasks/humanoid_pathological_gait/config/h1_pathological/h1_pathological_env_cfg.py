@@ -253,17 +253,16 @@ class RewardsCfg:
     forward_velocity = RewTerm(
         func=mdp.track_forward_velocity, weight=2.0, params={"target_velocity": None, "std": 0.5}
     )
-    # std stays at 0.15 deliberately. Tightening it to 0.04 to charge the policy for
-    # crouching was tried (see research_log/2026-09-07) and made everything worse: mean
-    # pelvis fell 1.028 -> 1.012 m, vertical oscillation nearly doubled to 82 mm against
-    # the reference's own 30 mm, forward speed collapsed 0.151 -> -0.039 m/s and cost of
-    # transport went 1.33 -> 3.25. A narrower RBF did not buy more pressure, it bought a
-    # spike too sharp to hold, so the term stopped shaping height at all.
+    # target_height=None tracks the reference pelvis per phase instead of a constant. The
+    # pelvis rises and falls 30.0 mm over the stride, so a constant target asked the policy
+    # to hold still vertically while every other term asked it to walk.
     #
-    # The remaining defect is real but is in the *target*, not the width: target_height is
-    # a constant while the reference pelvis rises and falls 30 mm over the stride. Fixing
-    # that means tracking reference height per phase, not narrowing a constant.
-    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": 1.05, "std": 0.15})
+    # std stays at 0.15. Narrowing it to 0.04 to charge harder for crouching was measured
+    # over a matched 14720-env run and made everything worse, including pelvis height:
+    # mean 1.028 -> 1.012 m, oscillation 44.5 -> 82.3 mm, speed 0.151 -> -0.039 m/s. Past
+    # ~80 mm of error the Gaussian is flat, so the term stopped shaping height at all.
+    # See research_log/2026-09-07. Fix the target first; revisit the width only after.
+    base_height = RewTerm(func=mdp.track_base_height, weight=3.0, params={"target_height": None, "std": 0.15})
 
     # -- dynamic balance
     margin_of_stability = RewTerm(

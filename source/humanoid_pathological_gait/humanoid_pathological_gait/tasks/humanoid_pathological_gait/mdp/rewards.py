@@ -185,26 +185,38 @@ def track_root_progression(
 
 def track_base_height(
     env: H1PathologicalGaitEnv,
-    target_height: float = 1.05,
+    target_height: float | None = None,
     std: float = 0.15,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
-    """RBF reward keeping the pelvis near a constant nominal standing height.
+    """RBF reward tracking the reference pelvis height at the current gait phase.
 
-    Two things about this term are worth knowing before tuning it.
+    ``target_height=None`` (the default) follows the reference's own pelvis trajectory.
+    That matters because the pelvis is not level while walking: it rises and falls 30.0 mm
+    peak to peak over the stride. Tracking a *constant* instead -- which this term used to
+    do -- asks the policy to hold still vertically while every other term asks it to walk,
+    and caps the score at whatever the reference's own bob costs.
 
-    The target is a *constant*, but the reference pelvis rises and falls 30 mm over the
-    stride, so the best a policy can do here is sit at the mean and be charged for the
-    oscillation the reference itself demands. That is the term's real defect.
+    Pass a float to pin a constant target; the reward also falls back to 1.05 m when the
+    stride archive predates ``root_translation`` and carries no height to track.
 
-    Narrowing ``std`` does not fix it. Going 0.15 -> 0.04 to charge harder for crouching
-    was measured and made every gait metric worse, including the pelvis height it was
-    meant to raise: a spike that sharp is one the policy cannot hold, so the term stops
-    shaping anything. Fix the target before touching the width.
+    On ``std``: narrowing it is not the same as weighting it more. Going 0.15 -> 0.04 to
+    charge harder for crouching was measured over a matched run and made every gait metric
+    worse, the pelvis height it was aimed at included -- past ~80 mm of error the Gaussian
+    is flat, so once the policy left the spike nothing pulled it back and the term stopped
+    shaping height at all. See research_log/2026-09-07.
     """
     asset: Articulation = env.scene[asset_cfg.name]
     height = asset.data.root_link_pos_w.torch[:, 2]
-    return torch.exp(-torch.square(height - target_height) / std**2)
+
+    if target_height is None:
+        target = env.reference_gait.sample_root_height()
+        if target is None:
+            target = torch.full_like(height, 1.05)
+    else:
+        target = torch.full_like(height, float(target_height))
+
+    return torch.exp(-torch.square(height - target) / std**2)
 
 
 def _whole_body_com(asset: Articulation) -> tuple[torch.Tensor, torch.Tensor]:

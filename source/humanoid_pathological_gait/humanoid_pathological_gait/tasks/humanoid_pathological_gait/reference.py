@@ -104,6 +104,18 @@ class ReferenceGaitManager:
         #: reference's 0.447 m. Requiring the root to be where the reference's root is, at
         #: the phase the reference is at, states that constraint directly.
         self.ref_root_disp = None
+
+        #: ``(T,)`` absolute pelvis height of the reference, in metres, or ``None``.
+        #:
+        #: Kept because the pelvis is *not* at a constant height: it rises and falls 30.0 mm
+        #: peak to peak over the stride (mean 1.0523, min 1.0364, max 1.0664). The height
+        #: reward used to track a constant 1.05, which asks the policy to hold still
+        #: vertically while every other term asks it to walk, and caps the achievable score
+        #: at whatever the reference's own bob costs. Narrowing that constant target's ``std``
+        #: to charge harder for crouching was measured and made every gait metric worse --
+        #: see research_log/2026-09-07. The defect was the target, not the width.
+        self.ref_root_height = None
+
         if root_translation is not None:
             planar = torch.tensor(root_translation[:, :2], dtype=torch.float32, device=self.device)
             heading = planar[-1] - planar[0]
@@ -111,6 +123,9 @@ class ReferenceGaitManager:
             cos, sin = torch.cos(-angle), torch.sin(-angle)
             rotation = torch.tensor([[cos, -sin], [sin, cos]], device=self.device)
             self.ref_root_disp = (planar - planar[0]) @ rotation.T
+            self.ref_root_height = torch.tensor(
+                root_translation[:, 2], dtype=torch.float32, device=self.device
+            )
 
         #: Per-environment anchor: root position and heading at the last phase wrap. The
         #: reference displacement is measured from the start of *its* stride, so the robot's
@@ -284,3 +299,23 @@ class ReferenceGaitManager:
         position = self.gait_phase[env_ids] * (self.num_samples - 1)
         index = torch.round(position).long().clamp_(0, self.num_samples - 1)
         return self.ref_contact[index]
+
+    def sample_root_height(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
+        """Reference pelvis height at each environment's phase, as ``(N,)`` in metres.
+
+        Linearly interpolated, unlike :meth:`sample_contact`: height is continuous, and
+        rounding to the nearest of 1001 samples would put a 30 um staircase on a signal
+        whose whole amplitude is 30 mm.
+
+        Returns ``None`` when the stride archive predates ``root_translation``, which lets
+        the reward fall back to its constant target rather than fail.
+        """
+        if self.ref_root_height is None:
+            return None
+        if env_ids is None:
+            env_ids = slice(None)
+        position = self.gait_phase[env_ids] * (self.num_samples - 1)
+        lower = torch.floor(position).long().clamp_(0, self.num_samples - 1)
+        upper = (lower + 1).clamp_(max=self.num_samples - 1)
+        alpha = (position - lower.float()).clamp_(0.0, 1.0)
+        return torch.lerp(self.ref_root_height[lower], self.ref_root_height[upper], alpha)
