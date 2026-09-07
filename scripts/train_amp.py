@@ -415,6 +415,12 @@ class PPOAMPTrainer:
         self.discriminator.load_state_dict(checkpoint["discriminator_state_dict"])
         self.disc_loss_mgr.optimizer.load_state_dict(checkpoint["optimizer_disc"])
 
+        # Checkpoints written before the KL-adaptive LR carry no learning_rate; those resume
+        # from the CLI value, which is the old fixed-LR behaviour and so is the right default.
+        self.learning_rate = float(checkpoint.get("learning_rate", self.learning_rate))
+        for group in self.optimizer_policy.param_groups:
+            group["lr"] = self.learning_rate
+
         # The observation buffer was captured before the load; re-reading it keeps the
         # first resumed rollout consistent with the restored policy.
         obs, _ = self.env.reset()
@@ -431,6 +437,11 @@ class PPOAMPTrainer:
                 "optimizer_policy": self.optimizer_policy.state_dict(),
                 "discriminator_state_dict": self.discriminator.state_dict(),
                 "optimizer_disc": self.disc_loss_mgr.optimizer.state_dict(),
+                # The KL-adapted LR is trainer state, not optimizer state: Adam's own
+                # state_dict carries the lr it was last stepped with, but self.learning_rate
+                # is what the controller adapts from, and a resume that dropped it would
+                # restart adaptation from the CLI default.
+                "learning_rate": self.learning_rate,
             },
             path,
         )
