@@ -15,3 +15,6 @@ wandb/
 
 # Large clinical gait corpus (31 MB) - regenerate with the outer repo's data/batch_parse_gait.py
 source/humanoid_pathological_gait/humanoid_pathological_gait/tasks/humanoid_pathological_gait/data/stroke_gait_dataset.npz
+
+# Backups written by scripts/add_reference_mos.py before it augments an archive.
+*.npz.bak
