@@ -68,12 +68,29 @@ class TSRTParams:
     #: from the moment it exceeds what the patient actually did.
     lambda_0_knee: float = 0.25
 
-    #: Hip-roll reflex threshold, rad. Left at 0.20 (11.46 deg) for now, but note it has the
-    #: same defect the knee had: the reference paretic hip roll spans -7.89..-2.42 deg and
-    #: so never reaches it either, which means adductor spasticity cannot currently shape
-    #: circumduction. Not changed here only because the knee is the measured regression and
-    #: one variable at a time is what makes the result attributable.
-    lambda_0_hip: float = 0.20
+    #: Hip-roll reflex threshold, rad. -0.0435 rad is -2.49 deg, just under the reference
+    #: paretic hip's peak abduction of -2.42 deg, and crossed on 4.4% of the stride -- the same
+    #: placement rule applied to the knee, which the reference crosses on 3.8%.
+    #:
+    #: It was 0.20 rad (+11.46 deg). The reference paretic hip roll spans -7.89..-2.42 deg, so
+    #: it stays *adducted* throughout and never came within 14 deg of that threshold. The
+    #: reflex was therefore unable to shape reference-tracking motion -- but it was **not**
+    #: inert, and an earlier version of this comment wrongly said so: measured on a trained
+    #: policy it engaged on 24.3% of samples, because the policy's own hip deviates far beyond
+    #: anything the reference does. It was acting as a brake on excess abduction rather than a
+    #: shaper of gait, exactly as the knee reflex was before its threshold was corrected.
+    #:
+    #: At the new threshold the engagement rate is similar (25.6%) but the torque roughly
+    #: doubles: mean 4.19 -> 9.22 Nm, p99 24.9 -> 44.1 Nm.
+    #:
+    #: A caution that belongs with this parameter. The reference achieves its lateral foot
+    #: clearance by **pelvic hiking, not hip abduction** -- coronal pelvic obliquity rises from
+    #: +4.25 deg in paretic stance to +8.75 in paretic swing, a +4.50 deg hiking signature,
+    #: while the hip's entire range of motion is 5.47 deg and never leaves adduction. So this
+    #: reflex firing is necessary for adductor spasticity to be modelled at all, but it is
+    #: *not* the mechanism behind circumduction in this data, and a claim that circumduction
+    #: emerges from hip adductor spasticity is not supported by the reference kinematics.
+    lambda_0_hip: float = -0.0435
 
     mu_ankle: float = 0.08
     mu_knee: float = 0.06

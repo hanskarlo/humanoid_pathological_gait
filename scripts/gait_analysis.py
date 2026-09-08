@@ -35,6 +35,38 @@ def standardize_to_paretic_frame(values: np.ndarray, is_right_paretic: np.ndarra
     return np.where(is_right_paretic[None, :, None], mirrored, values)
 
 
+def pelvic_obliquity(root_quat, is_right_paretic, valid, contact_schedule=None):
+    """Coronal pelvic obliquity in degrees, and the hiking signature if a schedule is given.
+
+    Pelvic hiking is one of the hemiparetic hallmarks this project set out to reproduce, and it
+    was claimed without ever being measured. It is also the mechanism the *reference* uses for
+    lateral foot clearance: obliquity rises from +4.25 deg in paretic stance to +8.75 in
+    paretic swing, a **+4.50 deg hiking signature**, while the paretic hip's entire range of
+    motion is 5.47 deg and never leaves adduction. Circumduction in this data is pelvic, not
+    femoral -- so a claim that it emerges from hip adductor spasticity is not supported.
+
+    Sign is standardised so positive means hiked on the paretic side: obliquity negates under a
+    left/right reflection, so right-paretic environments are flipped before averaging. Without
+    that step a balanced cohort cancels the very asymmetry being measured, which is the same
+    trap the knee symmetry index and the AMP corpus both fell into.
+
+    Returns ``(mean_deg, hiking_signature_deg)``; the signature is ``nan`` without a schedule.
+    """
+    # Isaac Lab quaternions are (x, y, z, w) in this release.
+    x, y, z, w = root_quat[..., 0], root_quat[..., 1], root_quat[..., 2], root_quat[..., 3]
+    roll = np.degrees(np.arctan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y)))
+    roll = np.where(np.asarray(is_right_paretic)[None, :], -roll, roll)
+
+    mean_deg = float(np.mean(roll[valid])) if valid.any() else float("nan")
+    signature = float("nan")
+    if contact_schedule is not None:
+        swing = contact_schedule & valid
+        stance = (~contact_schedule) & valid
+        if swing.any() and stance.any():
+            signature = float(np.mean(roll[swing]) - np.mean(roll[stance]))
+    return mean_deg, signature
+
+
 def contact_gait_metrics(
     contact: np.ndarray, valid: np.ndarray, dt: float, gait_phase: np.ndarray | None = None
 ) -> dict[str, float]:

@@ -105,6 +105,7 @@ from gait_analysis import (  # noqa: E402
     NUM_CYCLE_BINS,
     contact_gait_metrics,
     cycle_normalize,
+    pelvic_obliquity,
     standardize_to_paretic_frame,
 )
 
@@ -286,6 +287,14 @@ def main() -> int:
 
         q_ref, v_ref = env.reference_gait.sample()
         gait_phase = env.reference_gait.gait_phase.clone()
+        # The reference's own contact schedule at this phase, in (paretic, sound) order.
+        # Recorded so schedule-gated metrics compare the policy against the reference over the
+        # *same* window: the reference schedules 39.4% of the cycle as paretic swing while the
+        # policy achieves 14-19%, so measured-swing and scheduled-swing averages are not
+        # comparable quantities.
+        ref_contact = env.reference_gait.sample_contact()
+        if ref_contact is None:
+            ref_contact = torch.zeros((env.num_envs, 2), device=env.device)
 
         obs, reward, terminated, truncated, _ = env.step(actions)
         obs = obs["policy"]
@@ -319,6 +328,7 @@ def main() -> int:
             terminated=terminated,
             truncated=truncated,
             alive=~ever_terminated,
+            ref_contact=ref_contact,
         )
 
         if (step + 1) % 200 == 0:
@@ -419,6 +429,16 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     paretic_first = np.where(is_right_paretic[None, :, None], contact[:, :, ::-1], contact)
     timing = contact_gait_metrics(paretic_first, valid, dt, gait_phase=data["gait_phase"])
 
+    # Pelvic hiking: obliquity overall, and the swing-minus-stance signature that is the
+    # hallmark itself. The reference carries +4.50 deg of it; a policy walking with a level
+    # pelvis scores ~0 and one that drops the swing side scores negative.
+    obliquity_deg, hiking_deg = pelvic_obliquity(
+        data["root_quat"],
+        is_right_paretic,
+        valid,
+        contact_schedule=data["ref_contact"][..., 0] < 0.5,
+    )
+
     knee_paretic = layout.index_of("left_knee")
     knee_sound = layout.index_of("right_knee")
     ankle_paretic = layout.index_of("left_ankle")
@@ -448,6 +468,8 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     return {
         "label": label,
         "checkpoint_iteration": iteration,
+        "pelvic_obliquity_deg": obliquity_deg,
+        "pelvic_hiking_signature_deg": hiking_deg,
         "recorded_at": datetime.now().isoformat(timespec="seconds"),
         "num_envs": int(valid.shape[1]),
         "num_steps": int(valid.shape[0]),
