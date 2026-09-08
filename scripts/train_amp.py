@@ -421,6 +421,14 @@ class PPOAMPTrainer:
         for group in self.optimizer_policy.param_groups:
             group["lr"] = self.learning_rate
 
+        # Restore the curriculum clock. Checkpoints written before this field carry none, so
+        # reconstruct it from the iteration -- one iteration advances the counter by
+        # num_steps_per_env -- which is exact for a run that was never resumed before.
+        iteration = int(checkpoint.get("iteration", 0))
+        self.env.common_step_counter = int(
+            checkpoint.get("common_step_counter", iteration * self.num_steps)
+        )
+
         # The observation buffer was captured before the load; re-reading it keeps the
         # first resumed rollout consistent with the restored policy.
         obs, _ = self.env.reset()
@@ -442,6 +450,12 @@ class PPOAMPTrainer:
                 # is what the controller adapts from, and a resume that dropped it would
                 # restart adaptation from the CLI default.
                 "learning_rate": self.learning_rate,
+                # Every curriculum keys off this. It lives in the environment and starts at
+                # zero in a fresh process, so a resume that did not restore it would rewind
+                # spasticity, the push magnitude and the balance assist to their starting
+                # values -- re-applying full balance assist at the point in training where it
+                # should have faded to nothing.
+                "common_step_counter": int(self.env.common_step_counter),
             },
             path,
         )
