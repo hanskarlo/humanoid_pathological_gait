@@ -108,7 +108,29 @@ def contact_gait_metrics(
     if fragmented:
         signed = float("nan")
 
+    # Mean duration of one uninterrupted single-support episode, in seconds. This separates
+    # two behaviours the double-support *fraction* conflates: a policy that stands on one leg
+    # for a real step, and one that unloads briefly and often. Measured, they differ sharply
+    # -- 4.2 control steps per episode against the reference stride's ~51 -- and a fading
+    # balance assist moved the fraction by nine standard deviations while making the episodes
+    # *shorter*. Report this alongside the fraction or that distinction is invisible.
+    # ``masked`` zeroes invalid samples, which would read as "no foot loaded" and split an
+    # episode in two, so the validity mask is applied to the episode test as well.
+    single = (contact.sum(axis=-1) == 1) & valid
+    single_support_runs: list[float] = []
+    for env_index in range(single.shape[1]):
+        edges = np.diff(single[:, env_index].astype(np.int8))
+        starts = np.flatnonzero(edges == 1)
+        ends = np.flatnonzero(edges == -1)
+        # Same treatment as the stance runs above: an episode clipped by the recording
+        # window is incomplete and would bias the mean downward.
+        if starts.size and ends.size:
+            ends = ends[ends > starts[0]]
+            single_support_runs.extend((ends - starts[: ends.size]) * dt)
+    single_support_s = float(np.mean(single_support_runs)) if single_support_runs else float("nan")
+
     return {
+        "single_support_episode_s": single_support_s,
         "paretic_stance_periods_per_cycle": periods_per_cycle[0],
         "sound_stance_periods_per_cycle": periods_per_cycle[1],
         # True when the contact pattern is not one-stance-per-cycle, which makes the

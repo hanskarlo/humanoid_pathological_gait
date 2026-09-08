@@ -422,12 +422,23 @@ class CurriculumCfg:
         func=mdp.push_magnitude_ramp,
         params={"term_name": "push_robot", "start_step": 0, "num_steps": 24_000, "start_scale": 0.0, "end_scale": 1.0},
     )
-    # Fades the other way: full help at the start, none by two thirds of a 1200-iteration run,
-    # leaving 400 iterations of unaided training so the reported policy is not being carried.
-    balance_assist = CurrTerm(
-        func=mdp.balance_assist_decay,
-        params={"start_step": 0, "num_steps": 19_000, "start_scale": 1.0, "end_scale": 0.0},
-    )
+    # DISABLED after measurement. Kept because the code and the negative result are both
+    # worth reproducing; re-enable by restoring the CurrTerm below and setting
+    # initial_assist_scale back to 1.0.
+    #
+    # It worked on the headline metric and for the wrong reason. Against a matched control
+    # (same retuned gains, no assist) double support fell 0.8545 -> 0.8053, but the mean
+    # single-support *episode* went 0.0943 -> 0.0840 s against the reference's 1.02 s: the
+    # policy unloads more often and more briefly, not for longer. Margin of stability during
+    # single support was unchanged at -0.231 against the patient's -0.082, so the balance
+    # skill the assist exists to teach did not appear. Unaided swing_timing also came out
+    # *worse* than the control (2.931 against 3.430) -- the signature of a policy that was
+    # carried rather than taught, which this term's own docstring warned to watch for.
+    #
+    # balance_assist = CurrTerm(
+    #     func=mdp.balance_assist_decay,
+    #     params={"start_step": 0, "num_steps": 19_000, "start_scale": 1.0, "end_scale": 0.0},
+    # )
 
 
 ##
@@ -462,8 +473,8 @@ class H1PathologicalGaitEnvCfg(ManagerBasedRLEnvCfg):
     initial_spasticity_scale: float = 1.0
     """Reflex gain before the curriculum takes over (the curriculum overwrites it on step 1)."""
 
-    initial_assist_scale: float = 1.0
-    """Balance-assist gain before the curriculum takes over."""
+    initial_assist_scale: float = 0.0
+    """Balance-assist gain. 0.0 disables it; see the curriculum note above for why."""
 
     assist_stiffness: float = 400.0
     """Lateral restoring stiffness at the pelvis, N per metre of CoM offset from the feet."""
