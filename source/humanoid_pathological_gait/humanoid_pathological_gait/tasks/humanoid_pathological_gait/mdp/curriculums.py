@@ -49,6 +49,27 @@ def spasticity_ramp(
     return scale
 
 
+def balance_assist_decay(
+    env: H1PathologicalGaitEnv,
+    env_ids: torch.Tensor,
+    start_step: int = 0,
+    num_steps: int = 24_000,
+    start_scale: float = 1.0,
+    end_scale: float = 0.0,
+) -> float:
+    """Fade the mediolateral balance assist from ``start_scale`` to ``end_scale``.
+
+    Runs the opposite way to the pathology ramps: the help is strongest at the start, when the
+    policy cannot hold single support at all, and gone by the end so the reported policy stands
+    unaided. Returns the current scale so the curriculum manager logs it -- worth watching,
+    because a policy whose performance collapses as this reaches zero never learned the skill,
+    it was being carried.
+    """
+    scale = _linear_ramp(env.common_step_counter, start_step, num_steps, start_scale, end_scale)
+    env.assist_scale.fill_(scale)
+    return scale
+
+
 def push_magnitude_ramp(
     env: H1PathologicalGaitEnv,
     env_ids: torch.Tensor,

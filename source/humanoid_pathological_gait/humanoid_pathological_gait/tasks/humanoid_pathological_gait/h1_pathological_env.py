@@ -63,6 +63,13 @@ class H1PathologicalGaitEnv(ManagerBasedRLEnv):
         )
         self.applied_spastic_torque = torch.zeros((self.num_envs, robot.num_joints), device=self.device)
 
+        #: Fading balance assist. 1.0 means full help, 0.0 means the policy is on its own; the
+        #: curriculum drives it down so the trained policy never depends on it.
+        self.assist_scale = torch.tensor(float(self.cfg.initial_assist_scale), device=self.device)
+        self._assist_force_magnitude = torch.zeros(self.num_envs, device=self.device)
+        self._assist_body_ids = robot.find_bodies(["pelvis"], preserve_order=True)[0]
+        self._assist_foot_ids = robot.find_bodies([".*ankle_link"], preserve_order=True)[0]
+
         # Nominal actuator/inertial parameters. The asymmetric randomization events scale
         # these rather than the live values, so repeated resets cannot compound drift.
         self.default_joint_stiffness = robot.data.default_joint_stiffness.torch.clone()
@@ -82,9 +89,78 @@ class H1PathologicalGaitEnv(ManagerBasedRLEnv):
 
         super().load_managers()
 
+    def _apply_balance_assist(self) -> None:
+        """Apply a fading mediolateral assist wrench at the pelvis.
+
+        The policy can enter single support but cannot hold it: measured across every run it
+        reaches a lateral margin of -0.23 m there against the patient's -0.082, i.e. it falls
+        sideways and plants the foot to recover. High double support is that recovery. Nine
+        interventions that changed what behaviour *costs* -- eight reward terms and one
+        actuator retune -- failed to move it, because reward shaping cannot install a skill
+        the policy never successfully executes: every attempt at single support ends in a
+        near-fall, so there is no gradient toward a good one.
+
+        This changes what is *reachable* instead. A lateral restoring force at the pelvis
+        holds the robot up through the unstable phase so the policy can experience controlled
+        single support and learn the control, then decays to zero so the final policy stands
+        on its own. Precedent: Shi et al. (ISRR 2022), and A2CF (Cao et al., arXiv 2506.23125)
+        with a decaying 6D pelvis wrench on a 29-DoF humanoid.
+
+        The force opposes the *lateral* CoM velocity and offset only. It deliberately does not
+        assist forward progress or vertical support: those are not the missing skill, and
+        holding the robot up would let it collect the alive bonus for free.
+        """
+        scale = float(self.assist_scale)
+        if scale <= 0.0:
+            return
+
+        robot = self.scene["robot"]
+        # Work in the robot's yaw frame so "lateral" tracks the walking direction.
+        quat = robot.data.root_link_quat_w.torch
+        x, y, z, w = quat[:, 0], quat[:, 1], quat[:, 2], quat[:, 3]
+        yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+        cos, sin = torch.cos(yaw), torch.sin(yaw)
+
+        mass = robot.data.body_mass.torch.unsqueeze(-1)
+        com_vel_w = (robot.data.body_com_lin_vel_w.torch * mass).sum(dim=1) / mass.sum(dim=1)
+        com_pos_w = (robot.data.body_com_pos_w.torch * mass).sum(dim=1) / mass.sum(dim=1)
+        foot_pos_w = robot.data.body_link_pos_w.torch[:, self._assist_foot_ids]
+
+        # Where the CoM *should* be laterally: over the feet the reference schedule says are
+        # down. Targeting the midpoint of both feet instead would pull the robot back toward
+        # double support -- assisting the very behaviour this is meant to break it out of, and
+        # measurably so: the first version shortened episodes instead of lengthening them.
+        schedule = self.reference_gait.sample_contact()
+        if schedule is not None:
+            # sample_contact returns (paretic, sound); foot_pos_w is (left, right).
+            is_right_paretic = (self.reference_gait.paretic_side > 0).unsqueeze(-1)
+            weights = torch.where(is_right_paretic, schedule.flip(-1), schedule)
+            total = weights.sum(dim=-1, keepdim=True).clamp(min=1e-3)
+            target = (foot_pos_w * weights.unsqueeze(-1)).sum(dim=1) / total
+        else:
+            target = foot_pos_w.mean(dim=1)
+        delta = com_pos_w[:, :2] - target[:, :2]
+        offset_y = -sin * delta[:, 0] + cos * delta[:, 1]
+        vel_y = -sin * com_vel_w[:, 0] + cos * com_vel_w[:, 1]
+
+        magnitude = -(self.cfg.assist_stiffness * offset_y + self.cfg.assist_damping * vel_y)
+        magnitude = magnitude.clamp(-self.cfg.assist_max_force, self.cfg.assist_max_force) * scale
+
+        forces = torch.zeros((self.num_envs, 1, 3), device=self.device)
+        forces[:, 0, 0] = -sin * magnitude
+        forces[:, 0, 1] = cos * magnitude
+        self._assist_force_magnitude = magnitude
+
+        composer = robot.permanent_wrench_composer
+        composer.reset()
+        composer.add_forces_and_torques_index(
+            forces=forces, torques=torch.zeros_like(forces), body_ids=self._assist_body_ids
+        )
+
     def step(self, action: torch.Tensor):
         """Advance the gait clock, then step the environment."""
         self.reference_gait.advance(self.step_dt, self.cfg.gait_phase_rate_scale)
+        self._apply_balance_assist()
         # The reference's root displacement restarts at zero each stride, so the robot's
         # origin has to restart with it -- otherwise the tracking error grows without bound
         # across cycles instead of measuring progress within one.

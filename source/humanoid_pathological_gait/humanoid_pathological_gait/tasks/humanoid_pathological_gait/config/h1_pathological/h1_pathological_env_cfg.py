@@ -422,6 +422,12 @@ class CurriculumCfg:
         func=mdp.push_magnitude_ramp,
         params={"term_name": "push_robot", "start_step": 0, "num_steps": 24_000, "start_scale": 0.0, "end_scale": 1.0},
     )
+    # Fades the other way: full help at the start, none by two thirds of a 1200-iteration run,
+    # leaving 400 iterations of unaided training so the reported policy is not being carried.
+    balance_assist = CurrTerm(
+        func=mdp.balance_assist_decay,
+        params={"start_step": 0, "num_steps": 19_000, "start_scale": 1.0, "end_scale": 0.0},
+    )
 
 
 ##
@@ -455,6 +461,19 @@ class H1PathologicalGaitEnvCfg(ManagerBasedRLEnvCfg):
 
     initial_spasticity_scale: float = 1.0
     """Reflex gain before the curriculum takes over (the curriculum overwrites it on step 1)."""
+
+    initial_assist_scale: float = 1.0
+    """Balance-assist gain before the curriculum takes over."""
+
+    assist_stiffness: float = 400.0
+    """Lateral restoring stiffness at the pelvis, N per metre of CoM offset from the feet."""
+
+    assist_damping: float = 80.0
+    """Lateral damping at the pelvis, N per m/s of CoM velocity."""
+
+    assist_max_force: float = 150.0
+    """Cap on the assist force, N. About a quarter of the robot's 55 kg weight -- enough to
+    arrest a sideways fall, not enough to carry the robot or to substitute for a step."""
 
     tsrt_params: TSRTParams = TSRTParams()
     """Biomechanical parameters of the TSRT spasticity model."""
@@ -492,6 +511,9 @@ class H1PathologicalGaitEnvCfg_PLAY(H1PathologicalGaitEnvCfg):
         # Deterministic conditions: no observation noise, no pushes, fixed start phase.
         self.observations.policy.enable_corruption = False
         self.events.push_robot = None
+        # Evaluation is always unaided, whatever the curriculum was doing during training.
+        self.initial_assist_scale = 0.0
+        self.curriculum.balance_assist = None
         self.events.asymmetric_joint_gains = None
         self.events.asymmetric_leg_mass = None
         self.events.reset_to_reference.params["randomize_phase"] = False
