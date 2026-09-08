@@ -116,6 +116,48 @@ class H1PathologicalSceneCfg(InteractiveSceneCfg):
 
     robot: ArticulationCfg = H1_MINIMAL_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
+    def __post_init__(self) -> None:
+        """Stiffen the leg chain enough to hold a commanded pose against gravity.
+
+        Isaac Lab's H1 gains are tuned for *velocity tracking*, where a standing steady-state
+        pose error costs nothing. This task is pose imitation, where it is the whole game, and
+        the gains were never revisited. Measured by holding the reference's single-support
+        pose with zero action (``scripts/single_leg_stance.py``): the pelvis sags 73 mm with
+        5.45 deg of mean joint error, and only 28.5% of the hold is genuinely one-footed --
+        the sag drops the swing foot back onto the ground. That is upstream of the crouch, the
+        foot scuff and the contact pattern, and no reward term can reach it.
+
+        Per-joint the error is not uniform, so neither is the fix:
+
+        ============  ==================  ===========
+        joint         steady-state error  old stiffness
+        ============  ==================  ===========
+        ankle         12.50 / 10.96 deg   **20**
+        knee          8.53 / 7.93 deg     200
+        hip_pitch     6.61 / 6.39 deg     200
+        ============  ==================  ===========
+
+        The ankle is an order of magnitude softer than the rest of the leg while carrying
+        comparable load in single support, so it is scaled hardest: ankle 8x, leg joints 4x.
+        Damping rises with the square root of stiffness so the damping ratio is preserved --
+        raising stiffness alone would leave the joint less damped than it started.
+
+        The response is sub-linear, and not because of torque limits: at 4x/2x the ankle sat
+        at 26-32% of its effort ceiling and the knee at 6-8%, so nothing is saturating. The
+        leg is a closed chain against the ground and raising one joint's stiffness
+        redistributes the error rather than removing it. That is also why there is no point
+        chasing this much further.
+
+        The arms are left alone: they carry no ground reaction and track fine.
+        """
+        legs = self.robot.actuators["legs"]
+        legs.stiffness = {name: 4.0 * value for name, value in legs.stiffness.items()}
+        legs.damping = {name: 2.0 * value for name, value in legs.damping.items()}
+
+        feet = self.robot.actuators["feet"]
+        feet.stiffness = {name: 8.0 * value for name, value in feet.stiffness.items()}
+        feet.damping = {name: 2.83 * value for name, value in feet.damping.items()}
+
     contact_forces = H1PathologicalContactSensorCfg()
 
     dome_light = AssetBaseCfg(

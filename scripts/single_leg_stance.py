@@ -107,7 +107,7 @@ def run_condition(
     zero = torch.zeros((env.num_envs, env.action_space.shape[-1]), device=env.device)
     upright = torch.ones(env.num_envs, dtype=torch.bool, device=env.device)
     survived = torch.full((env.num_envs,), float(steps), device=env.device)
-    heights, margins, loaded_counts, spans, errs = [], [], [], [], []
+    heights, margins, loaded_counts, spans, errs, per_joint, sat = [], [], [], [], [], [], []
     sensor = env.scene["contact_forces"]
     # Two separate index sets, because the robot and the contact sensor order their bodies
     # differently. Mixing them is silent: sensor indices on the robot tensor gave a
@@ -138,6 +138,8 @@ def run_condition(
         lowest = torch.where(loaded_mask, ankle_z, torch.full_like(ankle_z, float("inf"))).min(dim=-1).values
         spans.append(torch.where(torch.isfinite(lowest), height - lowest, torch.full_like(height, float("nan"))))
         errs.append((robot.data.joint_pos.torch - q_ref).abs().mean(dim=-1))
+        per_joint.append((robot.data.joint_pos.torch - q_ref).abs().mean(dim=0))
+        sat.append((robot.data.applied_torque.torch.abs() / robot.data.joint_effort_limits.torch.clamp(min=1e-6)).mean(dim=0))
         if hasattr(env, "last_mos") and env.last_mos is not None:
             margins.append(env.last_mos.clone())
 
@@ -154,6 +156,8 @@ def run_condition(
         "single_support_pct": 100.0 * float((loaded == 1).float().mean()),
         "pelvis_to_foot_m": float(torch.nanmean(torch.stack(spans))),
         "joint_err_deg": float(torch.rad2deg(torch.stack(errs).mean())),
+        "per_joint_deg": torch.rad2deg(torch.stack(per_joint).mean(dim=0)).cpu().numpy(),
+        "saturation": torch.stack(sat).mean(dim=0).cpu().numpy(),
     }
 
 
@@ -184,6 +188,7 @@ def main() -> int:
     ref_height = float(env.reference_gait.ref_root_height.mean()) if env.reference_gait.ref_root_height is not None else float("nan")
     print(f"  reference pelvis height {ref_height:.4f} m\n")
 
+    joint_names = list(env.scene["robot"].data.joint_names)
     rows = []
     conditions = [("full pathology", True, True), ("no spasticity", False, True),
                   ("no weakness", True, False), ("neither", False, False)]
@@ -199,6 +204,14 @@ def main() -> int:
               f"pelvis-to-foot {r['pelvis_to_foot_m']:.4f} m   joint err {r['joint_err_deg']:.2f} deg", flush=True)
 
     print()
+    top = rows[0]["per_joint_deg"]
+    order = np.argsort(-top)[:8]
+    print("\n  worst steady-state joint errors under the full deficit model (deg):")
+    satu = rows[0]["saturation"]
+    print(f"     {'joint':<22}{'err deg':>9}{'torque / its ceiling':>22}")
+    for i in order:
+        print(f"     {joint_names[i]:<22}{top[i]:>9.2f}{100 * satu[i]:>21.1f}%")
+
     full, unimpaired = rows[0], next((r for r in rows if r["condition"] == "neither"), rows[0])
     print()
     if full["held_pct"] < 80.0 and unimpaired["held_pct"] > 80.0:
