@@ -142,10 +142,18 @@ def contact_gait_metrics(
 
     # Mean duration of one uninterrupted single-support episode, in seconds. This separates
     # two behaviours the double-support *fraction* conflates: a policy that stands on one leg
-    # for a real step, and one that unloads briefly and often. Measured, they differ sharply
-    # -- 4.2 control steps per episode against the reference stride's ~51 -- and a fading
-    # balance assist moved the fraction by nine standard deviations while making the episodes
-    # *shorter*. Report this alongside the fraction or that distinction is invisible.
+    # for a real step, and one that unloads briefly and often. A fading balance assist moved
+    # the fraction by nine standard deviations while making the episodes *shorter*. Report
+    # this alongside the fraction or that distinction is invisible.
+    #
+    # **The reference scores 0.5115 s here, not 1.02 s.** The larger figure was quoted against
+    # policies in three research-log entries and is the reference's *total* single support per
+    # stride -- 51 control steps, split across two episodes of 0.721 and 0.302 s -- compared
+    # against a policy's mean *episode*. Comparing a sum to a mean roughly doubled the claimed
+    # gap: the 2026-09-08 assist run is 0.084 s against 0.511, a factor of six, not the factor
+    # of twelve recorded at the time. Run the reference's own contact schedule through this
+    # function before quoting any target from it; it is the only way the two sides of the
+    # comparison come from the same definition.
     # ``masked`` zeroes invalid samples, which would read as "no foot loaded" and split an
     # episode in two, so the validity mask is applied to the episode test as well.
     single = (contact.sum(axis=-1) == 1) & valid
