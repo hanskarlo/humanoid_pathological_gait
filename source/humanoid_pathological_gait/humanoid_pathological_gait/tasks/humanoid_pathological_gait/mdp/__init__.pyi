@@ -21,6 +21,7 @@ __all__ = [
     "compute_xcom_and_mos",
     "margin_of_stability",
     "paretic_foot_clearance",
+    "paretic_load_aversion",
     "spastic_torque_l2",
     # terminations
     "reference_tracking_divergence",
@@ -63,6 +64,7 @@ from .rewards import (
     joint_vel_tracking,
     margin_of_stability,
     paretic_foot_clearance,
+    paretic_load_aversion,
     spastic_torque_l2,
     swing_timing,
     track_base_height,

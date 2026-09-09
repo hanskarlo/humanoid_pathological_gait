@@ -481,6 +481,57 @@ def paretic_foot_clearance(
     return torch.exp(-torch.square(paretic_height - target_height) / std**2) * in_swing
 
 
+def paretic_load_aversion(
+    env: H1PathologicalGaitEnv,
+    sensor_cfg: SceneEntityCfg,
+    contact_threshold: float = 1.0,
+) -> torch.Tensor:
+    """Cost of committing body weight to the paretic limb while the sound limb is available.
+
+    Give this a **negative** weight. Returns the paretic limb's share of total foot load in
+    ``[0, 1]``, and **zero outside double support**.
+
+    Why the term exists. Reduced paretic stance time is the defining temporal signature of
+    hemiparetic gait: the reference loads the paretic limb 60.6% of the cycle against the
+    sound limb's 83.5%, a stance-fraction asymmetry of -15.87%. Every policy this project has
+    trained has the opposite sign -- AMP +2.02%, no-AMP +7.43%, no-AMP with full reference
+    state initialisation +10.49%, three seeds each -- and the interventions that improved
+    every other metric made this one steadily worse.
+
+    The mechanism is that the impairment is modelled purely peripherally, as a 40% effort
+    ceiling plus a stretch reflex. Under that model the paretic limb is the **cheaper limb to
+    stand on**: standing costs almost nothing, and swinging is precisely what the weakened
+    actuators cannot afford. Leaving it planted is optimal. Patients do the opposite, and the
+    reason lives above the actuator level -- they will not commit weight to a limb they do not
+    trust to carry them. Nothing in the environment represented that, so this term does.
+
+    Why it is gated on double support. The weight-transfer *decision* only exists while both
+    feet are down; during paretic single support there is no alternative, and charging for
+    load there would penalise physics the policy cannot escape and reward falling toward the
+    sound side. Gating also means the term cannot be satisfied by going airborne.
+
+    Why load share rather than stance time. Charging for stance time directly would install
+    the measured outcome by construction and prove nothing -- the question is whether the
+    asymmetry *emerges* from an aversion to bearing weight, as the clinical account says it
+    does. Load share and stance fraction are related but distinct, which leaves room for the
+    informative failure: a policy that unloads the paretic foot while leaving it on the
+    ground, satisfying the term without changing the gait. ``evaluate.py`` records
+    ``paretic_load_share`` so that outcome is visible rather than mistaken for success.
+    """
+    sensor: ContactSensor = env.scene[sensor_cfg.name]
+    force = torch.norm(sensor.data.net_forces_w.torch[:, sensor_cfg.body_ids], dim=-1)
+
+    # body_ids are ordered (left, right); swap for right-paretic environments so column 0 is
+    # always the paretic limb. Averaging without this cancels the very asymmetry being shaped.
+    is_right_paretic = (env.reference_gait.paretic_side > 0).unsqueeze(-1)
+    force = torch.where(is_right_paretic, force.flip(-1), force)
+
+    total = force.sum(dim=-1)
+    both_loaded = (force > contact_threshold).all(dim=-1)
+    share = force[:, 0] / total.clamp_min(1e-6)
+    return torch.where(both_loaded, share, torch.zeros_like(share))
+
+
 def spastic_torque_l2(env: H1PathologicalGaitEnv) -> torch.Tensor:
     """Squared TSRT reflex torque, as a diagnostic of how hard the policy fights spasticity."""
     return torch.sum(torch.square(env.applied_spastic_torque), dim=-1)

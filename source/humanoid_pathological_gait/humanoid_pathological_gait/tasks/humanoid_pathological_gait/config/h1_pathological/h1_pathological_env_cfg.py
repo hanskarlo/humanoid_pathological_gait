@@ -387,6 +387,31 @@ class RewardsCfg:
     # where the robot should be by then, which is what fixes cadence and stride length.
     root_progression = RewTerm(func=mdp.track_root_progression, weight=6.0, params={"std": 0.15})
 
+    # -- the strategy the actuator model cannot express
+    #
+    # Reduced paretic stance is the defining temporal signature of hemiparetic gait, and
+    # every policy trained here has the opposite sign: the reference scores -15.87% on
+    # stance_fraction_asymmetry_pct, this configuration +10.49% over three seeds. Modelling
+    # the deficit peripherally -- 40% effort ceiling plus a stretch reflex -- makes the
+    # paretic limb the *cheaper* limb to stand on, so the policy leaves it planted. Patients
+    # will not commit weight to a limb they do not trust; that decision lives above the
+    # actuator level and nothing in this environment represented it.
+    #
+    # Weight -3.0 is a judgement call, comparable to base_height and half of swing_timing,
+    # which already asks the paretic foot to lift on schedule at 6.0 and is complied with
+    # only 33% of the time. A null here does not rule out the mechanism at a larger weight;
+    # it rules out this one. Recorded before the run so the number is not chosen afterwards.
+    paretic_load_aversion = RewTerm(
+        func=mdp.paretic_load_aversion,
+        weight=-3.0,
+        params={
+            # FOOT_BODY_NAMES, not a regex: the reward flips columns for right-paretic
+            # environments and that is only correct if column 0 is reliably the left foot.
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
+            "contact_threshold": 1.0,
+        },
+    )
+
     # -- shaping
     alive = RewTerm(func=mdp.is_alive, weight=2.0)
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-2.0)

@@ -481,10 +481,31 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     spastic = np.abs(data["spastic_torque"])
     survival = 100.0 * float(valid[-1].mean())
 
+    # Share of total foot load carried by the paretic limb while both feet are down. This is
+    # what ``paretic_load_aversion`` charges for, and reporting it separately is what makes
+    # that term falsifiable: a policy can satisfy an aversion to paretic load by unloading
+    # the foot while leaving it on the ground, which would move this number and leave
+    # ``stance_fraction_asymmetry_pct`` where it was. Read together, the two separate a real
+    # change in weight-transfer strategy from the term being gamed.
+    #
+    # 0.5 is symmetric loading. The reference's *time* asymmetry is -15.87%, so a policy
+    # reproducing the strategy should sit below 0.5 here as well as shortening paretic stance.
+    force_paretic_first = np.where(
+        is_right_paretic[None, :, None], data["foot_force"][:, :, ::-1], data["foot_force"]
+    )
+    both_down = (force_paretic_first > 1.0).all(axis=-1) & valid
+    if both_down.any():
+        loads = force_paretic_first[both_down]
+        paretic_load_share = float(np.mean(loads[:, 0] / np.maximum(loads.sum(axis=-1), 1e-6)))
+    else:
+        paretic_load_share = float("nan")
+
     return {
         "label": label,
         "checkpoint_iteration": iteration,
         "pelvic_obliquity_deg": obliquity_deg,
+        # Paretic share of foot load during double support; 0.5 is symmetric.
+        "paretic_load_share": paretic_load_share,
         "pelvic_hiking_signature_deg": hiking_deg,
         "recorded_at": datetime.now().isoformat(timespec="seconds"),
         "num_envs": int(valid.shape[1]),
