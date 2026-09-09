@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 import torch
 
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.utils.math import quat_apply, yaw_quat
+from isaaclab.utils.math import quat_apply, quat_mul, quat_from_euler_xyz, yaw_quat
 
 if TYPE_CHECKING:
     from isaaclab.assets import Articulation
@@ -58,13 +58,44 @@ def reset_to_reference_pose(
     start_phase: float = 0.0,
     position_noise: float = 0.02,
     velocity_noise: float = 0.05,
+    scatter_xy: float = 0.5,
+    randomize_yaw: bool = True,
+    root_lin_vel_noise: float = 0.1,
+    root_ang_vel_noise: float = 0.1,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> None:
-    """Draw a paretic side and gait phase, then place the robot on the reference pose.
+    """Draw a paretic side and gait phase, then place the **whole** robot on the reference.
 
     Resetting onto the reference rather than a fixed default pose is what makes phase
-    conditioning meaningful: the observed phase and the body configuration agree from
-    the first step of the episode.
+    conditioning meaningful: the observed phase and the body configuration agree from the
+    first step of the episode.
+
+    That agreement used to stop at the joints. This term wrote ``q_ref``/``v_ref`` and a
+    separate ``reset_root_state_uniform`` placed the floating base at its default pose with
+    a zero-mean velocity, so every episode began in a state the reference never occupies:
+
+    * **Linear velocity zero-mean, against the reference's +0.244 m/s** (0.092 to 0.435 over
+      the stride). The legs were placed mid-swing with reference joint velocities while the
+      body they hang from had no momentum. Walking single support is a controlled fall
+      forward onto the swing foot; from rest there is nothing to fall *into*, and the only
+      way not to topple sideways is to plant the second foot. 55.8% of the reference stride
+      is single support, so more than half of all reset draws landed in exactly that state.
+    * **Pelvis level, against a reference carrying +1.78 to +9.65 deg of coronal roll.** That
+      obliquity is the mechanism this stride uses for lateral foot clearance, and pelvic
+      hiking is one of the hallmarks the project set out to reproduce. It was being zeroed
+      at every reset.
+    * **Height from the articulation default (1.05 m)** rather than the reference's
+      phase-dependent 1.0364-1.0664. Small next to the other two, and fixed for free.
+
+    This is the reference-state-initialisation of Peng et al. (DeepMimic, 2018) done in
+    full: the point of RSI is that the policy gets gradient from states it could not reach
+    by exploration, and that only holds if the state it is placed in is the reference's.
+    A pose without its momentum is not a noisy sample of the reference, it is a different
+    state, and no amount of reward shaping reaches the one that was skipped.
+
+    What is still randomised, because it has to be: planar position, heading, and small
+    noise on top of every reference quantity. Falls back to the previous behaviour, default
+    root pose included, for a stride archive predating ``root_quaternion``.
     """
     asset: Articulation = env.scene[asset_cfg.name]
     num_resets = env_ids.shape[0]
@@ -88,6 +119,76 @@ def reset_to_reference_pose(
     limits = asset.data.soft_joint_pos_limits.torch[env_ids]
     q_ref = torch.clamp(q_ref, limits[..., 0], limits[..., 1])
     asset.write_joint_state_to_sim(q_ref, v_ref, env_ids=env_ids)
+
+    _reset_root_to_reference(
+        env,
+        env_ids,
+        asset,
+        scatter_xy=scatter_xy,
+        randomize_yaw=randomize_yaw,
+        lin_vel_noise=root_lin_vel_noise,
+        ang_vel_noise=root_ang_vel_noise,
+    )
+
+
+def _reset_root_to_reference(
+    env: H1PathologicalGaitEnv,
+    env_ids: torch.Tensor,
+    asset: Articulation,
+    scatter_xy: float,
+    randomize_yaw: bool,
+    lin_vel_noise: float,
+    ang_vel_noise: float,
+) -> None:
+    """Place the floating base on the reference root state, at a random heading.
+
+    The reference tables are stored with the stride's own heading removed, so the episode's
+    yaw is composed back on here and the reference's linear and angular velocities are
+    rotated into it. Rotating the velocities is not optional: a robot facing 90 deg off the
+    capture heading and given the capture's forward velocity would be launched sideways,
+    which is a worse initial state than the one this replaces.
+    """
+    num_resets = env_ids.shape[0]
+    device = env.device
+    root_state = env.reference_gait.sample_root_state(env_ids)
+
+    default_pose = asset.data.default_root_pose.torch[env_ids].clone()
+    default_velocity = asset.data.default_root_vel.torch[env_ids].clone()
+
+    zeros = torch.zeros(num_resets, device=device)
+    yaw = (
+        torch.empty(num_resets, device=device).uniform_(-torch.pi, torch.pi) if randomize_yaw else zeros
+    )
+    yaw_rotation = quat_from_euler_xyz(zeros, zeros, yaw)
+
+    position = default_pose[:, 0:3] + env.scene.env_origins[env_ids]
+    if scatter_xy > 0.0:
+        position[:, :2] += torch.empty((num_resets, 2), device=device).uniform_(-scatter_xy, scatter_xy)
+
+    if root_state is None:
+        # Archive predates ``root_quaternion``: keep the old default-pose behaviour rather
+        # than fail, but the reference-state initialisation above is then only partial.
+        orientation = quat_mul(default_pose[:, 3:7], yaw_rotation)
+        velocity = default_velocity
+    else:
+        height, quaternion, linear_velocity, angular_velocity = root_state
+        # The reference height is measured from the ground; env origins carry the ground.
+        position[:, 2] = env.scene.env_origins[env_ids][:, 2] + height
+        orientation = quat_mul(yaw_rotation, quaternion)
+        velocity = torch.cat(
+            [quat_apply(yaw_rotation, linear_velocity), quat_apply(yaw_rotation, angular_velocity)],
+            dim=-1,
+        )
+
+    if lin_vel_noise > 0.0:
+        velocity[:, 0:3] += lin_vel_noise * torch.randn_like(velocity[:, 0:3])
+    if ang_vel_noise > 0.0:
+        velocity[:, 3:6] += ang_vel_noise * torch.randn_like(velocity[:, 3:6])
+
+    asset.write_root_pose_to_sim_index(
+        root_pose=torch.cat([position, orientation], dim=-1), env_ids=env_ids
+    )
+    asset.write_root_velocity_to_sim_index(root_velocity=velocity, env_ids=env_ids)
 
 
 def randomize_asymmetric_joint_gains(

@@ -55,6 +55,7 @@ class ReferenceGaitManager:
             contact,
             speed,
             root_translation,
+            root_quaternion,
             reference_mos,
         ) = self._load(Path(stride_path))
         self.stride_duration_s = float(data_duration_s if data_duration_s > 0.0 else stride_duration_s)
@@ -117,6 +118,31 @@ class ReferenceGaitManager:
         #: see research_log/2026-09-07. The defect was the target, not the width.
         self.ref_root_height = None
 
+        #: ``(T, 4)`` reference pelvis orientation in simulation order ``(x, y, z, w)``, with
+        #: the stride's own heading rotation removed so it composes with a randomised yaw.
+        #:
+        #: The reference pelvis is **not** level. It carries +1.78 to +9.65 deg of coronal
+        #: roll -- the pelvic obliquity that produces this stride's lateral foot clearance,
+        #: +4.25 deg in paretic stance rising to +8.75 in paretic swing. Resetting the root
+        #: to a level default discards the very hallmark the policy is asked to reproduce.
+        self.ref_root_quat = None
+
+        #: ``(T, 3)`` reference pelvis linear velocity in the stride's heading frame, m/s.
+        #:
+        #: Mean forward +0.2444, ranging +0.0917 to +0.4351. Placing the joints on the
+        #: reference while leaving the root at rest is not a noisy version of the reference
+        #: state, it is a physically inconsistent one: the legs are mid-swing and the body
+        #: has no momentum to swing over. See :meth:`sample_root_state`.
+        self.ref_root_lin_vel = None
+
+        #: ``(T, 3)`` reference pelvis angular velocity in the stride's heading frame, rad/s.
+        self.ref_root_ang_vel = None
+
+        #: Sagittal reflections of the three tables above, for right-paretic environments.
+        self.ref_root_quat_mirrored = None
+        self.ref_root_lin_vel_mirrored = None
+        self.ref_root_ang_vel_mirrored = None
+
         #: ``(T,)`` mediolateral margin of stability of the reference, in metres, or ``None``.
         #:
         #: Not swapped for a right-paretic stride, unlike ``ref_contact``. The margin is
@@ -139,6 +165,7 @@ class ReferenceGaitManager:
             self.ref_root_height = torch.tensor(
                 root_translation[:, 2], dtype=torch.float32, device=self.device
             )
+            self._build_root_state_tables(root_translation, root_quaternion, angle)
 
         #: Per-environment anchor: root position and heading at the last phase wrap. The
         #: reference displacement is measured from the start of *its* stride, so the robot's
@@ -167,7 +194,17 @@ class ReferenceGaitManager:
 
     def _load(
         self, path: Path
-    ) -> tuple[torch.Tensor, torch.Tensor, float, str, "np.ndarray | None", float, "np.ndarray | None"]:
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        float,
+        str,
+        "np.ndarray | None",
+        float,
+        "np.ndarray | None",
+        "np.ndarray | None",
+        "np.ndarray | None",
+    ]:
         """Load the stride, deriving velocities by finite difference if absent."""
         data = np.load(str(path), allow_pickle=True)
         q = torch.tensor(np.asarray(data["q_trajectory"]), dtype=torch.float32)
@@ -213,13 +250,31 @@ class ReferenceGaitManager:
                 f"root_translation at {path} has {root_translation.shape[0]} frames, expected {q.shape[0]}"
             )
 
+        root_quaternion = (
+            np.asarray(data["root_quaternion"]) if "root_quaternion" in data.files else None
+        )
+        if root_quaternion is not None and root_quaternion.shape != (q.shape[0], 4):
+            raise ValueError(
+                f"root_quaternion at {path} has shape {root_quaternion.shape}, expected {(q.shape[0], 4)}"
+            )
+
         reference_mos = np.asarray(data["reference_mos"]) if "reference_mos" in data.files else None
         if reference_mos is not None and reference_mos.shape[0] != q.shape[0]:
             raise ValueError(
                 f"reference_mos at {path} has {reference_mos.shape[0]} frames, expected {q.shape[0]}"
             )
 
-        return q, v, duration_s, impaired_side, contact, speed, root_translation, reference_mos
+        return (
+            q,
+            v,
+            duration_s,
+            impaired_side,
+            contact,
+            speed,
+            root_translation,
+            root_quaternion,
+            reference_mos,
+        )
 
     def advance(self, dt: float, rate_scale: float = 1.0) -> None:
         """Advance every environment's gait phase by ``dt`` seconds of stride time.
@@ -340,6 +395,143 @@ class ReferenceGaitManager:
         upper = (lower + 1).clamp_(max=self.num_samples - 1)
         alpha = (position - lower.float()).clamp_(0.0, 1.0)
         return torch.lerp(self.ref_mos[lower], self.ref_mos[upper], alpha)
+
+    def _build_root_state_tables(self, root_translation, root_quaternion, angle: torch.Tensor) -> None:
+        """Derive heading-frame root orientation and velocity tables from the stride archive.
+
+        Everything here exists so a reset can place the *whole* root state on the reference,
+        not just its height. The archive stores the pelvis pose in the capture's world frame;
+        an episode starts at an arbitrary heading, so the stride's own heading rotation is
+        removed once here and a random yaw is composed back on at reset time. That keeps this
+        consistent with ``ref_root_disp``, which is rotated by the same ``angle``.
+
+        Quaternion conventions are the trap in this function. The archive is MuJoCo-ordered
+        ``(w, x, y, z)``; this Isaac Lab release is ``(x, y, z, w)`` in both the data buffers
+        and ``isaaclab.utils.math``. The stored table is in *simulation* order. The check that
+        the ordering is right is that the coronal roll recovered from it reproduces the
+        reference's measured pelvic obliquity -- +4.25 deg in paretic stance, +8.75 in paretic
+        swing -- which ``tests/test_reference_root_state.py`` asserts.
+        """
+        if root_quaternion is None:
+            return
+
+        numpy_dtype = np.float64
+        quaternion = np.asarray(root_quaternion, dtype=numpy_dtype)
+        translation = np.asarray(root_translation, dtype=numpy_dtype)
+        num_samples = quaternion.shape[0]
+        dt = self.stride_duration_s / max(num_samples - 1, 1)
+
+        # A quaternion and its negation are the same rotation, and the archive is free to
+        # flip sign between frames. Differentiating across a flip would fabricate an angular
+        # velocity spike of 2/dt, so make the sequence continuous first.
+        flip = np.sign(np.sum(quaternion[1:] * quaternion[:-1], axis=1))
+        flip[flip == 0.0] = 1.0
+        quaternion[1:] *= np.cumprod(flip)[:, None]
+
+        def multiply(first: np.ndarray, second: np.ndarray) -> np.ndarray:
+            """Hamilton product of ``(w, x, y, z)`` quaternions, broadcasting over frames."""
+            w1, x1, y1, z1 = first[..., 0], first[..., 1], first[..., 2], first[..., 3]
+            w2, x2, y2, z2 = second[..., 0], second[..., 1], second[..., 2], second[..., 3]
+            return np.stack(
+                [
+                    w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2,
+                    w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
+                    w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2,
+                    w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2,
+                ],
+                axis=-1,
+            )
+
+        heading_angle = float(angle)
+        planar_cos, planar_sin = np.cos(-heading_angle), np.sin(-heading_angle)
+        unrotate = np.array([[planar_cos, -planar_sin], [planar_sin, planar_cos]], dtype=numpy_dtype)
+
+        # Pelvis orientation with the stride's heading removed.
+        yaw_inverse = np.array(
+            [np.cos(-heading_angle / 2.0), 0.0, 0.0, np.sin(-heading_angle / 2.0)], dtype=numpy_dtype
+        )
+        heading_frame_quat = multiply(np.broadcast_to(yaw_inverse, quaternion.shape), quaternion)
+
+        # Angular velocity from the quaternion derivative: omega = 2 * (dq/dt) * conj(q).
+        quaternion_rate = np.gradient(heading_frame_quat, dt, axis=0)
+        conjugate = heading_frame_quat * np.array([1.0, -1.0, -1.0, -1.0], dtype=numpy_dtype)
+        angular_velocity = 2.0 * multiply(quaternion_rate, conjugate)[:, 1:]
+
+        linear_velocity = np.gradient(translation, dt, axis=0)
+        linear_velocity[:, :2] = linear_velocity[:, :2] @ unrotate.T
+
+        def to_tensor(values: np.ndarray) -> torch.Tensor:
+            return torch.tensor(values, dtype=torch.float32, device=self.device)
+
+        # Store in simulation order (x, y, z, w).
+        self.ref_root_quat = to_tensor(heading_frame_quat[:, [1, 2, 3, 0]])
+        self.ref_root_lin_vel = to_tensor(linear_velocity)
+        self.ref_root_ang_vel = to_tensor(angular_velocity)
+
+        # A right-paretic stride is the sagittal reflection of this one, and the reflection
+        # acts differently on each quantity. Position and linear velocity are ordinary
+        # vectors, so only the lateral component negates. Angular velocity is a pseudovector:
+        # roll and yaw negate, pitch does not -- the same rule the AMP feature mirror uses.
+        # A quaternion's vector part follows the pseudovector rule, its scalar part is
+        # invariant. Getting any one of these wrong reverses the pelvic obliquity on half the
+        # environments, which is exactly how the AMP corpus cancelled 85% of its own signal.
+        self.ref_root_quat_mirrored = self.ref_root_quat * torch.tensor(
+            [-1.0, 1.0, -1.0, 1.0], device=self.device
+        )
+        self.ref_root_lin_vel_mirrored = self.ref_root_lin_vel * torch.tensor(
+            [1.0, -1.0, 1.0], device=self.device
+        )
+        self.ref_root_ang_vel_mirrored = self.ref_root_ang_vel * torch.tensor(
+            [-1.0, 1.0, -1.0], device=self.device
+        )
+
+    def sample_root_state(
+        self, env_ids: torch.Tensor | slice | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor] | None:
+        """Full reference root state at each environment's phase, in the stride heading frame.
+
+        Returns ``(height, quaternion, linear_velocity, angular_velocity)`` with shapes
+        ``(N,)``, ``(N, 4)`` in ``(x, y, z, w)``, ``(N, 3)`` and ``(N, 3)``; or ``None`` when
+        the stride archive predates ``root_quaternion``, so a reset can fall back to the
+        default root pose rather than fail.
+
+        Sagittally reflected for right-paretic environments, like :meth:`sample`.
+        """
+        if self.ref_root_quat is None or self.ref_root_height is None:
+            return None
+        if env_ids is None:
+            env_ids = slice(None)
+
+        position = self.gait_phase[env_ids] * (self.num_samples - 1)
+        lower = torch.floor(position).long().clamp_(0, self.num_samples - 1)
+        upper = (lower + 1).clamp_(max=self.num_samples - 1)
+        alpha = (position - lower.float()).clamp_(0.0, 1.0)
+
+        def interpolate(table: torch.Tensor) -> torch.Tensor:
+            blend = alpha if table.ndim == 1 else alpha.unsqueeze(-1)
+            return torch.lerp(table[lower], table[upper], blend)
+
+        is_right_paretic = (self.paretic_side[env_ids] > 0).unsqueeze(-1)
+        # Normalised lerp rather than slerp: adjacent frames of a 1001-sample stride are
+        # under 0.05 deg apart, where the two agree to far better than the 0.02 rad of reset
+        # noise applied on top.
+        quaternion = torch.where(
+            is_right_paretic,
+            interpolate(self.ref_root_quat_mirrored),
+            interpolate(self.ref_root_quat),
+        )
+        quaternion = quaternion / quaternion.norm(dim=-1, keepdim=True).clamp_min(1e-6)
+        linear_velocity = torch.where(
+            is_right_paretic,
+            interpolate(self.ref_root_lin_vel_mirrored),
+            interpolate(self.ref_root_lin_vel),
+        )
+        angular_velocity = torch.where(
+            is_right_paretic,
+            interpolate(self.ref_root_ang_vel_mirrored),
+            interpolate(self.ref_root_ang_vel),
+        )
+        return interpolate(self.ref_root_height), quaternion, linear_velocity, angular_velocity
 
     def sample_root_height(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
         """Reference pelvis height at each environment's phase, as ``(N,)`` in metres.

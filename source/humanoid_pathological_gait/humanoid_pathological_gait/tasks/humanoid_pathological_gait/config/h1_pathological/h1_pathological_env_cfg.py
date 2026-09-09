@@ -249,6 +249,11 @@ class EventsCfg:
     # -- reset
     # Order matters: the paretic side is drawn here, and the three randomization terms
     # below read it to decide which limb gets the tight ranges.
+    # Places the floating base as well as the joints. There is deliberately no separate
+    # ``reset_root_state_uniform`` term any more: it used to overwrite the base with the
+    # articulation default and a zero-mean velocity, which discarded the reference's
+    # +0.244 m/s of forward momentum and its 1.78-9.65 deg of pelvic obliquity on every
+    # reset. See the docstring of ``mdp.reset_to_reference_pose``.
     reset_to_reference = EventTerm(
         func=mdp.reset_to_reference_pose,
         mode="reset",
@@ -257,15 +262,11 @@ class EventsCfg:
             "randomize_phase": True,
             "position_noise": 0.02,
             "velocity_noise": 0.05,
-        },
-    )
-
-    reset_base = EventTerm(
-        func=mdp.reset_root_state_uniform,
-        mode="reset",
-        params={
-            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
-            "velocity_range": {"x": (-0.2, 0.2), "y": (-0.2, 0.2), "yaw": (-0.2, 0.2)},
+            # What the removed term used to provide, less the parts that fought the reference.
+            "scatter_xy": 0.5,
+            "randomize_yaw": True,
+            "root_lin_vel_noise": 0.1,
+            "root_ang_vel_noise": 0.1,
         },
     )
 
@@ -529,8 +530,13 @@ class H1PathologicalGaitEnvCfg_PLAY(H1PathologicalGaitEnvCfg):
         self.events.asymmetric_leg_mass = None
         self.events.reset_to_reference.params["randomize_phase"] = False
         self.events.reset_to_reference.params["start_phase"] = 0.0
-        self.events.reset_base.params["pose_range"] = {"yaw": (0.0, 0.0)}
-        self.events.reset_base.params["velocity_range"] = {}
+        # Fixed heading and no scatter, but the reference's own root velocity is kept: it is
+        # part of the state being evaluated, not a perturbation. Zeroing it is what made the
+        # ``--zero_actions`` reference playback score 0% survival.
+        self.events.reset_to_reference.params["scatter_xy"] = 0.0
+        self.events.reset_to_reference.params["randomize_yaw"] = False
+        self.events.reset_to_reference.params["root_lin_vel_noise"] = 0.0
+        self.events.reset_to_reference.params["root_ang_vel_noise"] = 0.0
 
         # Spasticity and paretic weakness stay at full strength -- they are the phenomenon
         # under study, not a training aid.

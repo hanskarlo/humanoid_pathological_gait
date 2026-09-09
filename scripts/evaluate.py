@@ -187,6 +187,13 @@ def assign_phase_offsets(env, num_envs: int) -> None:
     to match; without that they would sit at the phase-0 pose returned by the reset event
     while ``gait_phase`` reports otherwise, until the policy's own tracking closes the gap.
     That transient is why this must run before, not instead of, the warmup window.
+
+    The floating base is moved with the joints, for the same reason and with the same
+    consequence if it is not: the reset event placed the root on the reference at phase 0,
+    and leaving it there while the joints move to phase ``i / num_envs`` reintroduces
+    exactly the pose-without-its-momentum mismatch that ``reset_to_reference_pose`` exists
+    to remove -- worst of all for the ``--zero_actions`` reference playback, which has no
+    policy to close the gap.
     """
     offsets = torch.arange(num_envs, device=env.device, dtype=torch.float32) / num_envs
     env.reference_gait.gait_phase[:] = offsets
@@ -198,6 +205,15 @@ def assign_phase_offsets(env, num_envs: int) -> None:
     limits = robot.data.soft_joint_pos_limits.torch
     q_ref = torch.clamp(q_ref, limits[..., 0], limits[..., 1])
     robot.write_joint_state_to_sim(q_ref, v_ref)
+
+    root_state = env.reference_gait.sample_root_state()
+    if root_state is not None:
+        height, quaternion, linear_velocity, angular_velocity = root_state
+        pose = robot.data.root_pose_w.torch.clone()
+        pose[:, 2] = env.scene.env_origins[:, 2] + height
+        pose[:, 3:7] = quaternion
+        robot.write_root_pose_to_sim(pose)
+        robot.write_root_velocity_to_sim(torch.cat([linear_velocity, angular_velocity], dim=-1))
 
 
 def main() -> int:
