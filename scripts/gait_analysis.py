@@ -169,7 +169,30 @@ def contact_gait_metrics(
             single_support_runs.extend((ends - starts[: ends.size]) * dt)
     single_support_s = float(np.mean(single_support_runs)) if single_support_runs else float("nan")
 
+    # Stance-fraction asymmetry, signed paretic-minus-sound like the run-duration index above
+    # but computed from the *fraction of time* each foot is loaded rather than the mean length
+    # of a contact run. That distinction is the point: the run-duration index is undefined
+    # whenever the contact pattern is fragmented, and every policy this project has trained is
+    # fragmented, so it has been blanked to NaN on all of them. The fragmentation guard was
+    # right to blank it and wrong to leave nothing in its place -- reduced paretic stance is
+    # the defining temporal signature of hemiparetic gait, and for nine runs across three
+    # configurations nothing was reporting it at all.
+    #
+    # It is well defined under fragmentation because a fraction does not care how the loaded
+    # time is divided up. The reference scores -15.87%; every policy measured to date scores
+    # POSITIVE, i.e. bears more weight on the paretic limb than the sound one, which is the
+    # mirror image of the pathology being modelled.
+    stance_denominator = stance_fraction[0] + stance_fraction[1]
+    stance_asymmetry = (
+        100.0 * (stance_fraction[0] - stance_fraction[1]) / stance_denominator
+        if stance_denominator > 0.0
+        else float("nan")
+    )
+
     return {
+        # Negative = paretic limb loaded a smaller fraction of the time = the hemiparetic
+        # direction. Unlike temporal_asymmetry_pct this survives a fragmented contact pattern.
+        "stance_fraction_asymmetry_pct": float(stance_asymmetry),
         "single_support_episode_s": single_support_s,
         "paretic_stance_periods_per_cycle": periods_per_cycle[0],
         "sound_stance_periods_per_cycle": periods_per_cycle[1],

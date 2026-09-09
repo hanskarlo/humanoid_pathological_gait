@@ -82,3 +82,44 @@ def test_reference_double_support_matches_the_quoted_schedule(reference_metrics)
 def test_the_reference_is_not_flagged_as_fragmented(reference_metrics):
     """One contact per foot per cycle. A policy scoring ~4 here is in a different regime."""
     assert reference_metrics["contact_pattern_fragmented"] is False
+
+
+def test_reference_stance_asymmetry_is_negative(reference_metrics):
+    """-15.87%: the paretic limb bears weight for a smaller fraction of the cycle.
+
+    This is the defining temporal signature of hemiparetic gait and the sign is the whole
+    content of the number. It is pinned because every policy trained in this project scores
+    it *positive* -- the mirror image of the pathology -- and nothing was reporting it: the
+    run-duration index that was supposed to catch this is blanked by the fragmentation guard
+    on every policy run, and the fraction-based index did not exist.
+    """
+    assert reference_metrics["stance_fraction_asymmetry_pct"] == pytest.approx(-15.87, abs=0.05)
+
+
+def test_stance_asymmetry_survives_fragmentation():
+    """A fraction does not care how the loaded time is divided, which is why this metric exists.
+
+    Chops the reference's two stance periods into many short ones without changing how long
+    either foot is loaded in total. The run-duration index gives up; this one is unmoved.
+    """
+    from gait_analysis import contact_gait_metrics
+
+    archive = numpy.load(str(DATA), allow_pickle=True)
+    contact = archive["reference_contact"].copy()
+    dt = float(numpy.mean(numpy.diff(archive["time_vector"])))
+
+    # Three strides end to end, so the gait phase actually wraps and the fragmentation guard
+    # has cycles to count -- it cannot fire on a single non-wrapping cycle.
+    strides = 3
+    tiled = numpy.tile(contact, (strides, 1))
+    # Punch a one-sample hole every 20 samples: same total loaded time, shredded runs.
+    tiled[::20] = False
+    ordered = numpy.stack([tiled[:, 0], tiled[:, 1]], axis=-1)[:, None, :]
+    valid = numpy.ones(ordered.shape[:2], dtype=bool)
+    within = numpy.arange(contact.shape[0]) / contact.shape[0]
+    phase = numpy.tile(within, strides)[:, None]
+    metrics = contact_gait_metrics(ordered, valid, dt, gait_phase=phase)
+
+    assert metrics["contact_pattern_fragmented"] is True
+    assert numpy.isnan(metrics["temporal_asymmetry_pct"]), "the run-duration index gives up"
+    assert metrics["stance_fraction_asymmetry_pct"] == pytest.approx(-15.87, abs=0.5)
