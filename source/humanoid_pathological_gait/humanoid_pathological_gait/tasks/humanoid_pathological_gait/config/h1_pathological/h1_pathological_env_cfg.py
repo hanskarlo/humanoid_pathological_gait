@@ -401,16 +401,39 @@ class RewardsCfg:
     # which already asks the paretic foot to lift on schedule at 6.0 and is complied with
     # only 33% of the time. A null here does not rule out the mechanism at a larger weight;
     # it rules out this one. Recorded before the run so the number is not chosen afterwards.
-    paretic_load_aversion = RewTerm(
-        func=mdp.paretic_load_aversion,
-        weight=-3.0,
-        params={
-            # FOOT_BODY_NAMES, not a regex: the reward flips columns for right-paretic
-            # environments and that is only correct if column 0 is reliably the left foot.
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
-            "contact_threshold": 1.0,
-        },
-    )
+    # DISABLED after measurement, like balance_assist before it. Three seeds against a
+    # matched control: the pre-registered primary, stance_fraction_asymmetry_pct, went
+    # +10.49 -> +9.23 (t = -1.02, p = 0.37) against a reference of -15.87. Null.
+    #
+    # The term was heard -- it was answered by a route the gate created. Gating on double
+    # support means the cheapest way to stop paying is to spend less time in double support
+    # rather than to transfer weight within it, and the policy did exactly that, in *both*
+    # directions at once: paretic swing rose 0.150 -> 0.203 (p = 0.016, the wanted direction)
+    # while standing on the paretic leg alone also rose, 0.308 -> 0.334. The ratio is
+    # unchanged because both terms of it moved together.
+    #
+    # The gate was there to avoid charging for physics the policy cannot escape during
+    # paretic single support. It bought a cheaper escape than the one intended. Anyone
+    # re-enabling this should ungate it and accept that cost, or charge on the weight
+    # *transfer* rather than the instantaneous share.
+    #
+    # It did leave double support at 0.4450 against the reference's 0.4416 -- the first time
+    # the headline temporal number has matched -- while the asymmetry stayed inverted, the
+    # single-support episode stayed at 0.1145 s against 0.5115, and mean MoS overshot to
+    # -0.0034 against +0.0385. That combination is the point, not a footnote.
+    #
+    # paretic_load_aversion = RewTerm(
+    #     func=mdp.paretic_load_aversion,
+    #     weight=-3.0,
+    #     params={
+    #         # FOOT_BODY_NAMES, not a regex: the reward flips columns for right-paretic
+    #         # environments, correct only if column 0 is reliably the left foot.
+    #         "sensor_cfg": SceneEntityCfg(
+    #             "contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True
+    #         ),
+    #         "contact_threshold": 1.0,
+    #     },
+    # )
 
     # -- shaping
     alive = RewTerm(func=mdp.is_alive, weight=2.0)
