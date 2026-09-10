@@ -189,9 +189,38 @@ def contact_gait_metrics(
         else float("nan")
     )
 
+    # Patterson's symmetry ratio, AS PUBLISHED -- the field's standard, and neither of the
+    # two indices above.
+    #
+    #     SR = (paretic swing / paretic stance) / (nonparetic swing / nonparetic stance)
+    #
+    # Patterson KK et al., "Gait asymmetry in community-ambulating stroke survivors",
+    # Arch Phys Med Rehabil 89(2):304-310, 2008 (note: 2008, not 2010 -- this project cited
+    # the wrong year). SR = 1.0 is symmetric; prolonged paretic swing and prolonged
+    # non-paretic stance both push it above 1. 55.5% of their n=54 cohort were significantly
+    # temporally asymmetric.
+    #
+    # Computed from stance *fractions* rather than the published swing/stance *times*. The two
+    # are equivalent when each foot makes one contact per cycle, and the fractions are the only
+    # form that survives the fragmented contact patterns every policy here produces -- the same
+    # reason stance_fraction_asymmetry_pct exists. Say which form is being quoted: the ratio is
+    # comparable to the literature only for an unfragmented gait.
+    swing_over_stance = [
+        (1.0 - fraction) / fraction if fraction > 1e-6 else float("nan") for fraction in stance_fraction
+    ]
+    patterson_sr = (
+        swing_over_stance[0] / swing_over_stance[1]
+        if np.isfinite(swing_over_stance[1]) and abs(swing_over_stance[1]) > 1e-9
+        else float("nan")
+    )
+
     return {
+        # Patterson et al. 2008, as published. 1.0 is symmetric, >1 is the hemiparetic
+        # direction. The reference stride scores 3.29.
+        "patterson_symmetry_ratio": float(patterson_sr),
         # Negative = paretic limb loaded a smaller fraction of the time = the hemiparetic
         # direction. Unlike temporal_asymmetry_pct this survives a fragmented contact pattern.
+        # Project-specific, NOT comparable to published asymmetry figures.
         "stance_fraction_asymmetry_pct": float(stance_asymmetry),
         "single_support_episode_s": single_support_s,
         "paretic_stance_periods_per_cycle": periods_per_cycle[0],

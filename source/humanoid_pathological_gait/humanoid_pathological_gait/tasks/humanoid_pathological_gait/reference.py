@@ -69,6 +69,13 @@ class ReferenceGaitManager:
         self.ref_v_mirrored = layout.mirror(self.ref_v)
         self.num_samples = self.ref_q.shape[0]
 
+        #: ``(19,)`` per-joint reference range of motion in radians, and its mirror. See
+        #: :meth:`joint_rom` for why the tracking reward needs this.
+        self.ref_joint_rom = self.ref_q.max(dim=0).values - self.ref_q.min(dim=0).values
+        self.ref_joint_rom_mirrored = (
+            self.ref_q_mirrored.max(dim=0).values - self.ref_q_mirrored.min(dim=0).values
+        )
+
         # ``sample`` hands back the unmirrored stride to left-paretic environments, so the
         # tables are swapped once here if the stride's impaired leg is the right one. Doing
         # it at load time keeps the per-step path free of the branch.
@@ -484,6 +491,25 @@ class ReferenceGaitManager:
         self.ref_root_ang_vel_mirrored = self.ref_root_ang_vel * torch.tensor(
             [-1.0, 1.0, -1.0], device=self.device
         )
+
+    def joint_rom(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor:
+        """Per-joint reference range of motion in radians, ``(N, 19)``, in the paretic frame.
+
+        Phase-independent -- it is a property of the stride, not of where in the stride an
+        environment is -- but it is still per-environment, because a right-paretic stride is
+        the mirror of a left-paretic one and the two put the small ROMs on opposite sides.
+
+        Exists so ``joint_pos_tracking`` can size its RBF width per joint. With one shared
+        width of 0.35 rad the term could not resolve motion smaller than itself, and 16 of
+        this stride's 19 joints have a total ROM below that: a policy that froze every joint
+        at its reference mean scored **0.9106** of the term carrying the largest weight in
+        the reward. The paretic limb is where the small ROMs are, so it was the limb the
+        objective could least see.
+        """
+        if env_ids is None:
+            env_ids = slice(None)
+        is_right_paretic = (self.paretic_side[env_ids] > 0).unsqueeze(-1)
+        return torch.where(is_right_paretic, self.ref_joint_rom_mirrored, self.ref_joint_rom)
 
     def sample_root_state(
         self, env_ids: torch.Tensor | slice | None = None

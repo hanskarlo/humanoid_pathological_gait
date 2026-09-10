@@ -38,14 +38,49 @@ GRAVITY = 9.81
 
 
 def joint_pos_tracking(
-    env: H1PathologicalGaitEnv, std: float = 0.35, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+    env: H1PathologicalGaitEnv,
+    std: float = 0.35,
+    rom_scale: float | None = None,
+    min_std: float = 0.05,
+    max_std: float = 0.35,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ) -> torch.Tensor:
-    """Clinically weighted RBF reward on joint position tracking error, in ``[0, 1]``."""
+    """Clinically weighted RBF reward on joint position tracking error, in ``[0, 1]``.
+
+    With ``rom_scale=None`` this is the original single shared width. **That form could not
+    see the pathology.** The reward is ``exp(-e^2/std^2)`` per joint, so at ``std = 0.35`` rad
+    it falls to half at 16.7 deg of error -- while 16 of the reference stride's 19 joints have
+    a total range of motion *below* that. A policy that froze every joint at its reference
+    mean and never moved scored **0.9106** of this term, which carries weight 15.0, the
+    largest in the reward. Only the sound limb's knee (ROM 50.6 deg) and hip pitch (47.5 deg)
+    had real contestable range; 17 of 19 joints paid out over 0.90 for doing nothing.
+
+    That is not a tuning detail, it is the shape of every result this project has produced.
+    The paretic limb is where the small ranges are -- knee 18.4, ankle 6.7, hip roll 5.5 deg --
+    so the paretic limb was the limb the objective could least resolve. It explains the
+    inverted weight-bearing asymmetry (the paretic side was nearly free), the hip roll sitting
+    against its mechanical stop for 62-75% of the gait (a 30 deg error there costs about 4% of
+    the achieved reward), and it means "foot drop reproduces" needs re-examining: a frozen
+    ankle and a dropped foot are indistinguishable under a 16.7 deg-wide RBF.
+
+    With ``rom_scale`` set, each joint gets ``std_j = clamp(rom_scale * ROM_j, min_std,
+    max_std)`` from :meth:`ReferenceGaitManager.joint_rom`, so the term has comparable
+    resolving power on a 5 deg joint and a 50 deg one. ``max_std`` never *loosens* a joint
+    beyond the original width; ``min_std`` keeps a gradient far from the target, which is the
+    failure mode the ``base_height`` narrowing hit when a sharpened RBF stopped shaping at all.
+    """
     asset: Articulation = env.scene[asset_cfg.name]
     q_ref, _ = env.reference_gait.sample()
     error_sq = torch.square(asset.data.joint_pos.torch - q_ref)
     weights = env.joint_layout.tracking_weights
-    return torch.sum(torch.exp(-error_sq / std**2) * weights, dim=-1) / torch.sum(weights)
+
+    if rom_scale is None:
+        width_sq = std**2
+    else:
+        width_sq = torch.square(
+            torch.clamp(rom_scale * env.reference_gait.joint_rom(), min=min_std, max=max_std)
+        )
+    return torch.sum(torch.exp(-error_sq / width_sq) * weights, dim=-1) / torch.sum(weights)
 
 
 def joint_vel_tracking(

@@ -288,7 +288,34 @@ class RewardsCfg:
     """Imitation fidelity, dynamic balance, and whole-body regularization."""
 
     # -- clinical imitation
-    joint_pos_tracking = RewTerm(func=mdp.joint_pos_tracking, weight=15.0, params={"std": 0.35})
+    # rom_scale sizes the RBF width PER JOINT, as clamp(rom_scale * reference ROM, 0.05, 0.35).
+    #
+    # The single shared std of 0.35 rad could not see the pathology. The reward is
+    # exp(-e^2/std^2), which halves at 16.7 deg of error, and 16 of this stride's 19 joints
+    # have a total range of motion below that. Measured directly: a policy that froze every
+    # joint at its reference mean and never moved scored **0.9106** of this term -- the one
+    # carrying weight 15.0, the largest in the reward. 17 of 19 joints paid over 0.90 for
+    # doing nothing. Only the SOUND limb's knee (ROM 50.6 deg) and hip pitch (47.5) had real
+    # contestable range, and the paretic limb is precisely where the small ROMs are: knee
+    # 18.4, ankle 6.7, hip roll 5.5 deg.
+    #
+    # So the objective could least resolve the limb the whole project is about. That is a
+    # candidate single explanation for the inverted weight-bearing asymmetry, for the hip roll
+    # sitting against its mechanical stop 62-75% of the gait (a 30 deg error there costs ~4%
+    # of the achieved reward), and it means "foot drop reproduces" needs re-checking -- a
+    # frozen ankle and a dropped foot are indistinguishable under a 16.7 deg-wide RBF.
+    #
+    # 0.5 was chosen over the sharper 0.35 and 0.25 deliberately. It takes the do-nothing
+    # score from 0.9106 to 0.7380 -- contestable range 8.9% -> 26.2%, nearly tripled -- while
+    # keeping every width at or above 2.86 deg and never loosening a joint beyond the original
+    # 0.35. Sharper values discriminate better on paper (0.6456 and 0.5560) but the
+    # base_height narrowing is the standing lesson that an RBF sharpened past the point where
+    # it still gradients far from the target stops shaping anything at all.
+    joint_pos_tracking = RewTerm(
+        func=mdp.joint_pos_tracking,
+        weight=15.0,
+        params={"std": 0.35, "rom_scale": 0.5, "min_std": 0.05, "max_std": 0.35},
+    )
     joint_vel_tracking = RewTerm(func=mdp.joint_vel_tracking, weight=2.0, params={"std": 2.0})
     # target_velocity=None tracks the reference stride's own speed (0.244 m/s for the
     # current stride) instead of a constant. The 0.5 that was here is twice that, and lost

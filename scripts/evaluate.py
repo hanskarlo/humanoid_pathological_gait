@@ -110,6 +110,7 @@ from gait_analysis import (  # noqa: E402
 )
 
 from isaaclab.managers import SceneEntityCfg  # noqa: E402
+from isaaclab.utils.math import quat_apply_inverse, yaw_quat  # noqa: E402
 
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.h1_joints import (  # noqa: E402
@@ -320,9 +321,24 @@ def main() -> int:
             continue
 
         xcom, mos, in_contact = compute_xcom_and_mos(env, foot_asset_cfg, foot_sensor_cfg)
-        foot_force = torch.norm(
-            env.scene["contact_forces"].data.net_forces_w.torch[:, foot_sensor_cfg.body_ids], dim=-1
-        )
+        foot_force_w = env.scene["contact_forces"].data.net_forces_w.torch[:, foot_sensor_cfg.body_ids]
+        foot_force = torch.norm(foot_force_w, dim=-1)
+        # Fore-aft ground reaction force per foot, in the robot's own heading frame.
+        #
+        # The magnitude above discards direction, and direction is what paretic propulsion
+        # needs: Bowden et al. (Stroke 37(3):872-876, 2006) define it as the paretic share of
+        # the *anteriorly directed* A-P GRF impulse, 50% being symmetric, with patient values
+        # of 16/36/49% for high/moderate/low severity. Two independent literature searches
+        # named it the best-validated marker of post-stroke walking performance and the one a
+        # simulation project is most likely to overlook -- and this project did overlook it
+        # for nineteen runs, because the only force it stored was a norm.
+        #
+        # Rotated by the root yaw rather than taken as world x: episodes start at a random
+        # heading, so world-frame fore-aft is meaningless across environments.
+        heading = yaw_quat(robot.data.root_link_quat_w.torch)
+        foot_force_ap = quat_apply_inverse(
+            heading.unsqueeze(1).expand(-1, foot_force_w.shape[1], -1), foot_force_w
+        )[..., 0]
         recorder.add(
             joint_pos=robot.data.joint_pos.torch,
             joint_vel=robot.data.joint_vel.torch,
@@ -336,6 +352,8 @@ def main() -> int:
             root_ang_vel_b=robot.data.root_ang_vel_b.torch,
             foot_pos=robot.data.body_link_pos_w.torch[:, foot_asset_cfg.body_ids] - env.scene.env_origins[:, None, :],
             foot_force=foot_force,
+            # Signed fore-aft GRF in the heading frame; positive is anterior (propulsive).
+            foot_force_ap=foot_force_ap,
             foot_contact=(foot_force > 1.0),
             xcom=xcom,
             mos=mos,
@@ -401,6 +419,27 @@ def warn_if_undersampled(data, stride_duration_s: float, dt: float) -> None:
             " offsets of 1/num_envs apart leave gaps; more --num_envs gives denser cycle coverage.",
             flush=True,
         )
+
+
+def _ambulation_class(speed_ms: float) -> str:
+    """Perry et al. (Stroke, 1995) walking-handicap class, validated by Bowden et al. (2008).
+
+    Reported alongside every result because it is the context that decides whether a clinical
+    normative range may be quoted at all. This project's own reference stride walks at
+    0.244 m/s -- a household ambulator -- and its policies at 0.081 to 0.187, so every
+    comparison against Patterson's 0.3-0.8+ m/s cohort is an extrapolation.
+    """
+    if not np.isfinite(speed_ms):
+        return "unknown"
+    if speed_ms < 0.40:
+        return "household"
+    if speed_ms <= 0.80:
+        return "limited_community"
+    return "community"
+
+
+HIP_ROLL_LIMIT_DEG = 24.6
+"""The H1's hip-roll joint limit (0.43 rad). Recorded values pile up against it exactly."""
 
 
 def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) -> dict[str, object]:
@@ -490,6 +529,52 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     #
     # 0.5 is symmetric loading. The reference's *time* asymmetry is -15.87%, so a policy
     # reproducing the strategy should sit below 0.5 here as well as shortening paretic stance.
+    # Fraction of the recorded gait in which a hip roll sits against its mechanical stop.
+    #
+    # With the stance foot flat and the H1's ankle rigid in roll, the stance leg has exactly
+    # one frontal-plane degree of freedom -- the hip roll -- and every configuration that
+    # actually walks pins it at its +-24.6 deg limit for 62-75% of the cycle. The AMP arm is
+    # the only exception and it avoids the stop by moving at a third of the reference speed.
+    #
+    # This went unreported for eighteen runs while `dof_pos_limits` quietly charged the policy
+    # for it at weight -1.0 and the policy paid. A soft penalty on a hard constraint hides
+    # exactly this: the trade "take the penalty, there is nowhere else to go". Mean pelvic
+    # obliquity tracks the saturation at r = +0.73 within the no-AMP arm, which is why the
+    # reproduced-pelvic-hiking claim now carries a qualification.
+    hip_roll_columns = [
+        index
+        for index, name in enumerate(layout.sim_names)
+        if name.endswith("hip_roll")
+    ]
+    if hip_roll_columns:
+        hip_roll_deg = np.degrees(np.abs(data["joint_pos"][:, :, hip_roll_columns]))
+        at_stop = (hip_roll_deg > HIP_ROLL_LIMIT_DEG - 1.0).any(axis=-1)
+        hip_roll_saturation = float(np.mean(at_stop[valid])) if valid.any() else float("nan")
+    else:
+        hip_roll_saturation = float("nan")
+
+    # Paretic propulsion, Bowden et al. (Stroke, 2006): the paretic share of the anteriorly
+    # directed fore-aft GRF impulse. 50% is symmetric; their cohort scored 16/36/49% for
+    # high/moderate/low hemiparetic severity. Only the positive (propulsive) part of the A-P
+    # force counts -- the braking phase is a separate quantity and folding it in would cancel
+    # most of the signal.
+    #
+    # Returns NaN for eval archives written before foot_force_ap was recorded, rather than
+    # silently computing something else from the force magnitude.
+    if "foot_force_ap" in data:
+        ap_paretic_first = np.where(
+            is_right_paretic[None, :, None], data["foot_force_ap"][:, :, ::-1], data["foot_force_ap"]
+        )
+        propulsive = np.clip(ap_paretic_first, 0.0, None) * valid[..., None]
+        impulse = propulsive.sum(axis=0) * dt          # (num_envs, 2)
+        total = impulse.sum(axis=-1)
+        usable = total > 1e-6
+        paretic_propulsion_pct = (
+            float(100.0 * np.mean(impulse[usable, 0] / total[usable])) if usable.any() else float("nan")
+        )
+    else:
+        paretic_propulsion_pct = float("nan")
+
     force_paretic_first = np.where(
         is_right_paretic[None, :, None], data["foot_force"][:, :, ::-1], data["foot_force"]
     )
@@ -506,6 +591,14 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
         "pelvic_obliquity_deg": obliquity_deg,
         # Paretic share of foot load during double support; 0.5 is symmetric.
         "paretic_load_share": paretic_load_share,
+        # Fraction of the gait with a hip roll against its mechanical stop; see above.
+        "hip_roll_saturation": hip_roll_saturation,
+        # Bowden 2006: paretic share of the anterior A-P GRF impulse. 50% symmetric.
+        "paretic_propulsion_pct": paretic_propulsion_pct,
+        # Perry (1995) / Bowden (2008) walking-handicap class for the achieved speed. Every
+        # normative comparison in the clinical literature is drawn from cohorts at
+        # 0.3-0.8+ m/s, so a policy below 0.40 is outside the range the norms were measured in.
+        "ambulation_class": _ambulation_class(float(np.mean(speed))),
         "pelvic_hiking_signature_deg": hiking_deg,
         "recorded_at": datetime.now().isoformat(timespec="seconds"),
         "num_envs": int(valid.shape[1]),

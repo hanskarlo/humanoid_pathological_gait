@@ -123,3 +123,25 @@ def test_stance_asymmetry_survives_fragmentation():
     assert metrics["contact_pattern_fragmented"] is True
     assert numpy.isnan(metrics["temporal_asymmetry_pct"]), "the run-duration index gives up"
     assert metrics["stance_fraction_asymmetry_pct"] == pytest.approx(-15.87, abs=0.5)
+
+
+def test_reference_patterson_symmetry_ratio(reference_metrics):
+    """Patterson et al. 2008's published ratio, computed on the reference: 3.29.
+
+    SR = (paretic swing/stance) / (nonparetic swing/stance); 1.0 is symmetric and the
+    hemiparetic direction is above 1. Pinned separately from the project's own asymmetry
+    indices because it is the only one of the three that is comparable to published values,
+    and only for an unfragmented gait.
+    """
+    assert reference_metrics["patterson_symmetry_ratio"] == pytest.approx(3.29, abs=0.02)
+
+
+def test_patterson_ratio_and_stance_asymmetry_agree_in_direction(reference_metrics):
+    """Two definitions, one pathology: SR above 1 must coincide with a negative fraction index.
+
+    They are different functions of the same two stance fractions, so a sign disagreement
+    would mean one of them is implemented backwards -- which is exactly the class of error
+    that let an inverted weight-bearing asymmetry go unnoticed for eighteen runs.
+    """
+    assert reference_metrics["patterson_symmetry_ratio"] > 1.0
+    assert reference_metrics["stance_fraction_asymmetry_pct"] < 0.0
