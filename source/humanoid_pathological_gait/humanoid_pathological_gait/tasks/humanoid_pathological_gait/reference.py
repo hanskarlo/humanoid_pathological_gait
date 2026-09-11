@@ -32,6 +32,10 @@ import torch
 from .h1_joints import NUM_JOINTS, H1JointLayout
 
 
+LEG_SYNERGY_JOINTS: tuple[str, ...] = ("hip_yaw", "hip_roll", "hip_pitch", "knee", "ankle")
+"""Leg joints spanned by the synergy projector, in the order its basis rows are expressed in."""
+
+
 class ReferenceGaitManager:
     """Reference stride playback and per-environment gait phase bookkeeping."""
 
@@ -71,6 +75,14 @@ class ReferenceGaitManager:
 
         #: ``(19,)`` per-joint reference range of motion in radians, and its mirror. See
         #: :meth:`joint_rom` for why the tracking reward needs this.
+        #: Simulation-order columns of the paretic leg, in LEG_SYNERGY_JOINTS order. The
+        #: archive's own impaired side is the left in the canonical (unmirrored) tables.
+        self._paretic_leg_columns = torch.tensor(
+            [layout.sim_names.index(f"left_{joint}") for joint in LEG_SYNERGY_JOINTS],
+            dtype=torch.long,
+            device=self.device,
+        )
+
         self.ref_joint_rom = self.ref_q.max(dim=0).values - self.ref_q.min(dim=0).values
         self.ref_joint_rom_mirrored = (
             self.ref_q_mirrored.max(dim=0).values - self.ref_q_mirrored.min(dim=0).values
@@ -491,6 +503,44 @@ class ReferenceGaitManager:
         self.ref_root_ang_vel_mirrored = self.ref_root_ang_vel * torch.tensor(
             [-1.0, 1.0, -1.0], device=self.device
         )
+
+    def paretic_leg_synergy_projector(self, rank: int) -> torch.Tensor:
+        """``(5, 5)`` orthogonal projector onto the paretic leg's top-``rank`` coordination modes.
+
+        Built by PCA on the reference stride's own paretic-leg joint trajectory, over
+        ``(hip_yaw, hip_roll, hip_pitch, knee, ankle)`` in that order. Returned in the
+        **left-paretic frame**; the caller conjugates it by the mirror signs for right-paretic
+        environments.
+
+        This is the loss of selective motor control, expressed as a constraint on what
+        *corrections* the paretic limb can make: it may move within the coordination pattern
+        its own gait already uses, and not outside it. That is Fugl-Meyer's "moving within
+        versus outside synergy" and the merged-module finding of Clark et al.
+        (J Neurophysiol 103(2):844-857, 2010), where paretic modules are merges of the healthy
+        basis rather than a new one -- a rank reduction.
+
+        **It is an analogue, not the same object, and the difference matters.** Clark's modules
+        are NMF factors of EMG across eight muscles with independent activation timing; this is
+        PCA over five joint angles. Ranks do not transfer between the two, which is why the
+        rank here is chosen from a measured effect on this robot rather than from 3.6-versus-2.7.
+
+        The projector is applied to the *residual*, never to the reference itself. Projecting
+        the reference would constrain nothing: a single periodic stride is intrinsically
+        low-dimensional and this one is already rank 2 at 90% variance explained, so a
+        reference-space constraint at any useful rank is vacuous. The residual is not --
+        measured on the best current policy, only 15% of paretic residual energy lies inside
+        the rank-2 subspace and 36% inside rank 4, *less* than a random subspace of the same
+        rank would retain. The policy's corrections are actively anti-aligned with the
+        reference's coordination pattern, concentrated in hip yaw and hip roll: the
+        frontal-plane bracing. Constraining the residual forbids exactly that.
+        """
+        if not 1 <= rank <= len(LEG_SYNERGY_JOINTS):
+            raise ValueError(f"synergy rank must be in 1..{len(LEG_SYNERGY_JOINTS)}, got {rank}")
+        trace = self.ref_q[:, self._paretic_leg_columns]
+        centred = trace - trace.mean(dim=0, keepdim=True)
+        # Right singular vectors are the coordination directions; rows of Vh, largest first.
+        basis = torch.linalg.svd(centred, full_matrices=False).Vh[:rank]
+        return basis.T @ basis
 
     def joint_rom(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor:
         """Per-joint reference range of motion in radians, ``(N, 19)``, in the paretic frame.
