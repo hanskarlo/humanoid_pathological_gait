@@ -39,6 +39,14 @@ parser.add_argument("--save_interval", type=int, default=100, help="Checkpoint f
 parser.add_argument("--log_interval", type=int, default=10, help="Console logging frequency, in iterations.")
 parser.add_argument("--amp_weight", type=float, default=5.0, help="Weight on the AMP style reward.")
 parser.add_argument(
+    "--synergy_rank",
+    type=int,
+    default=None,
+    help="Rank of the paretic leg's residual coordination subspace (1-5); 5 is unconstrained. "
+    "Models loss of selective motor control as a constraint on the structure of the paretic "
+    "limb's corrections rather than their magnitude. Omit to keep the config default.",
+)
+parser.add_argument(
     "--rom_scale",
     type=float,
     default=None,
@@ -497,6 +505,8 @@ def main() -> int:
     env_cfg = resolve_presets(env_cfg, selected=tuple(args_cli.presets))
     env_cfg.sim.device = args_cli.device
     env_cfg.scene.num_envs = args_cli.num_envs
+    if args_cli.synergy_rank is not None:
+        env_cfg.actions.joint_pos.paretic_synergy_rank = args_cli.synergy_rank
     if args_cli.rom_scale is not None:
         # <= 0 means the original single shared std, i.e. the control arm.
         env_cfg.rewards.joint_pos_tracking.params["rom_scale"] = (
