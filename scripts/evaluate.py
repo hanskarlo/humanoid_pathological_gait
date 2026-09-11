@@ -351,6 +351,19 @@ def main() -> int:
             root_lin_vel_b=robot.data.root_lin_vel_b.torch,
             root_ang_vel_b=robot.data.root_ang_vel_b.torch,
             foot_pos=robot.data.body_link_pos_w.torch[:, foot_asset_cfg.body_ids] - env.scene.env_origins[:, None, :],
+            # Raw policy action, before the action term projects or scales it.
+            #
+            # Recorded because the binding check for the synergy constraint cannot be built
+            # from `joint_pos - joint_ref_pos`. That is the *achieved* position error; the
+            # projection constrains the commanded *target*, and what the robot reaches also
+            # carries PD tracking error, the spastic reflex torque (a separate effort target,
+            # outside the projection), contact forces and gravity sag. With tracking RMSE near
+            # 15 deg against an action scale of 0.25 rad the unconstrained part dominates, so
+            # a constrained policy looks almost identical to an unconstrained one.
+            #
+            # With the raw action, the quantity the check should have used is available:
+            # the fraction of action energy the projector discards, 1 - |Pa|^2/|a|^2.
+            action=env.action_manager.action.clone(),
             foot_force=foot_force,
             # Signed fore-aft GRF in the heading frame; positive is anterior (propulsive).
             foot_force_ap=foot_force_ap,
