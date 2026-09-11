@@ -305,6 +305,15 @@ class RewardsCfg:
     # of the achieved reward), and it means "foot drop reproduces" needs re-checking -- a
     # frozen ankle and a dropped foot are indistinguishable under a 16.7 deg-wide RBF.
     #
+    # 0.35 was then tested against 0.5, three seeds each, and **bought nothing**. Both
+    # co-primaries came out non-significant and pointing the wrong way -- stance asymmetry
+    # -0.34 -> +2.44 (p = 0.37), single-support episode 0.157 -> 0.140 (p = 0.22) -- with
+    # joint RMSE trending up, 15.54 -> 16.46. Both widths beat the original shared std, and
+    # 0.35 is actually closer on paretic knee ROM (32.8 vs 36.5, reference 18.4), but 0.5 wins
+    # on both pre-registered outcomes. The lever plateaus at 0.5, so 0.25 was not run: that is
+    # the pre-registration's stop rule and this project's standing failure mode, pushing a
+    # lever past the point where it still measures what it claims to.
+    #
     # 0.5 was chosen over the sharper 0.35 and 0.25 deliberately. It takes the do-nothing
     # score from 0.9106 to 0.7380 -- contestable range 8.9% -> 26.2%, nearly tripled -- while
     # keeping every width at or above 2.86 deg and never loosening a joint beyond the original
