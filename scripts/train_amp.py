@@ -38,6 +38,17 @@ parser.add_argument("--num_steps_per_env", type=int, default=24, help="Rollout l
 parser.add_argument("--save_interval", type=int, default=100, help="Checkpoint frequency, in iterations.")
 parser.add_argument("--log_interval", type=int, default=10, help="Console logging frequency, in iterations.")
 parser.add_argument("--amp_weight", type=float, default=5.0, help="Weight on the AMP style reward.")
+parser.add_argument(
+    "--rom_scale",
+    type=float,
+    default=None,
+    help="Per-joint width of joint_pos_tracking, as rom_scale x each joint's reference ROM. "
+    "Omit to keep the config default. Pass 0 (or any value <= 0) for the ORIGINAL single "
+    "shared std, which is the control arm -- a width that halves at 16.7 deg while 16 of 19 "
+    "joints have a smaller total ROM than that, and under which a policy freezing every joint "
+    "at its reference mean scores 0.9106 of the term. Exposed so both arms of a replication "
+    "run from one checkout without editing the config between them.",
+)
 parser.add_argument("--lr_policy", type=float, default=3e-4, help="Policy/value learning rate.")
 parser.add_argument("--lr_disc", type=float, default=1e-4, help="Discriminator learning rate.")
 parser.add_argument(
@@ -486,6 +497,11 @@ def main() -> int:
     env_cfg = resolve_presets(env_cfg, selected=tuple(args_cli.presets))
     env_cfg.sim.device = args_cli.device
     env_cfg.scene.num_envs = args_cli.num_envs
+    if args_cli.rom_scale is not None:
+        # <= 0 means the original single shared std, i.e. the control arm.
+        env_cfg.rewards.joint_pos_tracking.params["rom_scale"] = (
+            args_cli.rom_scale if args_cli.rom_scale > 0.0 else None
+        )
     if args_cli.seed is not None:
         env_cfg.seed = args_cli.seed
         torch.manual_seed(args_cli.seed)
