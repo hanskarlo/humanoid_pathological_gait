@@ -37,6 +37,11 @@ Outputs, under ``--output_dir``:
 ``metrics.csv``              The same metrics as a table, for the paper's results table.
 ===========================  ==========================================================
 
+The environment is rebuilt here from the *registry default* task config, so any training flag
+that changes the action space has to be restored from the checkpoint's ``run_config.json``
+before the rollout -- see :func:`apply_training_config`. Without that step a constrained policy
+is rolled out unconstrained, which does not raise and does not look wrong in the output.
+
 .. note::
     The simulation app is launched before any task import; see ``zero_agent.py`` for why.
 """
@@ -76,6 +81,20 @@ parser.add_argument(
 parser.add_argument(
     "--presets", type=str, nargs="*", default=(), help="Preset variants to select, e.g. --presets newton_mjwarp."
 )
+parser.add_argument(
+    "--synergy_rank",
+    type=int,
+    default=None,
+    help="Override the paretic synergy rank instead of taking it from the checkpoint's "
+    "run_config.json. Only for deliberately evaluating a policy off its training action space; "
+    "the default (unset) reproduces training, which is what every reported number needs.",
+)
+parser.add_argument(
+    "--ignore_run_config",
+    action="store_true",
+    help="Proceed when the checkpoint has no run_config.json instead of refusing. The resulting "
+    "numbers are only trustworthy for runs that used the config defaults.",
+)
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
@@ -87,12 +106,12 @@ simulation_app = app_launcher.app
 import csv
 import importlib
 import json
-from datetime import datetime
-from pathlib import Path
-
 import os
 import sys
 import traceback
+from datetime import datetime
+from pathlib import Path
+
 import gymnasium as gym
 import numpy as np
 import torch
@@ -217,6 +236,67 @@ def assign_phase_offsets(env, num_envs: int) -> None:
         robot.write_root_velocity_to_sim(torch.cat([linear_velocity, angular_velocity], dim=-1))
 
 
+#: Training flags that change what the policy *does* during a rollout, and therefore have to be
+#: reapplied here or the policy is evaluated on an action space it was never trained on. Keyed
+#: by their ``run_config.json`` key.
+#:
+#: ``rom_scale`` is deliberately absent: it is a reward width, and rewards are not in the loop
+#: when a trained policy is rolled out deterministically, so it cannot change a recorded
+#: trajectory. ``synergy_rank`` is: it projects the paretic leg's residual onto a rank-k
+#: subspace *inside the action term*, leaving the action dimension unchanged -- so omitting it
+#: does not raise, it silently hands the policy authority it never had while training.
+DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank",)
+
+
+def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
+    """Reapply the checkpoint's own training configuration to the evaluation environment.
+
+    The task config this script loads from the registry is the *default* one. Any training run
+    that moved a dynamics-relevant setting off its default (see :data:`DYNAMICS_FLAGS`) produced
+    a policy that only means what it meant during training if the same setting is restored here.
+
+    This exists because it was not being done: the five ``syn_k2_*`` runs were trained with
+    ``--synergy_rank 2`` and evaluated with the config default (``None``, unconstrained), which
+    is a different controller and does not raise. See the research log entry of 2026-09-17.
+
+    Returns what was applied, for the run's own ``metrics.json`` -- a number whose provenance is
+    not recorded next to it is a number that cannot be defended later.
+    """
+    if checkpoint is None:
+        return {"source": "none (no checkpoint)"}
+
+    path = Path(checkpoint).absolute().parent / "run_config.json"
+    if not path.exists():
+        if not args_cli.ignore_run_config:
+            raise SystemExit(
+                f"[evaluate] no run_config.json beside {checkpoint}.\n"
+                "  This script cannot tell whether that policy was trained with a non-default\n"
+                "  action space, and evaluating it against the config defaults would silently\n"
+                "  measure a different controller. Pass --ignore_run_config to proceed anyway\n"
+                "  (only correct for runs that used the defaults), or --synergy_rank to state it."
+            )
+        print(f"[evaluate] WARNING: no run_config.json beside {checkpoint}; assuming config defaults")
+        stored: dict[str, object] = {}
+        source = "absent (--ignore_run_config)"
+    else:
+        stored = json.loads(path.read_text())
+        source = str(path)
+
+    applied: dict[str, object] = {"source": source}
+    for flag in DYNAMICS_FLAGS:
+        override = getattr(args_cli, flag, None)
+        value = override if override is not None else stored.get(flag)
+        applied[flag] = value
+        if override is not None and stored.get(flag) != override:
+            print(f"[evaluate] WARNING: --{flag}={override} overrides the run's own {stored.get(flag)!r}")
+        if value is None:
+            continue
+        if flag == "synergy_rank":
+            env_cfg.actions.joint_pos.paretic_synergy_rank = int(value)
+            print(f"[evaluate] restored training action space: paretic_synergy_rank={int(value)}")
+    return applied
+
+
 def main() -> int:
     num_envs = max(2, args_cli.num_envs - args_cli.num_envs % 2)
     if num_envs != args_cli.num_envs:
@@ -230,6 +310,7 @@ def main() -> int:
     # Long enough that the recording window is one uninterrupted episode: a timeout
     # mid-rollout would put a reset transient in the middle of the averaged curves.
     env_cfg.episode_length_s = max(env_cfg.episode_length_s, (args_cli.num_steps + args_cli.warmup_steps + 10) * 0.02)
+    training_config = apply_training_config(env_cfg, None if args_cli.zero_actions else args_cli.checkpoint)
 
     torch.manual_seed(args_cli.seed)
     np.random.seed(args_cli.seed)
@@ -336,9 +417,9 @@ def main() -> int:
         # Rotated by the root yaw rather than taken as world x: episodes start at a random
         # heading, so world-frame fore-aft is meaningless across environments.
         heading = yaw_quat(robot.data.root_link_quat_w.torch)
-        foot_force_ap = quat_apply_inverse(
-            heading.unsqueeze(1).expand(-1, foot_force_w.shape[1], -1), foot_force_w
-        )[..., 0]
+        foot_force_ap = quat_apply_inverse(heading.unsqueeze(1).expand(-1, foot_force_w.shape[1], -1), foot_force_w)[
+            ..., 0
+        ]
         recorder.add(
             joint_pos=robot.data.joint_pos.torch,
             joint_vel=robot.data.joint_vel.torch,
@@ -391,6 +472,8 @@ def main() -> int:
 
     try:
         metrics = summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration)
+        # Recorded next to the numbers it conditions, not only in the console log.
+        metrics["training_config_applied"] = training_config
     except NoSurvivingEnvironments as error:
         # A policy that falls in every environment is a legitimate result -- an early
         # checkpoint, or an ablation that does not learn to walk. Report it as a failed
@@ -554,11 +637,7 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     # exactly this: the trade "take the penalty, there is nowhere else to go". Mean pelvic
     # obliquity tracks the saturation at r = +0.73 within the no-AMP arm, which is why the
     # reproduced-pelvic-hiking claim now carries a qualification.
-    hip_roll_columns = [
-        index
-        for index, name in enumerate(layout.sim_names)
-        if name.endswith("hip_roll")
-    ]
+    hip_roll_columns = [index for index, name in enumerate(layout.sim_names) if name.endswith("hip_roll")]
     if hip_roll_columns:
         hip_roll_deg = np.degrees(np.abs(data["joint_pos"][:, :, hip_roll_columns]))
         at_stop = (hip_roll_deg > HIP_ROLL_LIMIT_DEG - 1.0).any(axis=-1)
@@ -579,7 +658,7 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
             is_right_paretic[None, :, None], data["foot_force_ap"][:, :, ::-1], data["foot_force_ap"]
         )
         propulsive = np.clip(ap_paretic_first, 0.0, None) * valid[..., None]
-        impulse = propulsive.sum(axis=0) * dt          # (num_envs, 2)
+        impulse = propulsive.sum(axis=0) * dt  # (num_envs, 2)
         total = impulse.sum(axis=-1)
         usable = total > 1e-6
         paretic_propulsion_pct = (
@@ -588,9 +667,7 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     else:
         paretic_propulsion_pct = float("nan")
 
-    force_paretic_first = np.where(
-        is_right_paretic[None, :, None], data["foot_force"][:, :, ::-1], data["foot_force"]
-    )
+    force_paretic_first = np.where(is_right_paretic[None, :, None], data["foot_force"][:, :, ::-1], data["foot_force"])
     both_down = (force_paretic_first > 1.0).all(axis=-1) & valid
     if both_down.any():
         loads = force_paretic_first[both_down]
