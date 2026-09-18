@@ -57,6 +57,16 @@ parser.add_argument(
     "at its reference mean scores 0.9106 of the term. Exposed so both arms of a replication "
     "run from one checkout without editing the config between them.",
 )
+parser.add_argument(
+    "--hip_roll_limit_deg",
+    type=float,
+    default=None,
+    help="Symmetric hip-roll position limit in degrees, replacing the H1's own +-24.6 deg stop. "
+    "Omit to keep it, which is the control condition. The hip roll is the stance leg's only "
+    "frontal-plane DoF once the ankle is rigid in roll, and it sits against that stop for "
+    "60-75%% of the gait cycle in every configuration that walks; widening it is H1 of "
+    "docs/forward_plan_2026-09-09.md. Evaluation reads this back from run_config.json.",
+)
 parser.add_argument("--lr_policy", type=float, default=3e-4, help="Policy/value learning rate.")
 parser.add_argument("--lr_disc", type=float, default=1e-4, help="Discriminator learning rate.")
 parser.add_argument(
@@ -102,13 +112,14 @@ simulation_app = app_launcher.app
 import csv
 import importlib
 import json
+import math
+import os
+import sys
 import time
+import traceback
 from datetime import datetime
 from pathlib import Path
 
-import os
-import sys
-import traceback
 import gymnasium as gym
 import numpy as np
 import torch
@@ -444,9 +455,7 @@ class PPOAMPTrainer:
         # reconstruct it from the iteration -- one iteration advances the counter by
         # num_steps_per_env -- which is exact for a run that was never resumed before.
         iteration = int(checkpoint.get("iteration", 0))
-        self.env.common_step_counter = int(
-            checkpoint.get("common_step_counter", iteration * self.num_steps)
-        )
+        self.env.common_step_counter = int(checkpoint.get("common_step_counter", iteration * self.num_steps))
 
         # The observation buffer was captured before the load; re-reading it keeps the
         # first resumed rollout consistent with the restored policy.
@@ -500,6 +509,13 @@ def resolve_resume_checkpoint(target: str) -> Path:
     return checkpoints[-1]
 
 
+def resolved_hip_roll_limit_deg(env) -> float:
+    """The hip-roll limit the articulation reports, in degrees, whatever set it."""
+    robot = env.scene["robot"]
+    joint_ids = robot.find_joints(".*_hip_roll")[0]
+    return float(math.degrees(robot.data.joint_pos_limits.torch[0, joint_ids[0], 1]))
+
+
 def main() -> int:
     env_cfg = load_cfg_from_registry(args_cli.task.split(":")[-1], "env_cfg_entry_point")
     env_cfg = resolve_presets(env_cfg, selected=tuple(args_cli.presets))
@@ -512,6 +528,8 @@ def main() -> int:
         env_cfg.rewards.joint_pos_tracking.params["rom_scale"] = (
             args_cli.rom_scale if args_cli.rom_scale > 0.0 else None
         )
+    if args_cli.hip_roll_limit_deg is not None:
+        env_cfg.hip_roll_limit_deg = args_cli.hip_roll_limit_deg
     if args_cli.seed is not None:
         env_cfg.seed = args_cli.seed
         torch.manual_seed(args_cli.seed)
@@ -553,6 +571,9 @@ def main() -> int:
         },
         "episode_length_s": env.cfg.episode_length_s,
         "step_dt": env.step_dt,
+        # The limit the articulation actually reports, not just the flag: the flag is usually
+        # None and the interesting number is then the USD's own stop.
+        "hip_roll_limit_deg_resolved": resolved_hip_roll_limit_deg(env),
     }
     (log_dir / "run_config.json").write_text(json.dumps(run_config, indent=2, default=str))
 

@@ -24,3 +24,5 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
+        # "retuned" is what happened to the actuator gains, not a typo for "returned".
+        args: ["--ignore-words-list=retuned"]

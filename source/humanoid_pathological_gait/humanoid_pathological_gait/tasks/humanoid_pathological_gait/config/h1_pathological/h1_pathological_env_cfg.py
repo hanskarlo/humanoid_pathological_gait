@@ -574,6 +574,22 @@ class H1PathologicalGaitEnvCfg(ManagerBasedRLEnvCfg):
     tsrt_params: TSRTParams = TSRTParams()
     """Biomechanical parameters of the TSRT spasticity model."""
 
+    hip_roll_limit_deg: float | None = None
+    """Symmetric hip-roll position limit, in degrees, replacing the H1's own +-24.6 deg stop.
+
+    ``None`` keeps the limit that ships in the USD, which is the control condition. With the
+    ankle rigid in roll, the hip roll is the stance leg's only frontal-plane degree of freedom,
+    and every configuration that actually walks runs it into that stop for 60-75% of the gait
+    cycle (``research_log/2026-09-09-the-hip-roll-is-against-its-stop-for-most-of-the-gait.md``).
+    Widening it is hypothesis H1 of ``docs/forward_plan_2026-09-09.md``: if single-limb support
+    and pelvic obliquity move when the stop does, the deficit is morphological rather than
+    anything the reward can reach.
+
+    Applied in :meth:`H1PathologicalGaitEnv.load_managers` *before* the action manager is
+    built, because the action term clamps against a copy of the soft limits taken at
+    construction.
+    """
+
     def __post_init__(self) -> None:
         """Post initialization."""
         self.decimation = 4

@@ -17,6 +17,7 @@ and the reward then scores how close it got.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
@@ -46,6 +47,7 @@ class H1PathologicalGaitEnv(ManagerBasedRLEnv):
         has to exist by now.
         """
         robot = self.scene["robot"]
+        self._apply_hip_roll_limit(robot)
 
         self.joint_layout = H1JointLayout.from_sim_names(robot.joint_names, self.device)
         self.reference_gait = ReferenceGaitManager(
@@ -88,6 +90,54 @@ class H1PathologicalGaitEnv(ManagerBasedRLEnv):
         self.base_push_velocity_range: dict[str, dict[str, tuple[float, float]]] = {}
 
         super().load_managers()
+
+    def _apply_hip_roll_limit(self, robot) -> None:
+        """Replace the H1's own hip-roll stop with ``cfg.hip_roll_limit_deg``, if one is set.
+
+        **Why this runs here and not as a startup event.** The action term clones
+        ``soft_joint_pos_limits`` when it is constructed (``mdp/actions.py``) and clamps every
+        joint target against that copy, and startup events are applied *after* the action
+        manager is built. A limit written from an event would therefore widen the mechanical
+        stop while the controller went on commanding against the old one -- a widened joint the
+        policy could never reach, which would read as "the limit was not the constraint".
+
+        Fails loudly rather than returning quietly: an experiment whose manipulation silently
+        did not happen is the failure mode this project has already paid for once
+        (``research_log/2026-09-17-the-synergy-arm-was-evaluated-without-its-synergy.md``).
+        """
+        limit_deg = self.cfg.hip_roll_limit_deg
+        if limit_deg is None:
+            return
+
+        joint_ids, names = robot.find_joints(".*_hip_roll", preserve_order=True)
+        if not joint_ids:
+            raise RuntimeError("no .*_hip_roll joints in this articulation; hip_roll_limit_deg cannot be applied")
+
+        limit = math.radians(abs(float(limit_deg)))
+        before = robot.data.joint_pos_limits.torch[:, joint_ids].clone()
+        limits = torch.empty((robot.num_instances, len(joint_ids), 2), device=self.device)
+        limits[..., 0] = -limit
+        limits[..., 1] = limit
+        robot.write_joint_position_limit_to_sim_index(limits=limits, joint_ids=joint_ids)
+
+        after = robot.data.joint_pos_limits.torch[:, joint_ids]
+        if not torch.allclose(after[..., 1], torch.full_like(after[..., 1], limit), atol=1e-4):
+            raise RuntimeError(
+                f"hip-roll limit write did not take: asked for +-{limit:.4f} rad, "
+                f"the articulation reports {after[0, 0].tolist()}"
+            )
+        soft = robot.data.soft_joint_pos_limits.torch[:, joint_ids]
+        print(
+            f"[h1_pathological] hip-roll limit {math.degrees(before[0, 0, 1]):.2f} -> "
+            f"{math.degrees(after[0, 0, 1]):.2f} deg on {names}; "
+            f"soft limit now +-{math.degrees(soft[0, 0, 1]):.2f} deg",
+            flush=True,
+        )
+        if soft[0, 0, 1] <= before[0, 0, 1]:
+            raise RuntimeError(
+                "the hard hip-roll limit widened but the soft limit did not follow it, so the "
+                "action term would still clamp to the old stop. Check the order in load_managers()."
+            )
 
     def _apply_balance_assist(self) -> None:
         """Apply a fading mediolateral assist wrench at the pelvis.

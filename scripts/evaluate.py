@@ -90,6 +90,14 @@ parser.add_argument(
     "the default (unset) reproduces training, which is what every reported number needs.",
 )
 parser.add_argument(
+    "--hip_roll_limit_deg",
+    type=float,
+    default=None,
+    help="Override the hip-roll position limit instead of taking it from the checkpoint's "
+    "run_config.json. Changes the morphology the policy is rolled out on; the default (unset) "
+    "reproduces training.",
+)
+parser.add_argument(
     "--ignore_run_config",
     action="store_true",
     help="Proceed when the checkpoint has no run_config.json instead of refusing. The resulting "
@@ -245,7 +253,7 @@ def assign_phase_offsets(env, num_envs: int) -> None:
 #: trajectory. ``synergy_rank`` is: it projects the paretic leg's residual onto a rank-k
 #: subspace *inside the action term*, leaving the action dimension unchanged -- so omitting it
 #: does not raise, it silently hands the policy authority it never had while training.
-DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank",)
+DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank", "hip_roll_limit_deg")
 
 
 def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
@@ -294,6 +302,9 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
         if flag == "synergy_rank":
             env_cfg.actions.joint_pos.paretic_synergy_rank = int(value)
             print(f"[evaluate] restored training action space: paretic_synergy_rank={int(value)}")
+        elif flag == "hip_roll_limit_deg":
+            env_cfg.hip_roll_limit_deg = float(value)
+            print(f"[evaluate] restored training morphology: hip_roll_limit_deg={float(value)}")
     return applied
 
 
@@ -468,12 +479,20 @@ def main() -> int:
     # data views are weak references into the physics backend and raise once the app is
     # torn down. The layout tensors are already plain torch, so they survive.
     total_mass = float(robot.data.body_mass.torch[0].sum())
+    # Read before close, like total_mass: hip_roll_saturation is only meaningful against the
+    # stop this rollout actually had, which --hip_roll_limit_deg moves.
+    hip_roll_limit_deg = float(
+        np.degrees(robot.data.joint_pos_limits.torch[0, robot.find_joints(".*_hip_roll")[0][0], 1].item())
+    )
     env.close()
 
     try:
-        metrics = summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration)
+        metrics = summarize(
+            data, layout, is_right_paretic, total_mass, dt, label, iteration, hip_roll_limit_deg=hip_roll_limit_deg
+        )
         # Recorded next to the numbers it conditions, not only in the console log.
         metrics["training_config_applied"] = training_config
+        metrics["hip_roll_limit_deg"] = hip_roll_limit_deg
     except NoSurvivingEnvironments as error:
         # A policy that falls in every environment is a legitimate result -- an early
         # checkpoint, or an ablation that does not learn to walk. Report it as a failed
@@ -535,10 +554,18 @@ def _ambulation_class(speed_ms: float) -> str:
 
 
 HIP_ROLL_LIMIT_DEG = 24.6
-"""The H1's hip-roll joint limit (0.43 rad). Recorded values pile up against it exactly."""
+"""The H1's stock hip-roll joint limit (0.43 rad). Recorded values pile up against it exactly.
+
+Only the default: a run trained with ``--hip_roll_limit_deg`` has a different stop, and
+``hip_roll_saturation`` means nothing unless it is measured against the stop the rollout
+actually had. :func:`summarize` takes it as an argument and ``main`` reads it off the
+articulation rather than assuming this constant.
+"""
 
 
-def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) -> dict[str, object]:
+def summarize(
+    data, layout, is_right_paretic, total_mass, dt, label, iteration, hip_roll_limit_deg=HIP_ROLL_LIMIT_DEG
+) -> dict[str, object]:
     """Reduce a recorded rollout to the scalar metrics the paper reports."""
     mirror_index = layout.mirror_index.cpu().numpy()
     mirror_sign = layout.mirror_sign.cpu().numpy()
@@ -640,7 +667,7 @@ def summarize(data, layout, is_right_paretic, total_mass, dt, label, iteration) 
     hip_roll_columns = [index for index, name in enumerate(layout.sim_names) if name.endswith("hip_roll")]
     if hip_roll_columns:
         hip_roll_deg = np.degrees(np.abs(data["joint_pos"][:, :, hip_roll_columns]))
-        at_stop = (hip_roll_deg > HIP_ROLL_LIMIT_DEG - 1.0).any(axis=-1)
+        at_stop = (hip_roll_deg > hip_roll_limit_deg - 1.0).any(axis=-1)
         hip_roll_saturation = float(np.mean(at_stop[valid])) if valid.any() else float("nan")
     else:
         hip_roll_saturation = float("nan")
