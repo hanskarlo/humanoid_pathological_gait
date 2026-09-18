@@ -98,6 +98,14 @@ parser.add_argument(
     "reproduces training.",
 )
 parser.add_argument(
+    "--objective",
+    choices=("imitation", "predictive"),
+    default=None,
+    help="Override the training objective instead of taking it from run_config.json. The "
+    "observation dimension differs between the two, so a wrong value fails loudly on the "
+    "checkpoint load rather than producing a number.",
+)
+parser.add_argument(
     "--ignore_run_config",
     action="store_true",
     help="Proceed when the checkpoint has no run_config.json instead of refusing. The resulting "
@@ -140,6 +148,9 @@ from isaaclab.managers import SceneEntityCfg  # noqa: E402
 from isaaclab.utils.math import quat_apply_inverse, yaw_quat  # noqa: E402
 
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
+from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
+    apply_predictive_objective,
+)
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.h1_joints import (  # noqa: E402
     CLINICAL_JOINT_ORDER,
     FOOT_BODY_NAMES,
@@ -253,7 +264,7 @@ def assign_phase_offsets(env, num_envs: int) -> None:
 #: trajectory. ``synergy_rank`` is: it projects the paretic leg's residual onto a rank-k
 #: subspace *inside the action term*, leaving the action dimension unchanged -- so omitting it
 #: does not raise, it silently hands the policy authority it never had while training.
-DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank", "hip_roll_limit_deg")
+DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank", "hip_roll_limit_deg", "objective")
 
 
 def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
@@ -295,6 +306,8 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
         override = getattr(args_cli, flag, None)
         value = override if override is not None else stored.get(flag)
         applied[flag] = value
+        if flag == "objective" and value in (None, "imitation"):
+            continue
         if override is not None and stored.get(flag) != override:
             print(f"[evaluate] WARNING: --{flag}={override} overrides the run's own {stored.get(flag)!r}")
         if value is None:
@@ -305,6 +318,13 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
         elif flag == "hip_roll_limit_deg":
             env_cfg.hip_roll_limit_deg = float(value)
             print(f"[evaluate] restored training morphology: hip_roll_limit_deg={float(value)}")
+        elif flag == "objective":
+            # Changes the observation dimension as well as the rewards, so a mismatch here
+            # surfaces as a state-dict shape error rather than a quiet wrong number -- but it
+            # is restored properly all the same, because the rewards are logged at evaluation.
+            if str(value) == "predictive":
+                applied["objective_detail"] = apply_predictive_objective(env_cfg)
+                print("[evaluate] restored training objective: predictive (reference terms removed)")
     return applied
 
 

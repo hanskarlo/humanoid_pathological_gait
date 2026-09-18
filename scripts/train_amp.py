@@ -67,6 +67,16 @@ parser.add_argument(
     "60-75%% of the gait cycle in every configuration that walks; widening it is H1 of "
     "docs/forward_plan_2026-09-09.md. Evaluation reads this back from run_config.json.",
 )
+parser.add_argument(
+    "--objective",
+    choices=("imitation", "predictive"),
+    default="imitation",
+    help="'predictive' is forward-plan H3: drop every reward, observation and termination that "
+    "reads the reference trajectory, keep the impairment model, and add a metabolic cost, so "
+    "the gait has to be predicted rather than copied. The reference then becomes validation "
+    "data. Evaluation reads this back from run_config.json; it changes the observation "
+    "dimension, so a checkpoint cannot be rolled out under the other objective.",
+)
 parser.add_argument("--lr_policy", type=float, default=3e-4, help="Policy/value learning rate.")
 parser.add_argument("--lr_disc", type=float, default=1e-4, help="Discriminator learning rate.")
 parser.add_argument(
@@ -140,6 +150,9 @@ from humanoid_pathological_gait.algorithms.amp import (  # noqa: E402
 )
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic, RolloutBuffer  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
+from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
+    apply_predictive_objective,
+)
 
 
 class MetricWriter:
@@ -530,6 +543,10 @@ def main() -> int:
         )
     if args_cli.hip_roll_limit_deg is not None:
         env_cfg.hip_roll_limit_deg = args_cli.hip_roll_limit_deg
+    objective_applied = None
+    if args_cli.objective == "predictive":
+        objective_applied = apply_predictive_objective(env_cfg)
+        print(f"[train_amp] predictive objective: {objective_applied}", flush=True)
     if args_cli.seed is not None:
         env_cfg.seed = args_cli.seed
         torch.manual_seed(args_cli.seed)
@@ -574,6 +591,8 @@ def main() -> int:
         # The limit the articulation actually reports, not just the flag: the flag is usually
         # None and the interesting number is then the USD's own stop.
         "hip_roll_limit_deg_resolved": resolved_hip_roll_limit_deg(env),
+        # None under the imitation objective; the full rewiring otherwise.
+        "objective_applied": objective_applied,
     }
     (log_dir / "run_config.json").write_text(json.dumps(run_config, indent=2, default=str))
 

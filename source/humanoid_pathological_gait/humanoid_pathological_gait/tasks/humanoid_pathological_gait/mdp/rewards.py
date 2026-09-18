@@ -19,9 +19,8 @@ Two families live here:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import math
+from typing import TYPE_CHECKING
 
 import torch
 
@@ -77,9 +76,7 @@ def joint_pos_tracking(
     if rom_scale is None:
         width_sq = std**2
     else:
-        width_sq = torch.square(
-            torch.clamp(rom_scale * env.reference_gait.joint_rom(), min=min_std, max=max_std)
-        )
+        width_sq = torch.square(torch.clamp(rom_scale * env.reference_gait.joint_rom(), min=min_std, max=max_std))
     return torch.sum(torch.exp(-error_sq / width_sq) * weights, dim=-1) / torch.sum(weights)
 
 
@@ -570,3 +567,36 @@ def paretic_load_aversion(
 def spastic_torque_l2(env: H1PathologicalGaitEnv) -> torch.Tensor:
     """Squared TSRT reflex torque, as a diagnostic of how hard the policy fights spasticity."""
     return torch.sum(torch.square(env.applied_spastic_torque), dim=-1)
+
+
+def metabolic_cost(
+    env: H1PathologicalGaitEnv,
+    include_spastic: bool = True,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+) -> torch.Tensor:
+    """Absolute mechanical joint power, summed over joints, as a metabolic-cost proxy.
+
+    :math:`\\sum_j |\\tau_j \\omega_j|` in watts. Returned **positive**; give the term a negative
+    weight. Absolute rather than signed because negative joint work is not free in a human --
+    eccentric muscle action costs metabolic energy too, at roughly a third the rate of
+    concentric, and a signed sum would pay the policy for braking.
+
+    This is the cost side of the predictive formulation (forward plan H3): with the imitation
+    terms gone, the gait has to be *predicted* from an impairment plus a cost, and this is the
+    cost. It is deliberately a crude proxy -- real metabolic models (Umberger, Bhargava) need
+    muscle states this robot does not have -- so it should be read as mechanical economy, not
+    as metabolic rate in the physiological sense.
+
+    ``include_spastic`` adds the TSRT reflex torque, which is real work done against the paretic
+    limb and is exactly the asymmetry the hypothesis says should drive the policy off that limb.
+    Excluding it would hide the impairment from the only term that can respond to it.
+
+    Measured on existing archives for scale: 674 W (shared-width control), 531 W (per-joint),
+    328 W (widened hip-roll stop). At weight -1e-3 that is -0.67 to -0.33 of reward against an
+    alive bonus of +2.0.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    torque = asset.data.applied_torque.torch
+    if include_spastic:
+        torque = torque + env.applied_spastic_torque
+    return torch.sum(torch.abs(torque * asset.data.joint_vel.torch), dim=-1)

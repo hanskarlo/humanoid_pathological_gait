@@ -643,3 +643,122 @@ class H1PathologicalGaitEnvCfg_PLAY(H1PathologicalGaitEnvCfg):
         self.curriculum.spasticity = None
         self.curriculum.push_magnitude = None
         self.initial_spasticity_scale = 1.0
+
+
+# ---------------------------------------------------------------------------------------
+# Predictive objective (forward plan H3)
+# ---------------------------------------------------------------------------------------
+
+#: Reward terms that read the reference *trajectory*, and therefore make this an imitation
+#: task. Removed wholesale by :func:`apply_predictive_objective`.
+IMITATION_REWARD_TERMS: tuple[str, ...] = (
+    "joint_pos_tracking",
+    "joint_vel_tracking",
+    "swing_timing",
+    "root_progression",
+    "margin_of_stability",
+    "paretic_foot_clearance",
+)
+
+#: Observation terms that hand the policy the reference trajectory, or exist only to make a
+#: removed tracking term actable.
+IMITATION_OBSERVATION_TERMS: tuple[str, ...] = (
+    "reference_joint_pos",
+    "reference_joint_vel",
+    "root_progression_error",
+)
+
+
+def apply_predictive_objective(
+    cfg: H1PathologicalGaitEnvCfg,
+    velocity_std: float = 0.15,
+    height_std: float = 0.10,
+    metabolic_weight: float = -1.0e-3,
+) -> dict[str, object]:
+    """Turn the imitation task into a predictive one: keep the impairment, drop the trajectory.
+
+    Forward-plan H3. Hemiparetic gait is not a trajectory to be copied; it is what optimal
+    control produces *given* a deficit. Under that framing the reference stride stops being a
+    target and becomes validation data -- so every term that reads it has to go, including the
+    ones that look like task terms.
+
+    What is removed, and why each one counts as imitation:
+
+    * ``joint_pos_tracking`` / ``joint_vel_tracking`` -- the trajectory itself, weights 15.0/2.0.
+    * ``swing_timing`` (6.0) -- scores contact against the reference's own contact schedule, so
+      it dictates the temporal structure that single support, double support and fragmentation
+      are supposed to *measure*.
+    * ``root_progression`` (6.0) -- per-phase reference root position. Forward speed covers
+      progression without prescribing where the root should be at each instant.
+    * ``margin_of_stability`` (1.5) -- its targets are the reference's own measured margins per
+      support state. Rewarding them trains on the statistic MoS is meant to validate.
+    * ``paretic_foot_clearance`` (1.0) -- a reference-measured swing height on the paretic limb.
+      Foot drop is a hallmark that is supposed to emerge; paying for clearance installs it.
+
+    Also removed: the ``tracking_divergence`` termination, which ends an episode at 1.0 rad of
+    RMS reference error. Leaving it would keep the reference as a hard constraint after deleting
+    it as an objective -- the policy would still be doing imitation, just with a cliff instead of
+    a gradient.
+
+    What remains is a task specification plus a cost: walk forward at the cohort's speed, stay
+    alive and upright, do not fight your own joint limits, and spend as little mechanical energy
+    as possible -- against a paretic limb that is weak, spastic and asymmetrically randomised.
+
+    Two surviving terms are re-specified so that nothing reads the reference *per phase*:
+
+    * ``forward_velocity`` takes the reference's scalar mean speed as a constant target, with a
+      width that can actually see the difference between walking and standing. At the inherited
+      ``std=0.5`` a motionless policy scores **0.788** of this term -- the same defect as the
+      0.35 rad tracking width, and fatal here because this is now the term carrying the task.
+      At ``std=0.15`` standing scores **0.071**, half speed 0.516, and a policy 0.05 m/s fast
+      still scores 0.895, so there is gradient over the plausible range without a spike.
+    * ``base_height`` takes the reference's mean pelvis height as a constant target (the
+      per-phase version tracks a trajectory). At ``std=0.10`` a policy crouching 39 mm low
+      scores 0.859, 100 mm low 0.368, 200 mm low 0.018. It is a posture constraint against the
+      degenerate crouch, not a kinematic target: the fall termination alone does not fire until
+      0.65 m.
+
+    Added: :func:`~...mdp.rewards.metabolic_cost`, absolute joint power summed over joints.
+
+    Both constants are read from the reference archive rather than written here, so they cannot
+    drift away from the stride they describe.
+
+    Returns what it applied, for the run's provenance.
+    """
+    import numpy as np
+
+    stride = np.load(cfg.reference_stride_path, allow_pickle=True)
+    target_velocity = float(stride["reference_speed_ms"])
+    target_height = float(np.mean(stride["root_translation"][:, 2]))
+    if not (0.05 < target_velocity < 2.0) or not (0.5 < target_height < 1.5):
+        raise ValueError(
+            f"implausible targets from {cfg.reference_stride_path}: speed {target_velocity}, height {target_height}"
+        )
+
+    for term in IMITATION_REWARD_TERMS:
+        if getattr(cfg.rewards, term, None) is None:
+            raise ValueError(f"reward term {term!r} is already absent; the objective rewiring is out of date")
+        setattr(cfg.rewards, term, None)
+    for term in IMITATION_OBSERVATION_TERMS:
+        if getattr(cfg.observations.policy, term, None) is None:
+            raise ValueError(f"observation term {term!r} is already absent; the rewiring is out of date")
+        setattr(cfg.observations.policy, term, None)
+    cfg.terminations.tracking_divergence = None
+
+    cfg.rewards.forward_velocity.params["target_velocity"] = target_velocity
+    cfg.rewards.forward_velocity.params["std"] = velocity_std
+    cfg.rewards.base_height.params["target_height"] = target_height
+    cfg.rewards.base_height.params["std"] = height_std
+    cfg.rewards.metabolic_cost = RewTerm(func=mdp.metabolic_cost, weight=metabolic_weight, params={})
+
+    return {
+        "objective": "predictive",
+        "target_velocity_ms": target_velocity,
+        "target_height_m": target_height,
+        "velocity_std": velocity_std,
+        "height_std": height_std,
+        "metabolic_weight": metabolic_weight,
+        "removed_rewards": list(IMITATION_REWARD_TERMS),
+        "removed_observations": list(IMITATION_OBSERVATION_TERMS),
+        "removed_terminations": ["tracking_divergence"],
+    }
