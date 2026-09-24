@@ -1,0 +1,17 @@
+#usda 1.0
+(
+    defaultPrim = "smart_walker"
+    metersPerUnit = 1
+    upAxis = "Z"
+    doc = """Root layer for the Smart Walker (AgileX Ranger Mini v3 base, single handlebar, ATI Axia F/T joint).
+
+Reconstructed 2026-09-24. The converter's own root layer (walker_modified.usda) did not survive;
+its payloads did, copied unmodified into payloads/ from
+smart-walker-ws/src/walker_description/urdf/Collected_backup-walker-with-cam-for-hans/.../walker_modified_2/payloads/
+(URDF USD Converter v0.1.2, Isaac Sim 6.0 era). The stack below is the converter's layering:
+PhysX joint schemas over rigid-body physics over the kinematic tree. See README.md here."""
+    subLayers = [
+        @./payloads/Physics/physx.usda@,
+        @./payloads/base.usda@
+    ]
+)

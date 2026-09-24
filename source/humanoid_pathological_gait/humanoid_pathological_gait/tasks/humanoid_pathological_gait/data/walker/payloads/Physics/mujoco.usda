@@ -1,0 +1,1317 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.2"
+    }
+    defaultPrim = "smart_walker"
+    doc = """Generated from Composed Stage of root layer /tmp/tmp59mrv0mj/smart_walker.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_walker_modified__56zsepv/usdex_walker_modified/smart_walker.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_walker_modified__56zsepv/temp_walker_modified/walker_modified.usd
+
+
+Generated from Composed Stage of root layer /home/create-sw/smartwalker-ws/src/walker_description/urdf/walker_modified_2/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    subLayers = [
+        @./physics.usda@
+    ]
+    upAxis = "Z"
+)
+
+over "smart_walker"
+{
+    over "Physics"
+    {
+        def MjcActuator "fr_steering_joint_actuator"
+        {
+            uniform double mjc:forceRange:max = 5
+            uniform double mjc:forceRange:min = -5
+            custom rel mjc:target
+            prepend rel mjc:target = </smart_walker/Physics/fr_steering_joint>
+        }
+
+        def MjcActuator "fr_wheel_actuator"
+        {
+            uniform double mjc:forceRange:max = inf
+            uniform double mjc:forceRange:min = -inf
+            custom rel mjc:target
+            prepend rel mjc:target = </smart_walker/Physics/fr_wheel>
+        }
+
+        def MjcActuator "fl_steering_joint_actuator"
+        {
+            uniform double mjc:forceRange:max = 5
+            uniform double mjc:forceRange:min = -5
+            custom rel mjc:target
+            prepend rel mjc:target = </smart_walker/Physics/fl_steering_joint>
+        }
+
+        def MjcActuator "fl_wheel_actuator"
+        {
+            uniform double mjc:forceRange:max = inf
+            uniform double mjc:forceRange:min = -inf
+            custom rel mjc:target
+            prepend rel mjc:target = </smart_walker/Physics/fl_wheel>
+        }
+
+        def MjcActuator "rl_steering_joint_actuator"
+        {
+            uniform double mjc:forceRange:max = 5
+            uniform double mjc:forceRange:min = -5
+            custom rel mjc:target
+            prepend rel mjc:target = </smart_walker/Physics/rl_steering_joint>
+        }
+
+        def MjcActuator "rl_wheel_actuator"
+        {
+            uniform double mjc:forceRange:max = inf
+            uniform double mjc:forceRange:min = -inf
+            custom rel mjc:target
+            prepend rel mjc:target = </smart_walker/Physics/rl_wheel>
+        }
+
+        def MjcActuator "rr_steering_joint_actuator"
+        {
+            uniform double mjc:forceRange:max = 5
+            uniform double mjc:forceRange:min = -5
+            custom rel mjc:target
+            prepend rel mjc:target = </smart_walker/Physics/rr_steering_joint>
+        }
+
+        def MjcActuator "rr_wheel_actuator"
+        {
+            uniform double mjc:forceRange:max = inf
+            uniform double mjc:forceRange:min = -inf
+            custom rel mjc:target
+            prepend rel mjc:target = </smart_walker/Physics/rr_wheel>
+        }
+
+        over "fr_steering_joint" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "fr_wheel" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "fl_steering_joint" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "fl_wheel" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "rl_steering_joint" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "rl_wheel" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "rr_steering_joint" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "rr_wheel" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "base_to_rr_pillar"
+        {
+        }
+
+        over "base_to_rl_pillar"
+        {
+        }
+
+        over "handle_base_to_rl_pillar"
+        {
+        }
+
+        over "handle_base_to_ft_sensor"
+        {
+        }
+
+        over "ft_sensor_to_protruding_bar"
+        {
+        }
+
+        over "ft_sensor_joint"
+        {
+        }
+    }
+
+    over "Geometry"
+    {
+        over "base_link"
+        {
+            over "fr_steering_wheel_link"
+            {
+                over "fr_wheel_link"
+                {
+                    over "wheel_v3"
+                    {
+                        over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                        {
+                        }
+
+                        over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                        {
+                        }
+
+                        over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                        {
+                        }
+                    }
+                }
+
+                over "steering_wheel"
+                {
+                }
+            }
+
+            over "fl_steering_wheel_link"
+            {
+                over "fl_wheel_link"
+                {
+                    over "wheel_v3"
+                    {
+                        over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                        {
+                        }
+
+                        over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                        {
+                        }
+
+                        over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                        {
+                        }
+                    }
+                }
+
+                over "steering_wheel"
+                {
+                }
+            }
+
+            over "rl_steering_wheel_link"
+            {
+                over "rl_wheel_link"
+                {
+                    over "wheel_v3"
+                    {
+                        over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                        {
+                        }
+
+                        over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                        {
+                        }
+
+                        over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                        {
+                        }
+                    }
+                }
+
+                over "steering_wheel"
+                {
+                }
+            }
+
+            over "rr_steering_wheel_link"
+            {
+                over "rr_wheel_link"
+                {
+                    over "wheel_v3"
+                    {
+                        over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                        {
+                        }
+
+                        over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                        {
+                        }
+
+                        over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                        {
+                        }
+                    }
+                }
+
+                over "steering_wheel"
+                {
+                }
+            }
+
+            over "rr_handle_pillar"
+            {
+                over "box"
+                {
+                }
+            }
+
+            over "rl_handle_pillar"
+            {
+                over "handle_base"
+                {
+                    over "ft_sensor_link"
+                    {
+                        over "protruding_bar_link"
+                        {
+                            over "handle"
+                            {
+                                over "box"
+                                {
+                                }
+                            }
+
+                            over "box"
+                            {
+                            }
+                        }
+
+                        over "cylinder"
+                        {
+                        }
+                    }
+
+                    over "box"
+                    {
+                    }
+                }
+
+                over "box"
+                {
+                }
+            }
+
+            over "ranger_base"
+            {
+                over "tn__"
+                {
+                }
+
+                over "_1"
+                {
+                }
+
+                over "_2"
+                {
+                }
+
+                over "_3"
+                {
+                }
+
+                over "_4"
+                {
+                }
+
+                over "_5"
+                {
+                }
+
+                over "_6"
+                {
+                }
+
+                over "_7"
+                {
+                }
+
+                over "_8"
+                {
+                }
+
+                over "_9"
+                {
+                }
+
+                over "_10"
+                {
+                }
+
+                over "_11"
+                {
+                }
+
+                over "_12"
+                {
+                }
+
+                over "_13"
+                {
+                }
+
+                over "_14"
+                {
+                }
+
+                over "_15"
+                {
+                }
+
+                over "_16"
+                {
+                }
+
+                over "_17"
+                {
+                }
+
+                over "_18"
+                {
+                }
+
+                over "_19"
+                {
+                }
+
+                over "_20"
+                {
+                }
+
+                over "_21"
+                {
+                }
+
+                over "_22"
+                {
+                }
+
+                over "_23"
+                {
+                }
+
+                over "_24"
+                {
+                }
+
+                over "_25"
+                {
+                }
+
+                over "_26"
+                {
+                }
+
+                over "_27"
+                {
+                }
+
+                over "_28"
+                {
+                }
+
+                over "_29"
+                {
+                }
+
+                over "_30"
+                {
+                }
+
+                over "_31"
+                {
+                }
+
+                over "_32"
+                {
+                }
+
+                over "_33"
+                {
+                }
+
+                over "_34"
+                {
+                }
+
+                over "_35"
+                {
+                }
+
+                over "_36"
+                {
+                }
+
+                over "_37"
+                {
+                }
+
+                over "_38"
+                {
+                }
+
+                over "_39"
+                {
+                }
+
+                over "_40"
+                {
+                }
+
+                over "_41"
+                {
+                }
+
+                over "_42"
+                {
+                }
+
+                over "_43"
+                {
+                }
+
+                over "_44"
+                {
+                }
+
+                over "_45"
+                {
+                }
+
+                over "_46"
+                {
+                }
+
+                over "_47"
+                {
+                }
+
+                over "_48"
+                {
+                }
+
+                over "_49"
+                {
+                }
+
+                over "_50"
+                {
+                }
+
+                over "_51"
+                {
+                }
+
+                over "_52"
+                {
+                }
+
+                over "_53"
+                {
+                }
+
+                over "_54"
+                {
+                }
+
+                over "_55"
+                {
+                }
+
+                over "_56"
+                {
+                }
+
+                over "_57"
+                {
+                }
+
+                over "_58"
+                {
+                }
+
+                over "_59"
+                {
+                }
+
+                over "_60"
+                {
+                }
+
+                over "_61"
+                {
+                }
+
+                over "_62"
+                {
+                }
+
+                over "_63"
+                {
+                }
+
+                over "_64"
+                {
+                }
+
+                over "_65"
+                {
+                }
+
+                over "_66"
+                {
+                }
+
+                over "_67"
+                {
+                }
+
+                over "_68"
+                {
+                }
+
+                over "_69"
+                {
+                }
+
+                over "_70"
+                {
+                }
+
+                over "_71"
+                {
+                }
+
+                over "_72"
+                {
+                }
+
+                over "_73"
+                {
+                }
+
+                over "_74"
+                {
+                }
+
+                over "_75"
+                {
+                }
+
+                over "_76"
+                {
+                }
+
+                over "_77"
+                {
+                }
+
+                over "_78"
+                {
+                }
+
+                over "_79"
+                {
+                }
+
+                over "_80"
+                {
+                }
+
+                over "_81"
+                {
+                }
+
+                over "_82"
+                {
+                }
+
+                over "_83"
+                {
+                }
+
+                over "_84"
+                {
+                }
+
+                over "_85"
+                {
+                }
+
+                over "_86"
+                {
+                }
+
+                over "_87"
+                {
+                }
+
+                over "_88"
+                {
+                }
+
+                over "_89"
+                {
+                }
+
+                over "_90"
+                {
+                }
+
+                over "_91"
+                {
+                }
+
+                over "_92"
+                {
+                }
+
+                over "_93"
+                {
+                }
+
+                over "_94"
+                {
+                }
+
+                over "_95"
+                {
+                }
+
+                over "_96"
+                {
+                }
+
+                over "_97"
+                {
+                }
+
+                over "_98"
+                {
+                }
+
+                over "_99"
+                {
+                }
+
+                over "_100"
+                {
+                }
+
+                over "_101"
+                {
+                }
+
+                over "_102"
+                {
+                }
+
+                over "_103"
+                {
+                }
+
+                over "_104"
+                {
+                }
+
+                over "_105"
+                {
+                }
+
+                over "_106"
+                {
+                }
+
+                over "_107"
+                {
+                }
+
+                over "_108"
+                {
+                }
+
+                over "_109"
+                {
+                }
+
+                over "_110"
+                {
+                }
+
+                over "_111"
+                {
+                }
+
+                over "_112"
+                {
+                }
+
+                over "_113"
+                {
+                }
+
+                over "_114"
+                {
+                }
+
+                over "_115"
+                {
+                }
+
+                over "_116"
+                {
+                }
+
+                over "_117"
+                {
+                }
+
+                over "_118"
+                {
+                }
+
+                over "_119"
+                {
+                }
+
+                over "_120"
+                {
+                }
+
+                over "_121"
+                {
+                }
+
+                over "_122"
+                {
+                }
+
+                over "_123"
+                {
+                }
+
+                over "_124"
+                {
+                }
+
+                over "_125"
+                {
+                }
+
+                over "_126"
+                {
+                }
+
+                over "_127"
+                {
+                }
+
+                over "_128"
+                {
+                }
+
+                over "_129"
+                {
+                }
+
+                over "_130"
+                {
+                }
+
+                over "_131"
+                {
+                }
+
+                over "_132"
+                {
+                }
+
+                over "_133"
+                {
+                }
+
+                over "_134"
+                {
+                }
+
+                over "_135"
+                {
+                }
+
+                over "_136"
+                {
+                }
+
+                over "_137"
+                {
+                }
+
+                over "_138"
+                {
+                }
+
+                over "_139"
+                {
+                }
+
+                over "_140"
+                {
+                }
+
+                over "_141"
+                {
+                }
+
+                over "_142"
+                {
+                }
+
+                over "_143"
+                {
+                }
+
+                over "_144"
+                {
+                }
+
+                over "_145"
+                {
+                }
+
+                over "_146"
+                {
+                }
+
+                over "_147"
+                {
+                }
+
+                over "_148"
+                {
+                }
+
+                over "_149"
+                {
+                }
+
+                over "_150"
+                {
+                }
+
+                over "_151"
+                {
+                }
+
+                over "_152"
+                {
+                }
+
+                over "_153"
+                {
+                }
+
+                over "_154"
+                {
+                }
+
+                over "_155"
+                {
+                }
+
+                over "_156"
+                {
+                }
+
+                over "_157"
+                {
+                }
+
+                over "_158"
+                {
+                }
+
+                over "_159"
+                {
+                }
+
+                over "_160"
+                {
+                }
+
+                over "_161"
+                {
+                }
+
+                over "_162"
+                {
+                }
+
+                over "_163"
+                {
+                }
+
+                over "_164"
+                {
+                }
+
+                over "_165"
+                {
+                }
+
+                over "_166"
+                {
+                }
+
+                over "_167"
+                {
+                }
+
+                over "_168"
+                {
+                }
+
+                over "_169"
+                {
+                }
+
+                over "_170"
+                {
+                }
+
+                over "_171"
+                {
+                }
+
+                over "_172"
+                {
+                }
+
+                over "_173"
+                {
+                }
+
+                over "_174"
+                {
+                }
+
+                over "_175"
+                {
+                }
+
+                over "_176"
+                {
+                }
+
+                over "_177"
+                {
+                }
+
+                over "_178"
+                {
+                }
+
+                over "_179"
+                {
+                }
+
+                over "_180"
+                {
+                }
+
+                over "_181"
+                {
+                }
+
+                over "_182"
+                {
+                }
+
+                over "_183"
+                {
+                }
+
+                over "_184"
+                {
+                }
+
+                over "_185"
+                {
+                }
+
+                over "_186"
+                {
+                }
+
+                over "_187"
+                {
+                }
+
+                over "_188"
+                {
+                }
+
+                over "_189"
+                {
+                }
+
+                over "_190"
+                {
+                }
+
+                over "_191"
+                {
+                }
+
+                over "_192"
+                {
+                }
+
+                over "_193"
+                {
+                }
+
+                over "_194"
+                {
+                }
+
+                over "_195"
+                {
+                }
+
+                over "_196"
+                {
+                }
+
+                over "_197"
+                {
+                }
+
+                over "_198"
+                {
+                }
+
+                over "_199"
+                {
+                }
+
+                over "_200"
+                {
+                }
+
+                over "_201"
+                {
+                }
+
+                over "_202"
+                {
+                }
+
+                over "_203"
+                {
+                }
+
+                over "_204"
+                {
+                }
+
+                over "_205"
+                {
+                }
+
+                over "_206"
+                {
+                }
+
+                over "_207"
+                {
+                }
+
+                over "_208"
+                {
+                }
+
+                over "_209"
+                {
+                }
+
+                over "_210"
+                {
+                }
+
+                over "_211"
+                {
+                }
+
+                over "_212"
+                {
+                }
+
+                over "_213"
+                {
+                }
+
+                over "_214"
+                {
+                }
+
+                over "_215"
+                {
+                }
+
+                over "_216"
+                {
+                }
+
+                over "_217"
+                {
+                }
+
+                over "_218"
+                {
+                }
+
+                over "_219"
+                {
+                }
+
+                over "_220"
+                {
+                }
+
+                over "_221"
+                {
+                }
+
+                over "_222"
+                {
+                }
+
+                over "_223"
+                {
+                }
+
+                over "_224"
+                {
+                }
+
+                over "_225"
+                {
+                }
+
+                over "_226"
+                {
+                }
+
+                over "_227"
+                {
+                }
+
+                over "_228"
+                {
+                }
+
+                over "_229"
+                {
+                }
+
+                over "_230"
+                {
+                }
+
+                over "_231"
+                {
+                }
+
+                over "_232"
+                {
+                }
+
+                over "_233"
+                {
+                }
+
+                over "_234"
+                {
+                }
+
+                over "_235"
+                {
+                }
+
+                over "_236"
+                {
+                }
+
+                over "_237"
+                {
+                }
+
+                over "_238"
+                {
+                }
+
+                over "_239"
+                {
+                }
+
+                over "_240"
+                {
+                }
+
+                over "_241"
+                {
+                }
+
+                over "_242"
+                {
+                }
+
+                over "_243"
+                {
+                }
+            }
+        }
+    }
+
+    over "Materials"
+    {
+        over "material_1"
+        {
+        }
+
+        over "gray"
+        {
+        }
+
+        over "black"
+        {
+        }
+
+        over "white"
+        {
+        }
+    }
+
+    over "VisualMaterials"
+    {
+    }
+}
+

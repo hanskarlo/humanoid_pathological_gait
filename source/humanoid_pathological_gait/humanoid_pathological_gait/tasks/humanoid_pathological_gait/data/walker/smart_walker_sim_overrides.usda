@@ -1,0 +1,5086 @@
+#usda 1.0
+
+over "smart_walker"
+{
+    over "Geometry"
+    {
+        over "base_link"
+        {
+            over "fr_steering_wheel_link"
+            {
+                over "fr_wheel_link"
+                {
+                    over "wheel_v3"
+                    {
+                        over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            bool physics:collisionEnabled = 0
+
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material__1_040_kMUhnnCnqn5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+
+                        over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material016_qGMgtWAYmv5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+
+                        over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material015_qGMgtWAYmv5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+                    }
+
+                    def Sphere "sim_collider" (
+                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                    )
+                    {
+                        rel material:binding:physics = </smart_walker/SimMaterials/frictionless> (
+                            bindMaterialAs = "weakerThanDescendants"
+                        )
+                        uniform token purpose = "guide"
+                        double radius = 0.1
+                    }
+                }
+
+                over "steering_wheel" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__Material__1_048_kMUhnnCnqn5" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "steering_wheel"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+            }
+
+            over "fl_steering_wheel_link"
+            {
+                over "fl_wheel_link"
+                {
+                    over "wheel_v3"
+                    {
+                        over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material__1_040_kMUhnnCnqn5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+
+                        over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material016_qGMgtWAYmv5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+
+                        over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material015_qGMgtWAYmv5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+                    }
+
+                    def Sphere "sim_collider" (
+                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                    )
+                    {
+                        rel material:binding:physics = </smart_walker/SimMaterials/frictionless> (
+                            bindMaterialAs = "weakerThanDescendants"
+                        )
+                        uniform token purpose = "guide"
+                        double radius = 0.1
+                    }
+                }
+
+                over "steering_wheel" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__Material__1_048_kMUhnnCnqn5" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "steering_wheel"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+            }
+
+            over "rl_steering_wheel_link"
+            {
+                over "rl_wheel_link"
+                {
+                    over "wheel_v3"
+                    {
+                        over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material__1_040_kMUhnnCnqn5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+
+                        over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material016_qGMgtWAYmv5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+
+                        over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material015_qGMgtWAYmv5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+                    }
+
+                    def Sphere "sim_collider" (
+                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                    )
+                    {
+                        rel material:binding:physics = </smart_walker/SimMaterials/frictionless> (
+                            bindMaterialAs = "weakerThanDescendants"
+                        )
+                        uniform token purpose = "guide"
+                        double radius = 0.1
+                    }
+                }
+
+                over "steering_wheel" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__Material__1_048_kMUhnnCnqn5" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "steering_wheel"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+            }
+
+            over "rr_steering_wheel_link"
+            {
+                over "rr_wheel_link"
+                {
+                    over "wheel_v3"
+                    {
+                        over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material__1_040_kMUhnnCnqn5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+
+                        over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material016_qGMgtWAYmv5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+
+                        over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
+                            instanceable = false
+                        )
+                        {
+                            over "VisualMaterials"
+                            {
+                                over "tn__Material015_qGMgtWAYmv5" (
+                                    instanceable = false
+                                )
+                                {
+                                }
+                            }
+
+                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                            {
+                                bool physics:collisionEnabled = 0
+                            }
+                        }
+                    }
+
+                    def Sphere "sim_collider" (
+                        prepend apiSchemas = ["PhysicsCollisionAPI", "MaterialBindingAPI"]
+                    )
+                    {
+                        rel material:binding:physics = </smart_walker/SimMaterials/frictionless> (
+                            bindMaterialAs = "weakerThanDescendants"
+                        )
+                        uniform token purpose = "guide"
+                        double radius = 0.1
+                    }
+                }
+
+                over "steering_wheel" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__Material__1_048_kMUhnnCnqn5" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "steering_wheel"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+            }
+
+            over "ranger_base"
+            {
+                over "tn__" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a977debf7f5248209d82009793cdc56d_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "tn__"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_1" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a8bf87ea80c140bc8c7289cd735d7dd7_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_1"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_2" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__d6cb3db4382749e9899786e502eac577_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_2"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_3" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__cd54e640b77843788797ec215edf2951_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_3"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_4" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__af40055ebee94a69aa37d2330dd643e4_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_4"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_5" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__aa6d22596c5b4ecb9c680f0e8665c7f7_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_5"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_6" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a296f01d66c141eb9f48e4bcb70c400f_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_6"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_7" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__ef347aef64f940499e3aeadbf448d602_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_7"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_8" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_8"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_9" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a85990c5e33a4ca7855140c35e51d51b_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_9"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_10" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_10"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_11" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__ecded9e489cb4a9f80605004576a3573_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_11"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_12" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__bd69fa9cc98f487d8c34c588497b360d_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_12"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_13" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_13"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_14" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__afb2a9371db14c5a9b1e010c948fad13_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_14"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_15" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_15"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_16" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_16"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_17" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_17"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_18" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_18"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_19" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_19"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_20" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_20"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_21" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__f1b1b466724245e38b415ca7e92ab7ac_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_21"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_22" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_22"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_23" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_23"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_24" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0e9842d78dc423f94c5e99ff18a7853_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_24"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_25" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_25"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_26" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a8e8c5bcdfcd4a16a49284033ad1ac5b_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_26"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_27" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_27"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_28" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_28"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_29" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_29"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_30" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_30"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_31" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_31"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_32" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_32"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_33" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_33"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_34" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a67b90d3563b473591c4d8dc65bb0950_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_34"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_35" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_35"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_36" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_36"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_37" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__e3bb23c9c5de4c52809f54a50c77ea04_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_37"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_38" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a1ba66f3a90645648852b2a9a4cbed72_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_38"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_39" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_39"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_40" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_40"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_41" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_41"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_42" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__e67b6cb436224749b5b0cef1f4badade_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_42"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_43" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_43"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_44" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_44"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_45" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_45"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_46" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_46"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_47" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_47"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_48" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_48"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_49" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_49"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_50" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a55cbef0f6104462a62f43c1f2207914_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_50"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_51" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_51"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_52" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_52"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_53" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_53"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_54" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_54"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_55" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_55"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_56" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a48faa4ebe5d4c8f92cf9fc53e5806a6_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_56"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_57" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_57"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_58" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a41a952e4a77407e993aa881b58eee87_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_58"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_59" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_59"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_60" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_60"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_61" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_61"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_62" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_62"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_63" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_63"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_64" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_64"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_65" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a368d65518344c51bd4c5ea49029f82c_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_65"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_66" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_66"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_67" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_67"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_68" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_68"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_69" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_69"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_70" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_70"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_71" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_71"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_72" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__fed85beb89e04e75beedc860f5d00d3d_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_72"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_73" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_73"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_74" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_74"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_75" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_75"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_76" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_76"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_77" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_77"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_78" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_78"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_79" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__add614efddb1426a919f798f9f889317_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_79"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_80" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_80"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_81" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_81"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_82" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_82"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_83" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_83"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_84" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a8f113af857648d483342f41d4584002_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_84"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_85" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_85"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_86" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a2d5f35e6044482398b5a43e36759338_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_86"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_87" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__ef3d416d40bc473290adf642cfb6dffc_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_87"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_88" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_88"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_89" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__ddb987ac4e984c14b42688fef9994a97_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_89"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_90" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__c767b11c7a20451aa9b55047c574e599_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_90"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_91" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__b304e5c0dc954eea8d6d0f58f27b276c_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_91"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_92" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_92"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_93" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_93"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_94" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_94"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_95" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_95"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_96" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_96"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_97" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_97"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_98" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_98"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_99" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_99"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_100" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_100"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_101" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_101"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_102" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_102"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_103" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__afb93c17fd88416c8f3c2590b5932a2d_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_103"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_104" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_104"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_105" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__d6dd9c74fde34ebc809907d12c03b5be_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_105"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_106" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_106"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_107" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__d5a0fc29fe0247f38beb0b3d55edd9ca_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_107"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_108" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_108"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_109" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_109"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_110" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_110"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_111" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_111"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_112" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_112"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_113" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_113"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_114" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_114"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_115" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_115"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_116" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_116"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_117" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_117"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_118" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_118"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_119" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_119"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_120" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_120"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_121" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_121"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_122" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_122"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_123" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_123"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_124" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_124"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_125" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_125"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_126" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_126"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_127" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_127"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_128" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_128"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_129" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_129"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_130" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_130"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_131" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_131"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_132" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a5a33b6984d8413d9b051644c505f074_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_132"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_133" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_133"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_134" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_134"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_135" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_135"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_136" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_136"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_137" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_137"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_138" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_138"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_139" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_139"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_140" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_140"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_141" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_141"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_142" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_142"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_143" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_143"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_144" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_144"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_145" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_145"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_146" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_146"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_147" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_147"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_148" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_148"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_149" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__feb8a6e522d94fdba6bc4df806d841e4_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_149"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_150" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_150"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_151" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_151"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_152" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_152"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_153" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_153"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_154" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_154"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_155" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_155"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_156" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_156"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_157" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a92964494ced429eb4d06823aa9550ea_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_157"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_158" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_158"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_159" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_159"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_160" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_160"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_161" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_161"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_162" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__abc28ac0142144a799b18e8f5b98298c_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_162"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_163" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_163"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_164" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__af0a8c560d37454fb56df9e14c04e493_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_164"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_165" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__af0e140404694139b7ae8be5b6738493_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_165"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_166" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_166"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_167" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_167"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_168" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_168"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_169" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_169"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_170" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_170"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_171" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_171"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_172" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_172"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_173" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_173"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_174" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_174"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_175" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_175"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_176" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a14fa2a5d166450388229a819661bd09_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_176"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_177" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_177"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_178" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_178"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_179" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_179"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_180" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_180"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_181" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_181"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_182" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a538979d22cd454f8aaefb52755e34d1_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_182"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_183" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_183"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_184" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_184"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_185" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a5d5834e2b4a4f01985cd9c8affe2f57_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_185"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_186" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_186"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_187" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_187"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_188" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_188"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_189" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a674202df37b438cbb11b101d800d2cf_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_189"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_190" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_190"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_191" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_191"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_192" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a5d93ea027f74d23a4fa193cedb40760_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_192"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_193" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_193"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_194" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_194"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_195" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__aa5bc7b89e3d4c48a838f61e39c97c44_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_195"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_196" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_196"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_197" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_197"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_198" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_198"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_199" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_199"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_200" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_200"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_201" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_201"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_202" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a491438039634a01b5bbe666b4290edf_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_202"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_203" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_203"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_204" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_204"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_205" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_205"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_206" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_206"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_207" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_207"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_208" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_208"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_209" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_209"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_210" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_210"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_211" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_211"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_212" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a19ae655d23947ea8af867f7c3b1a737_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_212"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_213" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_213"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_214" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_214"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_215" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_215"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_216" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_216"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_217" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_217"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_218" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_218"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_219" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_219"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_220" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_220"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_221" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_221"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_222" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_222"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_223" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_223"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_224" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_224"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_225" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a2c0eb2d05184e8e99a1e9e3f4140f3e_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_225"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_226" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_226"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_227" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_227"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_228" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a8a81d9eefe54571869037c63afa00bf_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_228"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_229" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_229"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_230" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_230"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_231" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_231"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_232" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_232"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_233" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a000664c33f54f708b92c181a2cd15c0_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_233"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_234" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_234"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_235" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_235"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_236" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__f4bef243cbe941c1b5b956a079bc14b1_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_236"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_237" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_237"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_238" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__dd2be60b85f94724acb9bc31d42fc9cf_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_238"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_239" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a0000000000000000000000000000000_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_239"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_240" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a672466c7a924a62863cda37bc3e0701_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_240"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_241" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__ad897a40974e47b293c47469146207af_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_241"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_242" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__d64e426c74174162ab8e6da77c5b0d45_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_242"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                over "_243" (
+                    instanceable = false
+                )
+                {
+                    over "VisualMaterials"
+                    {
+                        over "tn__a20b1cbbb8624c12bf429fc6fcb361ed_al0DIN" (
+                            instanceable = false
+                        )
+                        {
+                        }
+                    }
+
+                    over "_243"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+            }
+
+            def Cube "sim_chassis_collider" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                uniform token purpose = "guide"
+                double size = 1
+                float3 xformOp:scale = (0.7505, 0.5, 0.23998944)
+                double3 xformOp:translate = (-0.01926891596282132, 0, -0.10399471898394008)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+            }
+        }
+    }
+
+    over "Materials"
+    {
+        over "material_1" (
+            instanceable = false
+        )
+        {
+        }
+
+        over "gray" (
+            instanceable = false
+        )
+        {
+        }
+
+        over "black" (
+            instanceable = false
+        )
+        {
+        }
+
+        over "white" (
+            instanceable = false
+        )
+        {
+        }
+    }
+
+    def "SimMaterials"
+    {
+        def Material "frictionless" (
+            prepend apiSchemas = ["PhysicsMaterialAPI"]
+        )
+        {
+            float physics:dynamicFriction = 0
+            float physics:restitution = 0
+            float physics:staticFriction = 0
+        }
+    }
+}
+

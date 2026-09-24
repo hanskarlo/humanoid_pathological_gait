@@ -1,0 +1,230 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.2"
+    }
+    defaultPrim = "smart_walker"
+    doc = """Generated from Composed Stage of root layer /tmp/tmp59mrv0mj/smart_walker.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_walker_modified__56zsepv/usdex_walker_modified/smart_walker.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_walker_modified__56zsepv/temp_walker_modified/walker_modified.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+over "smart_walker" (
+    prepend apiSchemas = ["IsaacRobotAPI"]
+)
+{
+    prepend rel isaac:physics:robotJoints = [
+        </smart_walker/Physics/fr_steering_joint>,
+        </smart_walker/Physics/fl_steering_joint>,
+        </smart_walker/Physics/rl_steering_joint>,
+        </smart_walker/Physics/rr_steering_joint>,
+        </smart_walker/Physics/base_to_rr_pillar>,
+        </smart_walker/Physics/base_to_rl_pillar>,
+        </smart_walker/Physics/fr_wheel>,
+        </smart_walker/Physics/fl_wheel>,
+        </smart_walker/Physics/rl_wheel>,
+        </smart_walker/Physics/rr_wheel>,
+        </smart_walker/Physics/handle_base_to_rl_pillar>,
+        </smart_walker/Physics/handle_base_to_ft_sensor>,
+        </smart_walker/Physics/ft_sensor_to_protruding_bar>,
+        </smart_walker/Physics/ft_sensor_joint>,
+    ]
+    prepend rel isaac:physics:robotLinks = [
+        </smart_walker/Geometry/base_link>,
+        </smart_walker/Geometry/base_link/fr_steering_wheel_link>,
+        </smart_walker/Geometry/base_link/fr_steering_wheel_link/fr_wheel_link>,
+        </smart_walker/Geometry/base_link/fl_steering_wheel_link>,
+        </smart_walker/Geometry/base_link/fl_steering_wheel_link/fl_wheel_link>,
+        </smart_walker/Geometry/base_link/rl_steering_wheel_link>,
+        </smart_walker/Geometry/base_link/rl_steering_wheel_link/rl_wheel_link>,
+        </smart_walker/Geometry/base_link/rr_steering_wheel_link>,
+        </smart_walker/Geometry/base_link/rr_steering_wheel_link/rr_wheel_link>,
+        </smart_walker/Geometry/base_link/rr_handle_pillar>,
+        </smart_walker/Geometry/base_link/rl_handle_pillar>,
+        </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base>,
+        </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base/ft_sensor_link>,
+        </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base/ft_sensor_link/protruding_bar_link>,
+        </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base/ft_sensor_link/protruding_bar_link/handle>,
+    ]
+    token isaac:robotType = "Wheeled"
+
+    over "Geometry"
+    {
+        over "base_link" (
+            prepend apiSchemas = ["IsaacLinkAPI"]
+        )
+        {
+            over "fr_steering_wheel_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "fr_wheel_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                }
+            }
+
+            over "fl_steering_wheel_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "fl_wheel_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                }
+            }
+
+            over "rl_steering_wheel_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "rl_wheel_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                }
+            }
+
+            over "rr_steering_wheel_link" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "rr_wheel_link" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                }
+            }
+
+            over "rr_handle_pillar" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+            }
+
+            over "rl_handle_pillar" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "handle_base" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "ft_sensor_link" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "protruding_bar_link" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "handle" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    over "Physics"
+    {
+        over "fr_steering_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "fr_wheel" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "fl_steering_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "fl_wheel" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "rl_steering_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "rl_wheel" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "rr_steering_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "rr_wheel" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "base_to_rr_pillar" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "base_to_rl_pillar" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "handle_base_to_rl_pillar" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "handle_base_to_ft_sensor" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "ft_sensor_to_protruding_bar" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "ft_sensor_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+    }
+}
+

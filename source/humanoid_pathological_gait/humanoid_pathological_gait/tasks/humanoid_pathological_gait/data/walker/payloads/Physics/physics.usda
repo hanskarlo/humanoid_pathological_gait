@@ -1,0 +1,388 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.2"
+    }
+    defaultPrim = "smart_walker"
+    doc = """Generated from Composed Stage of root layer /tmp/tmp59mrv0mj/smart_walker.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_walker_modified__56zsepv/usdex_walker_modified/smart_walker.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_walker_modified__56zsepv/temp_walker_modified/walker_modified.usd
+
+
+Generated from Composed Stage of root layer /home/create-sw/smartwalker-ws/src/walker_description/urdf/walker_modified_2/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+over "smart_walker"
+{
+    over "Geometry"
+    {
+        over "base_link" (
+            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsArticulationRootAPI", "NewtonArticulationRootAPI", "PhysicsMassAPI"]
+        )
+        {
+            bool newton:selfCollisionEnabled = 1
+            point3f physics:centerOfMass = (-0.024269827, -0.0030308024, 0.054426745)
+            float3 physics:diagonalInertia = (0.1354, 0.2417, 0.3085)
+            float physics:mass = 10
+            quatf physics:principalAxes = (1, 0, 0, 0)
+
+            over "fr_steering_wheel_link" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                point3f physics:centerOfMass = (0.000018493, 0.0000012713, 0.043679)
+                float3 physics:diagonalInertia = (0.0063624787, 0.0063630217, 0.010465)
+                float physics:mass = 1
+                quatf physics:principalAxes = (0.9949951, 7.35743e-7, 0.000049939874, -0.09992342)
+
+                over "fr_wheel_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (0, 0, 0)
+                    float3 physics:diagonalInertia = (0.02047, 0.02047, 0.0324)
+                    float physics:mass = 8
+                    quatf physics:principalAxes = (1, 0, 0, 0)
+                }
+            }
+
+            over "fl_steering_wheel_link" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                point3f physics:centerOfMass = (-0.0017956, -9.6304e-8, 0.043642)
+                float3 physics:diagonalInertia = (0.0063625523, 0.006363001, 0.010464947)
+                float physics:mass = 1
+                quatf physics:principalAxes = (0.9995011, 0.0004919887, 0.020573417, -0.023957722)
+
+                over "fl_wheel_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (0, 0, 0)
+                    float3 physics:diagonalInertia = (0.02047, 0.02047, 0.0324)
+                    float physics:mass = 8
+                    quatf physics:principalAxes = (1, 0, 0, 0)
+                }
+            }
+
+            over "rl_steering_wheel_link" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                point3f physics:centerOfMass = (0, 0, 0)
+                float3 physics:diagonalInertia = (0.01, 0.01, 0.01)
+                float physics:mass = 1
+                quatf physics:principalAxes = (1, 0, 0, 0)
+
+                over "rl_wheel_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (0, 0, 0)
+                    float3 physics:diagonalInertia = (0.02047, 0.02047, 0.0324)
+                    float physics:mass = 8
+                    quatf physics:principalAxes = (1, 0, 0, 0)
+                }
+            }
+
+            over "rr_steering_wheel_link" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                point3f physics:centerOfMass = (0, 0, 0)
+                float3 physics:diagonalInertia = (0.01, 0.01, 0.01)
+                float physics:mass = 1
+                quatf physics:principalAxes = (1, 0, 0, 0)
+
+                over "rr_wheel_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (0, 0, 0)
+                    float3 physics:diagonalInertia = (0.02047, 0.02047, 0.0324)
+                    float physics:mass = 8
+                    quatf physics:principalAxes = (1, 0, 0, 0)
+                }
+            }
+
+            over "rr_handle_pillar" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (1, 1, 1)
+                float physics:mass = 5
+                quatf physics:principalAxes = (1, 0, 0, 0)
+            }
+
+            over "rl_handle_pillar" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            )
+            {
+                float3 physics:diagonalInertia = (1, 1, 1)
+                float physics:mass = 5
+                quatf physics:principalAxes = (1, 0, 0, 0)
+
+                over "handle_base" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    float3 physics:diagonalInertia = (1, 1, 1)
+                    float physics:mass = 5
+                    quatf physics:principalAxes = (1, 0, 0, 0)
+
+                    over "ft_sensor_link" (
+                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        float3 physics:diagonalInertia = (0.0001, 0.0001, 0.0001)
+                        float physics:mass = 0.2
+                        quatf physics:principalAxes = (1, 0, 0, 0)
+
+                        over "protruding_bar_link" (
+                            prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                        )
+                        {
+                            float3 physics:diagonalInertia = (0.0001, 0.0001, 0.0001)
+                            float physics:mass = 0.1
+                            quatf physics:principalAxes = (1, 0, 0, 0)
+
+                            over "handle" (
+                                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                            )
+                            {
+                                float3 physics:diagonalInertia = (0.0001, 0.03, 0.03)
+                                float physics:mass = 1
+                                quatf physics:principalAxes = (6.123234e-17, 0.70710677, 0.70710677, 0)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    over "Physics"
+    {
+        def PhysicsRevoluteJoint "fr_steering_joint" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:maxForce = 5
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/fr_steering_wheel_link>
+            point3f physics:localPos0 = (0.25, -0.19, -0.1)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0, -1, 0, 0)
+            quatf physics:localRot1 = (0, -1, 0, 0)
+            float physics:lowerLimit = -120.32114
+            float physics:upperLimit = 120.32114
+            custom float urdf:limit:effort = 5
+            custom float urdf:limit:velocity = 6.28
+        }
+
+        def PhysicsRevoluteJoint "fr_wheel" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link/fr_steering_wheel_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/fr_steering_wheel_link/fr_wheel_link>
+            point3f physics:localPos0 = (0, 0, -0.12)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsRevoluteJoint "fl_steering_joint" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:maxForce = 5
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/fl_steering_wheel_link>
+            point3f physics:localPos0 = (0.25, 0.19, -0.1)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0, -1, 0, 0)
+            quatf physics:localRot1 = (0, -1, 0, 0)
+            float physics:lowerLimit = -120.32114
+            float physics:upperLimit = 120.32114
+            custom float urdf:limit:effort = 5
+            custom float urdf:limit:velocity = 6.28
+        }
+
+        def PhysicsRevoluteJoint "fl_wheel" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link/fl_steering_wheel_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/fl_steering_wheel_link/fl_wheel_link>
+            point3f physics:localPos0 = (0, 0, -0.12)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsRevoluteJoint "rl_steering_joint" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:maxForce = 5
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rl_steering_wheel_link>
+            point3f physics:localPos0 = (-0.25, 0.19, -0.1)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0, -1, 0, 0)
+            quatf physics:localRot1 = (0, -1, 0, 0)
+            float physics:lowerLimit = -120.32114
+            float physics:upperLimit = 120.32114
+            custom float urdf:limit:effort = 5
+            custom float urdf:limit:velocity = 6.28
+        }
+
+        def PhysicsRevoluteJoint "rl_wheel" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link/rl_steering_wheel_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rl_steering_wheel_link/rl_wheel_link>
+            point3f physics:localPos0 = (0, 0, -0.12)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsRevoluteJoint "rr_steering_joint" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            float drive:angular:physics:maxForce = 5
+            uniform token physics:axis = "Z"
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rr_steering_wheel_link>
+            point3f physics:localPos0 = (-0.25, -0.19, -0.1)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0, -1, 0, 0)
+            quatf physics:localRot1 = (0, -1, 0, 0)
+            float physics:lowerLimit = -120.32114
+            float physics:upperLimit = 120.32114
+            custom float urdf:limit:effort = 5
+            custom float urdf:limit:velocity = 6.28
+        }
+
+        def PhysicsRevoluteJoint "rr_wheel" (
+            prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            uniform token physics:axis = "Y"
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link/rr_steering_wheel_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rr_steering_wheel_link/rr_wheel_link>
+            point3f physics:localPos0 = (0, 0, -0.12)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "base_to_rr_pillar"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rr_handle_pillar>
+            point3f physics:localPos0 = (-0.25, -0.115, 0.391)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "base_to_rl_pillar"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rl_handle_pillar>
+            point3f physics:localPos0 = (-0.25, 0.115, 0.391)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "handle_base_to_rl_pillar"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link/rl_handle_pillar>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base>
+            point3f physics:localPos0 = (-0.025, -0.115, 0.2215)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "handle_base_to_ft_sensor"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base/ft_sensor_link>
+            point3f physics:localPos0 = (-0.0375, 0, 0)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "ft_sensor_to_protruding_bar"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base/ft_sensor_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base/ft_sensor_link/protruding_bar_link>
+            point3f physics:localPos0 = (-0.0475, 0, 0)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "ft_sensor_joint"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base/ft_sensor_link/protruding_bar_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </smart_walker/Geometry/base_link/rl_handle_pillar/handle_base/ft_sensor_link/protruding_bar_link/handle>
+            point3f physics:localPos0 = (-0.035, 0, 0)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+    }
+}
+
