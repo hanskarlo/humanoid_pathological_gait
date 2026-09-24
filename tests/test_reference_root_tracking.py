@@ -61,18 +61,49 @@ def test_an_anchor_laid_mid_stride_starts_with_no_error(manager):
     assert torch.allclose(error, torch.zeros_like(error), atol=1e-6)
 
 
+def _reference_travel(manager):
+    index = torch.round(manager.gait_phase * (manager.num_samples - 1)).long()
+    anchor = torch.round(manager.cycle_anchor_phase * (manager.num_samples - 1)).long()
+    return manager.ref_root_disp[index] - manager.ref_root_disp[anchor]
+
+
 def test_matching_the_reference_leaves_no_error(manager):
+    """Walking the stride -- mirrored for a right-paretic environment -- scores zero error."""
     zeros, yaw = torch.zeros(4, 2), torch.zeros(4)
+    manager.paretic_side[:] = torch.tensor([-1.0, 1.0, -1.0, 1.0])
     manager.gait_phase[:] = torch.tensor([0.10, 0.30, 0.50, 0.70])
     manager.set_cycle_anchor(zeros, yaw)
 
     manager.gait_phase[:] = torch.tensor([0.35, 0.55, 0.75, 0.95])
-    index = torch.round(manager.gait_phase * (manager.num_samples - 1)).long()
-    anchor = torch.round(manager.cycle_anchor_phase * (manager.num_samples - 1)).long()
-    travelled = manager.ref_root_disp[index] - manager.ref_root_disp[anchor]
+    travelled = _reference_travel(manager)
+    right = manager.paretic_side > 0
+    travelled[right, 1] = -travelled[right, 1]
 
     error = manager.root_progression_error(travelled, yaw)
     assert torch.allclose(error, torch.zeros_like(error), atol=1e-5)
+
+
+def test_a_right_paretic_environment_is_asked_for_the_mirrored_sway(manager):
+    """The regression: every right-paretic environment was scored against the unmirrored sway.
+
+    Following the *unmirrored* path in a right-paretic environment must now read as a
+    cross-track error of twice the reference's lateral travel, and along-track must be
+    untouched -- the mirror is a reflection across the direction of travel.
+    """
+    zeros, yaw = torch.zeros(4, 2), torch.zeros(4)
+    manager.paretic_side[:] = torch.ones(4)
+    manager.gait_phase[:] = torch.zeros(4)
+    manager.set_cycle_anchor(zeros, yaw)
+    # Phases where the reference has swayed well off its line of travel.
+    lateral = manager.ref_root_disp[:, 1]
+    peak = float(lateral.abs().argmax()) / (manager.num_samples - 1)
+    manager.gait_phase[:] = torch.full((4,), peak)
+    unmirrored = _reference_travel(manager)
+
+    error = manager.root_progression_error(unmirrored, yaw)
+    assert torch.allclose(error[:, 0], torch.zeros(4), atol=1e-5)
+    assert torch.allclose(error[:, 1], 2.0 * unmirrored[:, 1], atol=1e-5)
+    assert float(unmirrored[:, 1].abs().min()) > 0.05, "the stride should sway more than 5 cm at its peak"
 
 
 def test_standing_still_falls_behind(manager):

@@ -56,6 +56,7 @@ class H1PathologicalGaitEnv(ManagerBasedRLEnv):
             num_envs=self.num_envs,
             device=self.device,
             stride_duration_s=self.cfg.reference_stride_duration_s,
+            mirror_sway_target=self.cfg.mirror_sway_target,
         )
         self.tsrt_model = TSRTSpasticModel(self.joint_layout, self.cfg.tsrt_params, self.device)
 

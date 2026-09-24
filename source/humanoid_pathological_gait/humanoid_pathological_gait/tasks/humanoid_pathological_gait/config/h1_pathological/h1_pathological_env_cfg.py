@@ -574,6 +574,16 @@ class H1PathologicalGaitEnvCfg(ManagerBasedRLEnvCfg):
     tsrt_params: TSRTParams = TSRTParams()
     """Biomechanical parameters of the TSRT spasticity model."""
 
+    mirror_sway_target: bool = True
+    """Mirror the reference root's cross-track (sway) target for right-paretic environments.
+
+    ``True`` is correct and the default. ``False`` reproduces every run trained before
+    2026-09-24, when the target was handed to both sides unmirrored, so half of every run was
+    paid -- and shown in its ``root_progression_error`` observation -- to sway toward the side a
+    left-paretic patient sways to. Kept only so archived checkpoints can be re-evaluated on
+    the observation they were trained with, and so a determinism gate can reproduce them.
+    """
+
     hip_roll_limit_deg: float | None = None
     """Symmetric hip-roll position limit, in degrees, replacing the H1's own +-24.6 deg stop.
 

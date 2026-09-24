@@ -325,6 +325,16 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
             if str(value) == "predictive":
                 applied["objective_detail"] = apply_predictive_objective(env_cfg)
                 print("[evaluate] restored training objective: predictive (reference terms removed)")
+
+    # The sway target is in the policy's observation (root_progression_error), so a checkpoint
+    # has to be rolled out with the target it was trained on. Every run_config written before
+    # the 2026-09-24 fix lacks the key, and every one of those runs trained on the unmirrored
+    # target -- so absence means legacy, not default.
+    mirror = bool(stored.get("mirror_sway_target_resolved", False))
+    env_cfg.mirror_sway_target = mirror
+    applied["mirror_sway_target"] = mirror
+    if not mirror:
+        print("[evaluate] restored pre-fix sway target: right-paretic cross-track target unmirrored")
     return applied
 
 

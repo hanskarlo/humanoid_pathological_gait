@@ -58,6 +58,13 @@ parser.add_argument(
     "run from one checkout without editing the config between them.",
 )
 parser.add_argument(
+    "--legacy_unmirrored_sway",
+    action="store_true",
+    help="Reproduce the pre-2026-09-24 environment, which handed right-paretic environments the "
+    "unmirrored cross-track root target. Only for determinism gates against archived runs; never "
+    "for a new result. Recorded in run_config.json as mirror_sway_target_resolved.",
+)
+parser.add_argument(
     "--hip_roll_limit_deg",
     type=float,
     default=None,
@@ -543,6 +550,8 @@ def main() -> int:
         )
     if args_cli.hip_roll_limit_deg is not None:
         env_cfg.hip_roll_limit_deg = args_cli.hip_roll_limit_deg
+    if args_cli.legacy_unmirrored_sway:
+        env_cfg.mirror_sway_target = False
     objective_applied = None
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)
@@ -593,6 +602,8 @@ def main() -> int:
         "hip_roll_limit_deg_resolved": resolved_hip_roll_limit_deg(env),
         # None under the imitation objective; the full rewiring otherwise.
         "objective_applied": objective_applied,
+        # Always written, so its absence identifies a run trained before the sway-target fix.
+        "mirror_sway_target_resolved": bool(env.cfg.mirror_sway_target),
     }
     (log_dir / "run_config.json").write_text(json.dumps(run_config, indent=2, default=str))
 

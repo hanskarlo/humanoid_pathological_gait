@@ -46,8 +46,12 @@ class ReferenceGaitManager:
         num_envs: int,
         device: torch.device | str,
         stride_duration_s: float = 1.2,
+        mirror_sway_target: bool = True,
     ):
         self.layout = layout
+        #: Mirror the cross-track root target for right-paretic environments. ``False`` only
+        #: reproduces runs trained before the fix; see :meth:`root_progression_error`.
+        self.mirror_sway_target = mirror_sway_target
         self.num_envs = num_envs
         self.device = torch.device(device)
 
@@ -366,6 +370,15 @@ class ReferenceGaitManager:
         # anchor's own displacement has to come off, or an environment that started
         # mid-stride is charged for the part of the stride it never ran.
         target = displacement_at(self.gait_phase) - displacement_at(self.cycle_anchor_phase)
+        # A right-paretic environment walks the sagittal mirror of the stride, as ``sample``
+        # hands it the mirrored joints, so its cross-track target is the reflection. Without
+        # this, half of every run was paid to sway toward the side a *left*-paretic patient
+        # sways to -- up to 7.3 cm, 14.6 cm of disagreement at worst phase -- and observed
+        # that wrong-side target too (research_log/2026-09-24-the-root-sway-target-was-never-mirrored.md).
+        if self.mirror_sway_target:
+            is_right_paretic = self.paretic_side > 0
+            lateral = torch.where(is_right_paretic, -target[:, 1], target[:, 1])
+            target = torch.stack((target[:, 0], lateral), dim=-1)
 
         delta = position_xy - self.cycle_anchor_pos
         cos, sin = torch.cos(-self.cycle_anchor_yaw), torch.sin(-self.cycle_anchor_yaw)
