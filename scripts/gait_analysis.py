@@ -275,3 +275,86 @@ def cycle_normalize(values: np.ndarray, phase: np.ndarray, valid: np.ndarray) ->
             mean[index] = selected.mean(axis=0)
             std[index] = selected.std(axis=0)
     return mean, std
+
+
+def swing_ankle_metrics(
+    dorsiflexion_deg: np.ndarray,
+    contact: np.ndarray,
+    valid: np.ndarray,
+    min_swing_steps: int = 5,
+    reference_dorsiflexion_deg: np.ndarray | None = None,
+) -> dict[str, float]:
+    """Ankle dorsiflexion in swing and at initial contact, per limb: the foot-drop measures.
+
+    Foot drop is a swing-phase deficit -- the paretic ankle fails to dorsiflex to clear the
+    ground, and lands flat or plantarflexed instead of on the heel -- so it has to be read on
+    swing samples and at initial contact, not averaged over the cycle, where stance dominates.
+
+    Only **complete** swings count: a run of unloaded, valid steps at least
+    ``min_swing_steps`` long, bounded by a valid loaded step on both sides. The length floor
+    is what keeps contact chatter out: this project's policies make 3-5 stance periods per
+    paretic cycle, and the sub-0.1 s gaps between them are not swings. The two-sided bound
+    drops swings clipped by the recording window or by a termination, as
+    :func:`contact_gait_metrics` does for stance.
+
+    Args:
+        dorsiflexion_deg: ``(steps, num_envs, 2)``, **clinical sign** (dorsiflexion
+            positive), ordered ``(paretic, sound)``. For the H1 that is minus the ankle pitch
+            (``docs/clinical_data_guide.md``).
+        contact: ``(steps, num_envs, 2)`` boolean, same order.
+        valid: ``(steps, num_envs)`` boolean.
+        min_swing_steps: Shortest unloaded run that counts as a swing.
+        reference_dorsiflexion_deg: Optional reference trajectory in the same layout. When
+            given, the paretic swing residual ``mean(policy - reference)`` over the paretic
+            swing samples is returned; negative means less dorsiflexed than the patient.
+
+    Returns:
+        ``swing_df_{paretic,sound}_deg`` (mean over complete-swing samples),
+        ``ic_df_{paretic,sound}_deg`` (at the loaded step ending each complete swing),
+        ``delta_swing_df_deg`` and ``delta_ic_df_deg`` (paretic minus sound; negative is the
+        hemiparetic direction), ``swing_count_{paretic,sound}``, and optionally
+        ``paretic_swing_residual_deg``. NaN where a limb has no complete swing.
+    """
+    steps, num_envs, _ = contact.shape
+    swing_mask = np.zeros(contact.shape, dtype=bool)
+    ic_values: list[list[float]] = [[], []]
+    counts = [0, 0]
+    for foot in range(2):
+        for env_index in range(num_envs):
+            loaded = contact[:, env_index, foot]
+            ok = valid[:, env_index]
+            unloaded = ok & ~loaded
+            t = 0
+            while t < steps:
+                if not unloaded[t]:
+                    t += 1
+                    continue
+                start = t
+                while t < steps and unloaded[t]:
+                    t += 1
+                end = t  # first step after the run
+                bounded = start > 0 and end < steps and ok[start - 1] and loaded[start - 1] and ok[end] and loaded[end]
+                if bounded and end - start >= min_swing_steps:
+                    swing_mask[start:end, env_index, foot] = True
+                    ic_values[foot].append(float(dorsiflexion_deg[end, env_index, foot]))
+                    counts[foot] += 1
+
+    def mean_or_nan(values: np.ndarray) -> float:
+        return float(np.mean(values)) if values.size else float("nan")
+
+    swing_df = [mean_or_nan(dorsiflexion_deg[..., foot][swing_mask[..., foot]]) for foot in range(2)]
+    ic_df = [mean_or_nan(np.asarray(ic_values[foot])) for foot in range(2)]
+    result = {
+        "swing_df_paretic_deg": swing_df[0],
+        "swing_df_sound_deg": swing_df[1],
+        "ic_df_paretic_deg": ic_df[0],
+        "ic_df_sound_deg": ic_df[1],
+        "delta_swing_df_deg": swing_df[0] - swing_df[1],
+        "delta_ic_df_deg": ic_df[0] - ic_df[1],
+        "swing_count_paretic": float(counts[0]),
+        "swing_count_sound": float(counts[1]),
+    }
+    if reference_dorsiflexion_deg is not None:
+        residual = (dorsiflexion_deg[..., 0] - reference_dorsiflexion_deg[..., 0])[swing_mask[..., 0]]
+        result["paretic_swing_residual_deg"] = mean_or_nan(residual)
+    return result
