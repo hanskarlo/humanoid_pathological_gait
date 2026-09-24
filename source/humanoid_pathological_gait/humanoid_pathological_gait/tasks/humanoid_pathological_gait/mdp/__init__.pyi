@@ -13,11 +13,15 @@ __all__ = [
     "reference_joint_pos_error",
     "paretic_side",
     "gait_phase",
+    "root_progression_error",
     # rewards
     "joint_pos_tracking",
     "joint_vel_tracking",
     "track_forward_velocity",
     "track_base_height",
+    "track_root_progression",
+    "swing_timing",
+    "H1_FOOT_WIDTH_M",
     "compute_xcom_and_mos",
     "margin_of_stability",
     "paretic_foot_clearance",
@@ -56,8 +60,10 @@ from .observations import (
     reference_joint_pos,
     reference_joint_pos_error,
     reference_joint_vel,
+    root_progression_error,
 )
 from .rewards import (
+    H1_FOOT_WIDTH_M,
     compute_xcom_and_mos,
     joint_pos_tracking,
     joint_vel_tracking,
@@ -66,7 +72,9 @@ from .rewards import (
     paretic_foot_clearance,
     paretic_load_aversion,
     spastic_torque_l2,
+    swing_timing,
     track_base_height,
     track_forward_velocity,
+    track_root_progression,
 )
 from .terminations import reference_tracking_divergence
