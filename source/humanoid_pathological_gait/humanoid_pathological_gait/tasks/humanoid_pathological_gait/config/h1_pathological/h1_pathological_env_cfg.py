@@ -772,3 +772,47 @@ def apply_predictive_objective(
         "removed_observations": list(IMITATION_OBSERVATION_TERMS),
         "removed_terminations": ["tracking_divergence"],
     }
+
+
+def apply_reference_stride(cfg: H1PathologicalGaitEnvCfg, path: str) -> dict[str, object]:
+    """Point the task at a different patient's reference stride (forward plan H4).
+
+    Everything the reward, reset and observations derive from the reference follows the archive
+    automatically -- per-joint widths, contact schedule, root progression, reset state, MoS
+    targets, and the predictive objective's constants. One target does not:
+    ``paretic_foot_clearance.target_height`` is a literal 0.131 m, subject 0's mean paretic
+    ankle-link height over its scheduled swing. A new archive has to carry its own value as
+    ``paretic_swing_ankle_height`` (written by ``scripts/add_reference_mos.py --stride``), and
+    this refuses an archive without it rather than silently training a new patient against
+    subject 0's clearance.
+
+    Call it **before** :func:`apply_predictive_objective`, which reads its constants from whichever
+    archive ``cfg.reference_stride_path`` names at the time. Returns what was applied, including
+    the archive's sha256, for the run's own provenance: a path alone does not say which file.
+    """
+    import hashlib
+    from pathlib import Path
+
+    import numpy as np
+
+    resolved = Path(path).resolve()
+    if not resolved.is_file():
+        raise FileNotFoundError(f"reference stride {resolved} does not exist")
+    with np.load(resolved, allow_pickle=True) as archive:
+        if "paretic_swing_ankle_height" not in archive.files:
+            raise ValueError(
+                f"{resolved.name} has no paretic_swing_ankle_height; run scripts/add_reference_mos.py --stride "
+                f"{resolved} first, or the clearance term keeps subject 0's 0.131 m target"
+            )
+        clearance = float(archive["paretic_swing_ankle_height"])
+        applied = {
+            "path": str(resolved),
+            "sha256": hashlib.sha256(resolved.read_bytes()).hexdigest(),
+            "subject_idx": int(archive["subject_idx"]) if "subject_idx" in archive.files else None,
+            "stride_idx": int(archive["stride_idx"]) if "stride_idx" in archive.files else None,
+            "impaired_side": str(archive["impaired_side"]) if "impaired_side" in archive.files else None,
+            "clearance_target_m": clearance,
+        }
+    cfg.reference_stride_path = str(resolved)
+    cfg.rewards.paretic_foot_clearance.params["target_height"] = clearance
+    return applied

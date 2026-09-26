@@ -87,11 +87,6 @@ class ReferenceGaitManager:
             device=self.device,
         )
 
-        self.ref_joint_rom = self.ref_q.max(dim=0).values - self.ref_q.min(dim=0).values
-        self.ref_joint_rom_mirrored = (
-            self.ref_q_mirrored.max(dim=0).values - self.ref_q_mirrored.min(dim=0).values
-        )
-
         # ``sample`` hands back the unmirrored stride to left-paretic environments, so the
         # tables are swapped once here if the stride's impaired leg is the right one. Doing
         # it at load time keeps the per-step path free of the branch.
@@ -100,6 +95,15 @@ class ReferenceGaitManager:
             self.ref_v, self.ref_v_mirrored = self.ref_v_mirrored, self.ref_v
             if contact is not None:
                 contact = contact[:, ::-1].copy()
+
+        # After the swap, so the canonical table's left slots are the paretic limb whichever
+        # side the archive's patient was impaired on. Computed before it, a right-impaired
+        # archive handed its sound limb's ranges -- and so its per-joint tracking widths -- to
+        # the paretic limb.
+        self.ref_joint_rom = self.ref_q.max(dim=0).values - self.ref_q.min(dim=0).values
+        self.ref_joint_rom_mirrored = (
+            self.ref_q_mirrored.max(dim=0).values - self.ref_q_mirrored.min(dim=0).values
+        )
 
         #: Mean forward speed of the stride itself, m/s. The reward tracks this rather than
         #: a fixed constant: the previous 0.5 m/s target was twice what the reference walks
@@ -189,6 +193,21 @@ class ReferenceGaitManager:
                 root_translation[:, 2], dtype=torch.float32, device=self.device
             )
             self._build_root_state_tables(root_translation, root_quaternion, angle)
+            if self.impaired_side == "right":
+                # The joint tables were swapped into the paretic-left canonical frame above; the
+                # root has to follow, or pelvic roll, lateral velocity and the sway target belong
+                # to the opposite side from the joints in every environment.
+                self.ref_root_disp = self.ref_root_disp * torch.tensor([1.0, -1.0], device=self.device)
+                if self.ref_root_quat is not None:
+                    self.ref_root_quat, self.ref_root_quat_mirrored = self.ref_root_quat_mirrored, self.ref_root_quat
+                    self.ref_root_lin_vel, self.ref_root_lin_vel_mirrored = (
+                        self.ref_root_lin_vel_mirrored,
+                        self.ref_root_lin_vel,
+                    )
+                    self.ref_root_ang_vel, self.ref_root_ang_vel_mirrored = (
+                        self.ref_root_ang_vel_mirrored,
+                        self.ref_root_ang_vel,
+                    )
 
         #: Per-environment anchor: root position and heading at the last phase wrap. The
         #: reference displacement is measured from the start of *its* stride, so the robot's

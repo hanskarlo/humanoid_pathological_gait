@@ -106,6 +106,13 @@ parser.add_argument(
     "checkpoint load rather than producing a number.",
 )
 parser.add_argument(
+    "--reference_stride",
+    type=str,
+    default=None,
+    help="Override the reference stride instead of taking it from run_config.json. Only for "
+    "deliberately evaluating a policy against a patient it was not trained on.",
+)
+parser.add_argument(
     "--ignore_run_config",
     action="store_true",
     help="Proceed when the checkpoint has no run_config.json instead of refusing. The resulting "
@@ -150,6 +157,7 @@ from isaaclab.utils.math import quat_apply_inverse, yaw_quat  # noqa: E402
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
+    apply_reference_stride,
 )
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.h1_joints import (  # noqa: E402
     CLINICAL_JOINT_ORDER,
@@ -264,7 +272,9 @@ def assign_phase_offsets(env, num_envs: int) -> None:
 #: trajectory. ``synergy_rank`` is: it projects the paretic leg's residual onto a rank-k
 #: subspace *inside the action term*, leaving the action dimension unchanged -- so omitting it
 #: does not raise, it silently hands the policy authority it never had while training.
-DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank", "hip_roll_limit_deg", "objective")
+DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank", "hip_roll_limit_deg", "reference_stride", "objective")
+# Order matters: reference_stride before objective, because apply_predictive_objective reads its
+# constants from whichever archive is set when it runs.
 
 
 def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
@@ -318,6 +328,17 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
         elif flag == "hip_roll_limit_deg":
             env_cfg.hip_roll_limit_deg = float(value)
             print(f"[evaluate] restored training morphology: hip_roll_limit_deg={float(value)}")
+        elif flag == "reference_stride":
+            detail = apply_reference_stride(env_cfg, str(value))
+            recorded = (stored.get("reference_stride_applied") or {}).get("sha256")
+            if recorded is not None and recorded != detail["sha256"] and override is None:
+                raise SystemExit(
+                    f"[evaluate] reference stride {detail['path']} has changed since training "
+                    f"(sha256 {detail['sha256'][:12]} vs recorded {recorded[:12]}). Refusing to evaluate the "
+                    "policy against a different patient than it was trained on."
+                )
+            applied["reference_stride_detail"] = detail
+            print(f"[evaluate] restored reference stride: subject {detail['subject_idx']}, {detail['path']}")
         elif flag == "objective":
             # Changes the observation dimension as well as the rewards, so a mismatch here
             # surfaces as a state-dict shape error rather than a quiet wrong number -- but it

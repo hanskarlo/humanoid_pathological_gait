@@ -58,6 +58,14 @@ parser.add_argument(
     "run from one checkout without editing the config between them.",
 )
 parser.add_argument(
+    "--reference_stride",
+    type=str,
+    default=None,
+    help="A different patient's reference stride archive (forward plan H4). Omit for the staged "
+    "subject-0 stride. The archive must carry paretic_swing_ankle_height (add_reference_mos.py "
+    "--stride). Recorded with its sha256 in run_config.json; evaluation restores it.",
+)
+parser.add_argument(
     "--legacy_unmirrored_sway",
     action="store_true",
     help="Reproduce the pre-2026-09-24 environment, which handed right-paretic environments the "
@@ -159,6 +167,7 @@ from humanoid_pathological_gait.algorithms.ppo import ActorCritic, RolloutBuffer
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
+    apply_reference_stride,
 )
 
 
@@ -552,6 +561,11 @@ def main() -> int:
         env_cfg.hip_roll_limit_deg = args_cli.hip_roll_limit_deg
     if args_cli.legacy_unmirrored_sway:
         env_cfg.mirror_sway_target = False
+    reference_applied = None
+    if args_cli.reference_stride is not None:
+        # Before the objective: apply_predictive_objective reads its constants from this archive.
+        reference_applied = apply_reference_stride(env_cfg, args_cli.reference_stride)
+        print(f"[train_amp] reference stride: {reference_applied}", flush=True)
     objective_applied = None
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)
@@ -604,6 +618,8 @@ def main() -> int:
         "objective_applied": objective_applied,
         # Always written, so its absence identifies a run trained before the sway-target fix.
         "mirror_sway_target_resolved": bool(env.cfg.mirror_sway_target),
+        # None for the staged subject-0 stride; path, sha256, subject and clearance otherwise.
+        "reference_stride_applied": reference_applied,
     }
     (log_dir / "run_config.json").write_text(json.dumps(run_config, indent=2, default=str))
 
