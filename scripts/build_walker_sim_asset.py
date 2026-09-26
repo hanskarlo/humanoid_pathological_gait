@@ -82,8 +82,17 @@ def main() -> int:
 
     chassis = world_bounds(stage, f"{BASE}/ranger_base")
     base_origin = world_translation(stage, BASE)
-    chassis_center_local = (chassis.GetMin() + chassis.GetMax()) / 2.0 - base_origin
-    chassis_size = chassis.GetMax() - chassis.GetMin()
+    # The chassis meshes' bounding box includes the wheel wells, so a box that size swallows the
+    # wheel spheres: its bottom sits at the wheel centres. The overlap made the self-collision
+    # solver push the walker along at 0.27 m/s on frictionless ground (2026-09-26). The box starts
+    # 5 mm above the tops of the wheel spheres instead.
+    wheel_top = world_translation(stage, f"{BASE}/fr_steering_wheel_link/fr_wheel_link")[2] + WHEEL_RADIUS_M
+    lo = Gf.Vec3d(chassis.GetMin()[0], chassis.GetMin()[1], max(chassis.GetMin()[2], wheel_top + 0.005))
+    hi = chassis.GetMax()
+    if hi[2] - lo[2] < 0.05:
+        raise SystemExit(f"chassis box above the wheels would be {hi[2] - lo[2]:.3f} m tall; check the geometry")
+    chassis_center_local = (lo + hi) / 2.0 - base_origin
+    chassis_size = hi - lo
 
     # Author the overrides into their own layer, sublayered strongest over the faithful asset.
     # Rebuilt from scratch on every run, so the output never carries a previous run's edits.
@@ -109,7 +118,13 @@ def main() -> int:
         # Anything that is not a primitive shape: the meshes, and one Xform the converter also
         # tagged with CollisionAPI. Only the converter's own handle/pillar/sensor primitives survive.
         if prim.HasAPI(UsdPhysics.CollisionAPI) and not any(prim.IsA(kind) for kind in primitives):
+            # Disabled AND the schemas removed. Disabling alone is not enough: the front-right
+            # wheel's collision-tagged Xform still became a triangle-mesh collider in PhysX (logged
+            # as a convex-hull fallback), ignoring collisionEnabled = false. One wheel with friction
+            # on frictionless ground pushed the walker sideways at ~0.09 m/s (2026-09-26).
             UsdPhysics.CollisionAPI(prim).CreateCollisionEnabledAttr(False)
+            prim.RemoveAPI(UsdPhysics.MeshCollisionAPI)
+            prim.RemoveAPI(UsdPhysics.CollisionAPI)
             disabled += 1
 
     # 2. A frictionless physics material for the wheel spheres.
@@ -119,6 +134,16 @@ def main() -> int:
     physics_material.CreateStaticFrictionAttr(0.0)
     physics_material.CreateDynamicFrictionAttr(0.0)
     physics_material.CreateRestitutionAttr(0.0)
+    # Frictionless only if this side wins PhysX's combine rule. When two materials request
+    # different modes the higher-priority one is used (average < min < multiply < max). Under the
+    # default "average" a friction-1.0 ground gives 0.5 and the walker rolls away on its free
+    # wheels -- measured, 0.056 m/s after settling (check_walker_asset.py, 2026-09-26). "multiply"
+    # gives 0 against every ground except one that insists on "max". Authored as raw attributes
+    # because plain pxr does not ship PhysxSchema; the names are Isaac Lab's (test_spawn_materials).
+    material_prim = material.GetPrim()
+    material_prim.AddAppliedSchema("PhysxMaterialAPI")
+    material_prim.CreateAttribute("physxMaterial:frictionCombineMode", Sdf.ValueTypeNames.Token).Set("multiply")
+    material_prim.CreateAttribute("physxMaterial:restitutionCombineMode", Sdf.ValueTypeNames.Token).Set("multiply")
 
     # 3. Wheel spheres at the wheel-link origins (the wheel centres).
     for wheel in WHEELS:
@@ -130,7 +155,12 @@ def main() -> int:
             material, UsdShade.Tokens.weakerThanDescendants, "physics"
         )
 
-    # 4. One chassis box, in base_link's frame (base_link carries no rotation in this asset).
+    # 4. No self-collision. The walker's links are one rigid chassis on the real device, and
+    #    self-contact between them is exactly what the oversized box above turned into motion.
+    root_prim = stage.GetPrimAtPath(BASE)
+    root_prim.CreateAttribute("physxArticulation:enabledSelfCollisions", Sdf.ValueTypeNames.Bool).Set(False)
+
+    # 5. One chassis box, in base_link's frame (base_link carries no rotation in this asset).
     box = UsdGeom.Cube.Define(stage, f"{BASE}/sim_chassis_collider")
     box.CreateSizeAttr(1.0)
     box.CreatePurposeAttr(UsdGeom.Tokens.guide)

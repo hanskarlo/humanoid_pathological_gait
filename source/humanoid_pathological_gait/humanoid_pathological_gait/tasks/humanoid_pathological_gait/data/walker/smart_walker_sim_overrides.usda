@@ -6,6 +6,8 @@ over "smart_walker"
     {
         over "base_link"
         {
+            bool physxArticulation:enabledSelfCollisions = 0
+
             over "fr_steering_wheel_link"
             {
                 over "fr_wheel_link"
@@ -13,6 +15,7 @@ over "smart_walker"
                     over "wheel_v3"
                     {
                         over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                            delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
                             instanceable = false
                         )
                         {
@@ -27,7 +30,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -46,7 +51,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -65,7 +72,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -97,7 +106,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "steering_wheel"
+                    over "steering_wheel" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -123,7 +134,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -142,7 +155,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -161,7 +176,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -193,7 +210,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "steering_wheel"
+                    over "steering_wheel" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -219,7 +238,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -238,7 +259,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -257,7 +280,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -289,7 +314,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "steering_wheel"
+                    over "steering_wheel" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -315,7 +342,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1"
+                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -334,7 +363,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1"
+                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -353,7 +384,9 @@ over "smart_walker"
                                 }
                             }
 
-                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1"
+                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
+                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                            )
                             {
                                 bool physics:collisionEnabled = 0
                             }
@@ -385,7 +418,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "steering_wheel"
+                    over "steering_wheel" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -407,7 +442,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "tn__"
+                    over "tn__" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -426,7 +463,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_1"
+                    over "_1" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -445,7 +484,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_2"
+                    over "_2" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -464,7 +505,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_3"
+                    over "_3" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -483,7 +526,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_4"
+                    over "_4" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -502,7 +547,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_5"
+                    over "_5" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -521,7 +568,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_6"
+                    over "_6" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -540,7 +589,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_7"
+                    over "_7" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -559,7 +610,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_8"
+                    over "_8" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -578,7 +631,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_9"
+                    over "_9" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -597,7 +652,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_10"
+                    over "_10" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -616,7 +673,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_11"
+                    over "_11" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -635,7 +694,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_12"
+                    over "_12" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -654,7 +715,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_13"
+                    over "_13" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -673,7 +736,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_14"
+                    over "_14" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -692,7 +757,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_15"
+                    over "_15" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -711,7 +778,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_16"
+                    over "_16" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -730,7 +799,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_17"
+                    over "_17" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -749,7 +820,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_18"
+                    over "_18" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -768,7 +841,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_19"
+                    over "_19" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -787,7 +862,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_20"
+                    over "_20" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -806,7 +883,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_21"
+                    over "_21" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -825,7 +904,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_22"
+                    over "_22" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -844,7 +925,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_23"
+                    over "_23" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -863,7 +946,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_24"
+                    over "_24" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -882,7 +967,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_25"
+                    over "_25" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -901,7 +988,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_26"
+                    over "_26" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -920,7 +1009,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_27"
+                    over "_27" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -939,7 +1030,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_28"
+                    over "_28" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -958,7 +1051,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_29"
+                    over "_29" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -977,7 +1072,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_30"
+                    over "_30" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -996,7 +1093,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_31"
+                    over "_31" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1015,7 +1114,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_32"
+                    over "_32" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1034,7 +1135,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_33"
+                    over "_33" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1053,7 +1156,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_34"
+                    over "_34" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1072,7 +1177,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_35"
+                    over "_35" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1091,7 +1198,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_36"
+                    over "_36" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1110,7 +1219,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_37"
+                    over "_37" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1129,7 +1240,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_38"
+                    over "_38" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1148,7 +1261,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_39"
+                    over "_39" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1167,7 +1282,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_40"
+                    over "_40" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1186,7 +1303,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_41"
+                    over "_41" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1205,7 +1324,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_42"
+                    over "_42" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1224,7 +1345,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_43"
+                    over "_43" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1243,7 +1366,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_44"
+                    over "_44" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1262,7 +1387,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_45"
+                    over "_45" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1281,7 +1408,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_46"
+                    over "_46" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1300,7 +1429,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_47"
+                    over "_47" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1319,7 +1450,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_48"
+                    over "_48" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1338,7 +1471,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_49"
+                    over "_49" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1357,7 +1492,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_50"
+                    over "_50" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1376,7 +1513,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_51"
+                    over "_51" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1395,7 +1534,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_52"
+                    over "_52" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1414,7 +1555,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_53"
+                    over "_53" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1433,7 +1576,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_54"
+                    over "_54" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1452,7 +1597,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_55"
+                    over "_55" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1471,7 +1618,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_56"
+                    over "_56" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1490,7 +1639,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_57"
+                    over "_57" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1509,7 +1660,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_58"
+                    over "_58" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1528,7 +1681,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_59"
+                    over "_59" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1547,7 +1702,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_60"
+                    over "_60" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1566,7 +1723,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_61"
+                    over "_61" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1585,7 +1744,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_62"
+                    over "_62" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1604,7 +1765,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_63"
+                    over "_63" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1623,7 +1786,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_64"
+                    over "_64" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1642,7 +1807,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_65"
+                    over "_65" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1661,7 +1828,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_66"
+                    over "_66" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1680,7 +1849,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_67"
+                    over "_67" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1699,7 +1870,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_68"
+                    over "_68" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1718,7 +1891,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_69"
+                    over "_69" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1737,7 +1912,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_70"
+                    over "_70" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1756,7 +1933,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_71"
+                    over "_71" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1775,7 +1954,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_72"
+                    over "_72" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1794,7 +1975,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_73"
+                    over "_73" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1813,7 +1996,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_74"
+                    over "_74" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1832,7 +2017,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_75"
+                    over "_75" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1851,7 +2038,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_76"
+                    over "_76" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1870,7 +2059,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_77"
+                    over "_77" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1889,7 +2080,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_78"
+                    over "_78" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1908,7 +2101,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_79"
+                    over "_79" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1927,7 +2122,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_80"
+                    over "_80" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1946,7 +2143,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_81"
+                    over "_81" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1965,7 +2164,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_82"
+                    over "_82" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -1984,7 +2185,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_83"
+                    over "_83" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2003,7 +2206,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_84"
+                    over "_84" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2022,7 +2227,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_85"
+                    over "_85" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2041,7 +2248,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_86"
+                    over "_86" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2060,7 +2269,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_87"
+                    over "_87" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2079,7 +2290,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_88"
+                    over "_88" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2098,7 +2311,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_89"
+                    over "_89" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2117,7 +2332,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_90"
+                    over "_90" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2136,7 +2353,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_91"
+                    over "_91" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2155,7 +2374,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_92"
+                    over "_92" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2174,7 +2395,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_93"
+                    over "_93" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2193,7 +2416,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_94"
+                    over "_94" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2212,7 +2437,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_95"
+                    over "_95" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2231,7 +2458,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_96"
+                    over "_96" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2250,7 +2479,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_97"
+                    over "_97" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2269,7 +2500,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_98"
+                    over "_98" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2288,7 +2521,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_99"
+                    over "_99" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2307,7 +2542,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_100"
+                    over "_100" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2326,7 +2563,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_101"
+                    over "_101" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2345,7 +2584,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_102"
+                    over "_102" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2364,7 +2605,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_103"
+                    over "_103" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2383,7 +2626,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_104"
+                    over "_104" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2402,7 +2647,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_105"
+                    over "_105" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2421,7 +2668,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_106"
+                    over "_106" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2440,7 +2689,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_107"
+                    over "_107" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2459,7 +2710,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_108"
+                    over "_108" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2478,7 +2731,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_109"
+                    over "_109" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2497,7 +2752,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_110"
+                    over "_110" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2516,7 +2773,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_111"
+                    over "_111" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2535,7 +2794,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_112"
+                    over "_112" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2554,7 +2815,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_113"
+                    over "_113" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2573,7 +2836,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_114"
+                    over "_114" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2592,7 +2857,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_115"
+                    over "_115" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2611,7 +2878,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_116"
+                    over "_116" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2630,7 +2899,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_117"
+                    over "_117" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2649,7 +2920,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_118"
+                    over "_118" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2668,7 +2941,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_119"
+                    over "_119" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2687,7 +2962,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_120"
+                    over "_120" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2706,7 +2983,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_121"
+                    over "_121" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2725,7 +3004,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_122"
+                    over "_122" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2744,7 +3025,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_123"
+                    over "_123" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2763,7 +3046,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_124"
+                    over "_124" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2782,7 +3067,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_125"
+                    over "_125" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2801,7 +3088,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_126"
+                    over "_126" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2820,7 +3109,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_127"
+                    over "_127" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2839,7 +3130,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_128"
+                    over "_128" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2858,7 +3151,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_129"
+                    over "_129" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2877,7 +3172,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_130"
+                    over "_130" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2896,7 +3193,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_131"
+                    over "_131" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2915,7 +3214,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_132"
+                    over "_132" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2934,7 +3235,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_133"
+                    over "_133" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2953,7 +3256,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_134"
+                    over "_134" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2972,7 +3277,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_135"
+                    over "_135" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -2991,7 +3298,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_136"
+                    over "_136" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3010,7 +3319,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_137"
+                    over "_137" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3029,7 +3340,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_138"
+                    over "_138" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3048,7 +3361,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_139"
+                    over "_139" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3067,7 +3382,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_140"
+                    over "_140" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3086,7 +3403,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_141"
+                    over "_141" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3105,7 +3424,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_142"
+                    over "_142" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3124,7 +3445,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_143"
+                    over "_143" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3143,7 +3466,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_144"
+                    over "_144" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3162,7 +3487,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_145"
+                    over "_145" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3181,7 +3508,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_146"
+                    over "_146" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3200,7 +3529,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_147"
+                    over "_147" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3219,7 +3550,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_148"
+                    over "_148" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3238,7 +3571,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_149"
+                    over "_149" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3257,7 +3592,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_150"
+                    over "_150" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3276,7 +3613,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_151"
+                    over "_151" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3295,7 +3634,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_152"
+                    over "_152" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3314,7 +3655,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_153"
+                    over "_153" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3333,7 +3676,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_154"
+                    over "_154" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3352,7 +3697,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_155"
+                    over "_155" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3371,7 +3718,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_156"
+                    over "_156" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3390,7 +3739,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_157"
+                    over "_157" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3409,7 +3760,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_158"
+                    over "_158" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3428,7 +3781,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_159"
+                    over "_159" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3447,7 +3802,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_160"
+                    over "_160" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3466,7 +3823,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_161"
+                    over "_161" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3485,7 +3844,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_162"
+                    over "_162" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3504,7 +3865,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_163"
+                    over "_163" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3523,7 +3886,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_164"
+                    over "_164" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3542,7 +3907,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_165"
+                    over "_165" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3561,7 +3928,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_166"
+                    over "_166" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3580,7 +3949,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_167"
+                    over "_167" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3599,7 +3970,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_168"
+                    over "_168" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3618,7 +3991,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_169"
+                    over "_169" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3637,7 +4012,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_170"
+                    over "_170" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3656,7 +4033,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_171"
+                    over "_171" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3675,7 +4054,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_172"
+                    over "_172" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3694,7 +4075,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_173"
+                    over "_173" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3713,7 +4096,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_174"
+                    over "_174" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3732,7 +4117,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_175"
+                    over "_175" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3751,7 +4138,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_176"
+                    over "_176" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3770,7 +4159,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_177"
+                    over "_177" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3789,7 +4180,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_178"
+                    over "_178" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3808,7 +4201,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_179"
+                    over "_179" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3827,7 +4222,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_180"
+                    over "_180" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3846,7 +4243,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_181"
+                    over "_181" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3865,7 +4264,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_182"
+                    over "_182" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3884,7 +4285,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_183"
+                    over "_183" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3903,7 +4306,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_184"
+                    over "_184" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3922,7 +4327,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_185"
+                    over "_185" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3941,7 +4348,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_186"
+                    over "_186" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3960,7 +4369,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_187"
+                    over "_187" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3979,7 +4390,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_188"
+                    over "_188" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -3998,7 +4411,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_189"
+                    over "_189" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4017,7 +4432,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_190"
+                    over "_190" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4036,7 +4453,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_191"
+                    over "_191" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4055,7 +4474,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_192"
+                    over "_192" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4074,7 +4495,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_193"
+                    over "_193" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4093,7 +4516,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_194"
+                    over "_194" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4112,7 +4537,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_195"
+                    over "_195" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4131,7 +4558,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_196"
+                    over "_196" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4150,7 +4579,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_197"
+                    over "_197" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4169,7 +4600,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_198"
+                    over "_198" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4188,7 +4621,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_199"
+                    over "_199" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4207,7 +4642,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_200"
+                    over "_200" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4226,7 +4663,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_201"
+                    over "_201" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4245,7 +4684,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_202"
+                    over "_202" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4264,7 +4705,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_203"
+                    over "_203" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4283,7 +4726,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_204"
+                    over "_204" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4302,7 +4747,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_205"
+                    over "_205" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4321,7 +4768,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_206"
+                    over "_206" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4340,7 +4789,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_207"
+                    over "_207" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4359,7 +4810,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_208"
+                    over "_208" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4378,7 +4831,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_209"
+                    over "_209" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4397,7 +4852,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_210"
+                    over "_210" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4416,7 +4873,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_211"
+                    over "_211" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4435,7 +4894,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_212"
+                    over "_212" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4454,7 +4915,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_213"
+                    over "_213" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4473,7 +4936,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_214"
+                    over "_214" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4492,7 +4957,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_215"
+                    over "_215" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4511,7 +4978,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_216"
+                    over "_216" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4530,7 +4999,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_217"
+                    over "_217" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4549,7 +5020,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_218"
+                    over "_218" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4568,7 +5041,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_219"
+                    over "_219" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4587,7 +5062,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_220"
+                    over "_220" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4606,7 +5083,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_221"
+                    over "_221" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4625,7 +5104,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_222"
+                    over "_222" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4644,7 +5125,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_223"
+                    over "_223" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4663,7 +5146,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_224"
+                    over "_224" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4682,7 +5167,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_225"
+                    over "_225" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4701,7 +5188,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_226"
+                    over "_226" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4720,7 +5209,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_227"
+                    over "_227" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4739,7 +5230,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_228"
+                    over "_228" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4758,7 +5251,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_229"
+                    over "_229" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4777,7 +5272,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_230"
+                    over "_230" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4796,7 +5293,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_231"
+                    over "_231" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4815,7 +5314,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_232"
+                    over "_232" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4834,7 +5335,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_233"
+                    over "_233" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4853,7 +5356,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_234"
+                    over "_234" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4872,7 +5377,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_235"
+                    over "_235" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4891,7 +5398,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_236"
+                    over "_236" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4910,7 +5419,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_237"
+                    over "_237" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4929,7 +5440,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_238"
+                    over "_238" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4948,7 +5461,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_239"
+                    over "_239" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4967,7 +5482,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_240"
+                    over "_240" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -4986,7 +5503,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_241"
+                    over "_241" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -5005,7 +5524,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_242"
+                    over "_242" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -5024,7 +5545,9 @@ over "smart_walker"
                         }
                     }
 
-                    over "_243"
+                    over "_243" (
+                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
+                    )
                     {
                         bool physics:collisionEnabled = 0
                     }
@@ -5037,8 +5560,8 @@ over "smart_walker"
             {
                 uniform token purpose = "guide"
                 double size = 1
-                float3 xformOp:scale = (0.7505, 0.5, 0.23998944)
-                double3 xformOp:translate = (-0.01926891596282132, 0, -0.10399471898394008)
+                float3 xformOp:scale = (0.7505, 0.5, 0.131)
+                double3 xformOp:translate = (-0.01926891596282132, 0, -0.04950000017534295)
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
             }
         }
@@ -5074,12 +5597,14 @@ over "smart_walker"
     def "SimMaterials"
     {
         def Material "frictionless" (
-            prepend apiSchemas = ["PhysicsMaterialAPI"]
+            prepend apiSchemas = ["PhysicsMaterialAPI", "PhysxMaterialAPI"]
         )
         {
             float physics:dynamicFriction = 0
             float physics:restitution = 0
             float physics:staticFriction = 0
+            custom token physxMaterial:frictionCombineMode = "multiply"
+            custom token physxMaterial:restitutionCombineMode = "multiply"
         }
     }
 }
