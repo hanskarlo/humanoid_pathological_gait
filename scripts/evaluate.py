@@ -113,6 +113,12 @@ parser.add_argument(
     "deliberately evaluating a policy against a patient it was not trained on.",
 )
 parser.add_argument(
+    "--walker",
+    action="store_true",
+    help="Couple the Smart Walker even if the checkpoint was trained without it (zero-shot walker "
+    "evaluation, walker plan condition C-zs).",
+)
+parser.add_argument(
     "--ignore_run_config",
     action="store_true",
     help="Proceed when the checkpoint has no run_config.json instead of refusing. The resulting "
@@ -158,6 +164,7 @@ from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
     apply_reference_stride,
+    apply_walker,
 )
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.h1_joints import (  # noqa: E402
     CLINICAL_JOINT_ORDER,
@@ -346,6 +353,12 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
             if str(value) == "predictive":
                 applied["objective_detail"] = apply_predictive_objective(env_cfg)
                 print("[evaluate] restored training objective: predictive (reference terms removed)")
+
+    # The walker changes the dynamics the policy acts in, not its observation, so a missing restore
+    # would be silent: a coupled checkpoint evaluated uncoupled. Restore it whenever it was trained.
+    if stored.get("walker_applied") or getattr(args_cli, "walker", False):
+        applied["walker"] = apply_walker(env_cfg)
+        print("[evaluate] restored training scene: Smart Walker coupled to the hands")
 
     # The sway target is in the policy's observation (root_progression_error), so a checkpoint
     # has to be rolled out with the target it was trained on. Every run_config written before
