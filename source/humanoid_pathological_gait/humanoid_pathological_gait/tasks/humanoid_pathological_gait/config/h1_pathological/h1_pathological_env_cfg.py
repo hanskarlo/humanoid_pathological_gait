@@ -50,7 +50,7 @@ from isaaclab_tasks.utils import PresetCfg
 from ... import mdp
 from ...assets import reference_stride_path
 from ...h1_joints import FOOT_BODY_NAMES
-from ...tsrt import TSRTParams
+from ...tsrt import TSRTParams, place_reflex_thresholds
 
 ##
 # Pre-defined configs
@@ -786,10 +786,17 @@ def apply_reference_stride(cfg: H1PathologicalGaitEnvCfg, path: str) -> dict[str
     this refuses an archive without it rather than silently training a new patient against
     subject 0's clearance.
 
+    It also **re-places the knee and hip-roll reflex thresholds** for the new patient by the rule
+    that placed subject 0's (:func:`~...tsrt.place_reflex_thresholds`): the same crossing fraction
+    of the patient's own paretic stride. Held at subject 0's values, subject 3's paretic knee would
+    sit past its threshold on 100 % of the stride -- a more severe impairment by construction. The
+    ankle threshold is unchanged. Decided 2026-10-01 for H4 (research_log, H4 registration).
+
     Call it **before** :func:`apply_predictive_objective`, which reads its constants from whichever
     archive ``cfg.reference_stride_path`` names at the time. Returns what was applied, including
     the archive's sha256, for the run's own provenance: a path alone does not say which file.
     """
+    import dataclasses
     import hashlib
     from pathlib import Path
 
@@ -813,6 +820,14 @@ def apply_reference_stride(cfg: H1PathologicalGaitEnvCfg, path: str) -> dict[str
             "impaired_side": str(archive["impaired_side"]) if "impaired_side" in archive.files else None,
             "clearance_target_m": clearance,
         }
+    placed = place_reflex_thresholds(resolved, reference_stride_path(), cfg.tsrt_params)
+    # replace(), not attribute assignment: the default TSRTParams instance may be shared.
+    cfg.tsrt_params = dataclasses.replace(
+        cfg.tsrt_params,
+        lambda_0_knee=placed["knee"]["lambda_0"],
+        lambda_0_hip=placed["hip_roll"]["lambda_0"],
+    )
+    applied["reflex_thresholds"] = placed
     cfg.reference_stride_path = str(resolved)
     cfg.rewards.paretic_foot_clearance.params["target_height"] = clearance
     return applied
