@@ -34,6 +34,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import numpy as np
 import torch
 
 from .h1_joints import H1JointLayout
@@ -193,3 +194,54 @@ class TSRTSpasticModel:
         if isinstance(gain_scale, torch.Tensor):
             gain_scale = gain_scale.unsqueeze(-1)
         return tau * gain_scale
+
+
+#: Joints whose thresholds were placed against the reference (2026-09-07/08) and are therefore
+#: re-placed for a new patient. The ankle's is not: it was never placed against a reference, and
+#: it sits below the whole paretic range of every staged patient. Values are (stretch sign on the
+#: left leg, sign of that joint under a left/right mirror) -- the same conventions TSRTSpasticModel
+#: builds from.
+PLACED_JOINTS: dict[str, tuple[float, float]] = {"knee": (1.0, 1.0), "hip_roll": (1.0, -1.0)}
+
+
+def _paretic_stretch(archive, joint: str) -> np.ndarray:
+    """The impaired limb's stretch coordinate for ``joint`` over the stride, from an archive."""
+    names = [str(n) for n in archive["joint_names"]]
+    side = str(archive["impaired_side"])
+    sign, mirror = PLACED_JOINTS[joint]
+    q = np.asarray(archive["q_trajectory"])[:, names.index(f"{side}_{joint}")]
+    # The right leg's stretch sign is the left's times the mirror sign, exactly as the model does.
+    return sign * (mirror if side == "right" else 1.0) * q
+
+
+def place_reflex_thresholds(stride_path, calibration_path, params: TSRTParams) -> dict[str, dict[str, float]]:
+    """Re-place the knee and hip-roll reflex thresholds for another patient, by subject 0's rule.
+
+    The 09-07/08 rule placed each threshold "just under the reference's own peak", which on the
+    calibration stride (subject 0) means the reference crosses it on a small fixed fraction of the
+    stride: 3.8 % at the knee, 4.4 % at the hip. A new patient gets the threshold at which *its*
+    paretic trajectory crosses on the same fraction: the ``1 - f`` quantile of its stretch
+    coordinate. The fractions are measured on the calibration archive under ``params`` at call
+    time rather than written down, so they cannot drift from the thresholds they came from.
+
+    Static placement, as the original was: the velocity term ``mu * theta_dot`` is ignored, and so
+    is the velocity deadband.
+
+    Without this, subject 0's thresholds applied to subject 3 sit inside its paretic knee's range
+    on 100 % of the stride -- a different, more severe impairment by construction, confounded with
+    whatever H4 compares.
+    """
+    with np.load(calibration_path, allow_pickle=True) as calibration, np.load(stride_path, allow_pickle=True) as target:
+        placed = {}
+        for joint, attr in (("knee", "lambda_0_knee"), ("hip_roll", "lambda_0_hip")):
+            current = getattr(params, attr)
+            fraction = float(np.mean(_paretic_stretch(calibration, joint) > current))
+            stretch = _paretic_stretch(target, joint)
+            threshold = float(np.quantile(stretch, 1.0 - fraction))
+            placed[joint] = {
+                "calibration_fraction": fraction,
+                "lambda_0": threshold,
+                "crossing_fraction": float(np.mean(stretch > threshold)),
+                "unplaced_crossing_fraction": float(np.mean(stretch > current)),
+            }
+    return placed
