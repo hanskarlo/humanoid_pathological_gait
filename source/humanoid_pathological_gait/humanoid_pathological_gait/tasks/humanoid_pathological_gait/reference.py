@@ -31,7 +31,6 @@ import torch
 
 from .h1_joints import NUM_JOINTS, H1JointLayout
 
-
 LEG_SYNERGY_JOINTS: tuple[str, ...] = ("hip_yaw", "hip_roll", "hip_pitch", "knee", "ankle")
 """Leg joints spanned by the synergy projector, in the order its basis rows are expressed in."""
 
@@ -47,11 +46,27 @@ class ReferenceGaitManager:
         device: torch.device | str,
         stride_duration_s: float = 1.2,
         mirror_sway_target: bool = True,
+        arm_posture: dict[str, float] | None = None,
     ):
         self.layout = layout
         #: Mirror the cross-track root target for right-paretic environments. ``False`` only
         #: reproduces runs trained before the fix; see :meth:`root_progression_error`.
         self.mirror_sway_target = mirror_sway_target
+        #: Walker mode: hold the arm reference at a fixed grip posture (both arms, mirrored), so
+        #: the hands rest on the handle instead of tracking the patient's arm swing. ``None``
+        #: leaves the arms on the reference. Keys are left-arm joint suffixes
+        #: (``shoulder_pitch``, ``shoulder_roll``, ``shoulder_yaw``, ``elbow``), in radians.
+        self._arm_override = None
+        if arm_posture:
+            columns, values = [], []
+            for suffix, value in arm_posture.items():
+                left = layout.index_of(f"left_{suffix}")
+                columns += [left, int(layout.mirror_index[left])]
+                values += [value, value * float(layout.mirror_sign[left])]
+            self._arm_override = (
+                torch.tensor(columns, dtype=torch.long, device=torch.device(device)),
+                torch.tensor(values, dtype=torch.float32, device=torch.device(device)),
+            )
         self.num_envs = num_envs
         self.device = torch.device(device)
 
@@ -101,9 +116,7 @@ class ReferenceGaitManager:
         # archive handed its sound limb's ranges -- and so its per-joint tracking widths -- to
         # the paretic limb.
         self.ref_joint_rom = self.ref_q.max(dim=0).values - self.ref_q.min(dim=0).values
-        self.ref_joint_rom_mirrored = (
-            self.ref_q_mirrored.max(dim=0).values - self.ref_q_mirrored.min(dim=0).values
-        )
+        self.ref_joint_rom_mirrored = self.ref_q_mirrored.max(dim=0).values - self.ref_q_mirrored.min(dim=0).values
 
         #: Mean forward speed of the stride itself, m/s. The reward tracks this rather than
         #: a fixed constant: the previous 0.5 m/s target was twice what the reference walks
@@ -121,9 +134,7 @@ class ReferenceGaitManager:
         #: The reward uses it to cancel the class imbalance: the schedule says "down" far
         #: more often than "up", so unweighted agreement pays a policy that simply never
         #: lifts a foot. See ``mdp.rewards.swing_timing``.
-        self.contact_stance_fraction = (
-            self.ref_contact.mean(dim=0) if self.ref_contact is not None else None
-        )
+        self.contact_stance_fraction = self.ref_contact.mean(dim=0) if self.ref_contact is not None else None
 
         #: ``(T, 2)`` planar displacement of the reference root from the start of the
         #: stride, in the stride's own heading frame. This is what pins *cadence and stride
@@ -177,9 +188,7 @@ class ReferenceGaitManager:
         #: two terms exchange places and the minimum is unchanged, so MoS is mirror-invariant
         #: and the trajectory over phase is the same either way.
         self.ref_mos = (
-            torch.tensor(reference_mos, dtype=torch.float32, device=self.device)
-            if reference_mos is not None
-            else None
+            torch.tensor(reference_mos, dtype=torch.float32, device=self.device) if reference_mos is not None else None
         )
 
         if root_translation is not None:
@@ -189,9 +198,7 @@ class ReferenceGaitManager:
             cos, sin = torch.cos(-angle), torch.sin(-angle)
             rotation = torch.tensor([[cos, -sin], [sin, cos]], device=self.device)
             self.ref_root_disp = (planar - planar[0]) @ rotation.T
-            self.ref_root_height = torch.tensor(
-                root_translation[:, 2], dtype=torch.float32, device=self.device
-            )
+            self.ref_root_height = torch.tensor(root_translation[:, 2], dtype=torch.float32, device=self.device)
             self._build_root_state_tables(root_translation, root_quaternion, angle)
             if self.impaired_side == "right":
                 # The joint tables were swapped into the paretic-left canonical frame above; the
@@ -241,11 +248,11 @@ class ReferenceGaitManager:
         torch.Tensor,
         float,
         str,
-        "np.ndarray | None",
+        np.ndarray | None,
         float,
-        "np.ndarray | None",
-        "np.ndarray | None",
-        "np.ndarray | None",
+        np.ndarray | None,
+        np.ndarray | None,
+        np.ndarray | None,
     ]:
         """Load the stride, deriving velocities by finite difference if absent."""
         data = np.load(str(path), allow_pickle=True)
@@ -279,32 +286,22 @@ class ReferenceGaitManager:
 
         contact = np.asarray(data["reference_contact"]) if "reference_contact" in data.files else None
         if contact is not None and (contact.ndim != 2 or contact.shape != (q.shape[0], 2)):
-            raise ValueError(
-                f"reference_contact at {path} has shape {contact.shape}, expected {(q.shape[0], 2)}"
-            )
+            raise ValueError(f"reference_contact at {path} has shape {contact.shape}, expected {(q.shape[0], 2)}")
         speed = float(data["reference_speed_ms"]) if "reference_speed_ms" in data.files else float("nan")
 
-        root_translation = (
-            np.asarray(data["root_translation"]) if "root_translation" in data.files else None
-        )
+        root_translation = np.asarray(data["root_translation"]) if "root_translation" in data.files else None
         if root_translation is not None and root_translation.shape[0] != q.shape[0]:
             raise ValueError(
                 f"root_translation at {path} has {root_translation.shape[0]} frames, expected {q.shape[0]}"
             )
 
-        root_quaternion = (
-            np.asarray(data["root_quaternion"]) if "root_quaternion" in data.files else None
-        )
+        root_quaternion = np.asarray(data["root_quaternion"]) if "root_quaternion" in data.files else None
         if root_quaternion is not None and root_quaternion.shape != (q.shape[0], 4):
-            raise ValueError(
-                f"root_quaternion at {path} has shape {root_quaternion.shape}, expected {(q.shape[0], 4)}"
-            )
+            raise ValueError(f"root_quaternion at {path} has shape {root_quaternion.shape}, expected {(q.shape[0], 4)}")
 
         reference_mos = np.asarray(data["reference_mos"]) if "reference_mos" in data.files else None
         if reference_mos is not None and reference_mos.shape[0] != q.shape[0]:
-            raise ValueError(
-                f"reference_mos at {path} has {reference_mos.shape[0]} frames, expected {q.shape[0]}"
-            )
+            raise ValueError(f"reference_mos at {path} has {reference_mos.shape[0]} frames, expected {q.shape[0]}")
 
         return (
             q,
@@ -362,6 +359,11 @@ class ReferenceGaitManager:
         is_right_paretic = (side > 0).unsqueeze(-1)
         q_ref = torch.where(is_right_paretic, interpolate(self.ref_q_mirrored), interpolate(self.ref_q))
         v_ref = torch.where(is_right_paretic, interpolate(self.ref_v_mirrored), interpolate(self.ref_v))
+        if self._arm_override is not None:
+            # The grip posture is left/right symmetric, so it is the same for either paretic side.
+            columns, values = self._arm_override
+            q_ref[:, columns] = values
+            v_ref[:, columns] = 0.0
         return q_ref, v_ref
 
     def set_cycle_anchor(self, position_xy: torch.Tensor, yaw: torch.Tensor, env_ids=None) -> None:
@@ -381,6 +383,7 @@ class ReferenceGaitManager:
         """
         if self.ref_root_disp is None:
             return None
+
         def displacement_at(phase: torch.Tensor) -> torch.Tensor:
             index = torch.round(phase * (self.num_samples - 1)).long().clamp_(0, self.num_samples - 1)
             return self.ref_root_disp[index]
@@ -401,9 +404,7 @@ class ReferenceGaitManager:
 
         delta = position_xy - self.cycle_anchor_pos
         cos, sin = torch.cos(-self.cycle_anchor_yaw), torch.sin(-self.cycle_anchor_yaw)
-        actual = torch.stack(
-            [cos * delta[:, 0] - sin * delta[:, 1], sin * delta[:, 0] + cos * delta[:, 1]], dim=-1
-        )
+        actual = torch.stack([cos * delta[:, 0] - sin * delta[:, 1], sin * delta[:, 0] + cos * delta[:, 1]], dim=-1)
         return actual - target
 
     def sample_contact(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
@@ -526,15 +527,9 @@ class ReferenceGaitManager:
         # A quaternion's vector part follows the pseudovector rule, its scalar part is
         # invariant. Getting any one of these wrong reverses the pelvic obliquity on half the
         # environments, which is exactly how the AMP corpus cancelled 85% of its own signal.
-        self.ref_root_quat_mirrored = self.ref_root_quat * torch.tensor(
-            [-1.0, 1.0, -1.0, 1.0], device=self.device
-        )
-        self.ref_root_lin_vel_mirrored = self.ref_root_lin_vel * torch.tensor(
-            [1.0, -1.0, 1.0], device=self.device
-        )
-        self.ref_root_ang_vel_mirrored = self.ref_root_ang_vel * torch.tensor(
-            [-1.0, 1.0, -1.0], device=self.device
-        )
+        self.ref_root_quat_mirrored = self.ref_root_quat * torch.tensor([-1.0, 1.0, -1.0, 1.0], device=self.device)
+        self.ref_root_lin_vel_mirrored = self.ref_root_lin_vel * torch.tensor([1.0, -1.0, 1.0], device=self.device)
+        self.ref_root_ang_vel_mirrored = self.ref_root_ang_vel * torch.tensor([-1.0, 1.0, -1.0], device=self.device)
 
     def paretic_leg_synergy_projector(self, rank: int) -> torch.Tensor:
         """``(5, 5)`` orthogonal projector onto the paretic leg's top-``rank`` coordination modes.

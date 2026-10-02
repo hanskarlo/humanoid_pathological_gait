@@ -580,6 +580,9 @@ class H1PathologicalGaitEnvCfg(ManagerBasedRLEnvCfg):
     tsrt_params: TSRTParams = TSRTParams()
     """Biomechanical parameters of the TSRT spasticity model."""
 
+    walker_arm_posture: dict[str, float] | None = None
+    """Walker mode's fixed arm reference (left-arm joint suffix -> rad), set by :func:`apply_walker`."""
+
     mirror_sway_target: bool = True
     """Mirror the reference root's cross-track (sway) target for right-paretic environments.
 
@@ -839,6 +842,12 @@ def apply_reference_stride(cfg: H1PathologicalGaitEnvCfg, path: str) -> dict[str
     return applied
 
 
+#: Walker grip posture (left arm; the right is mirrored), and where it puts the hands: measured on
+#: the H1 by scripts/measure_grip_posture.py, 2026-10-02.
+GRIP_POSTURE: dict[str, float] = {"shoulder_pitch": -0.40, "shoulder_roll": 0.0, "shoulder_yaw": 0.0, "elbow": 1.25}
+GRIP_REACH_M = 0.316
+
+
 def apply_walker(cfg: H1PathologicalGaitEnvCfg) -> dict[str, object]:
     """Put the Smart Walker in the scene, coupled to the robot's hands (walker plan §2).
 
@@ -872,8 +881,16 @@ def apply_walker(cfg: H1PathologicalGaitEnvCfg) -> dict[str, object]:
     )
     cfg.scene.env_spacing = max(cfg.scene.env_spacing, 4.0)
     cfg.actions.walker = mdp.WalkerCouplingActionCfg()
+    # The grip posture, measured with scripts/measure_grip_posture.py (2026-10-02): hands 0.316 m
+    # ahead of the pelvis, +-0.179 m apart, 0.964 m up, with 18 deg of elbow flexion -- inside the
+    # 15-30 deg band walkers are clinically fitted to. The arm reference is held there instead of
+    # tracking the patient's arm swing, and the handle is fitted to the hands (3.1 cm up), as a
+    # clinician sets handle height to the user's wrist.
+    cfg.walker_arm_posture = dict(GRIP_POSTURE)
     # Appended last, so it runs after reset_to_reference_pose has written the robot's pose.
-    cfg.events.reset_walker = EventTerm(func=mdp.reset_walker_ahead_of_robot, mode="reset")
+    cfg.events.reset_walker = EventTerm(
+        func=mdp.reset_walker_ahead_of_robot, mode="reset", params={"handle_ahead": GRIP_REACH_M}
+    )
     action = cfg.actions.walker
     return {
         "usd": str(usd),
@@ -884,5 +901,8 @@ def apply_walker(cfg: H1PathologicalGaitEnvCfg) -> dict[str, object]:
         "hand_offset_body": list(action.hand_offset_body),
         "enforce_halts": action.admittance.enforce_halts,
         "B_drive": action.admittance.B_drive,
+        "arm_posture": dict(GRIP_POSTURE),
+        "handle_ahead": GRIP_REACH_M,
+        "grip_height_offset": action.grip_height_offset,
         "M_drive": action.admittance.M_drive,
     }

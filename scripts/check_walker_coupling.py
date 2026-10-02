@@ -87,13 +87,32 @@ def main() -> int:
     # -- 2. smoke -------------------------------------------------------------------------------
     actions = torch.zeros(env.num_envs, env.action_manager.total_action_dim, device=env.device)
     worst_error, worst_force, finite = 0.0, 0.0, True
-    for _ in range(args_cli.steps):
+    for step in range(args_cli.steps):
         env.step(actions)
         s = env.walker_state
+        if step in (0, 1, 4, 9, 24, 49):
+            print(
+                f"[smoke] step {step:3d}: spring error mean {s['spring_error'].mean().item() * 100:5.2f} cm, "
+                f"grip force mean {torch.linalg.norm(s['hand_force_w'], dim=-1).mean().item():7.1f} N, "
+                f"f_down {-s['sensor_wrench'][:, 1].mean().item():7.1f} N, v_cmd {s['cmd'][:, 0].mean().item():+.3f}"
+            )
         finite &= all(torch.isfinite(s[k]).all().item() for k in ("hand_force_w", "sensor_wrench", "cmd"))
         worst_error = max(worst_error, s["spring_error"].max().item())
         worst_force = max(worst_force, torch.linalg.norm(s["hand_force_w"], dim=-1).max().item())
     s = env.walker_state
+    walker = env.scene["walker"]
+    wq = walker.data.root_link_quat_w.torch
+    x, y, z, w = wq.unbind(-1)
+    yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+    v = walker.data.root_lin_vel_w.torch
+    v_fwd = v[:, 0] * torch.cos(yaw) + v[:, 1] * torch.sin(yaw)
+    v_lat = -v[:, 0] * torch.sin(yaw) + v[:, 1] * torch.cos(yaw)
+    wz = walker.data.root_ang_vel_w.torch[:, 2]
+    cmd_v, cmd_w = s["cmd"][:, 0].tolist(), s["cmd"][:, 1].tolist()
+    print(f"[track] commanded v_x {[round(a, 3) for a in cmd_v]}")
+    print(f"[track] walker    v_x {[round(a, 3) for a in v_fwd.tolist()]}")
+    print(f"[track] walker lateral {[round(a, 4) for a in v_lat.tolist()]}")
+    print(f"[track] commanded wz  {[round(a, 3) for a in cmd_w]}   walker wz {[round(a, 3) for a in wz.tolist()]}")
     print(f"[smoke] finite throughout: {finite}")
     print(f"[smoke] max spring error {worst_error * 100:.2f} cm, max grip force {worst_force:.1f} N")
     print(f"[smoke] last sensor wrench (Fx,Fy,Fz,Tx,Ty,Tz): {[round(x, 2) for x in s['sensor_wrench'][0].tolist()]}")

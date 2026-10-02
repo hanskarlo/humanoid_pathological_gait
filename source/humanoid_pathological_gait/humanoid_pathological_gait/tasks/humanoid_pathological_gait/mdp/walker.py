@@ -64,7 +64,8 @@ class WalkerCouplingAction(ActionTerm):
         self._hand_offset = torch.tensor(cfg.hand_offset_body, device=dev).expand(n, 2, 3)
         # Grip points in the walker base frame, relative to the handle centre: left at +y, right at -y.
         d = cfg.half_grip_width
-        self._grip_offset_b = torch.tensor([[0.0, d, 0.0], [0.0, -d, 0.0]], device=dev).expand(n, 2, 3)
+        h = cfg.grip_height_offset
+        self._grip_offset_b = torch.tensor([[0.0, d, h], [0.0, -d, h]], device=dev).expand(n, 2, 3)
         self._processor = wa.ForceTorqueProcessor(n, dev, cfg.processor)
         self._controller = wa.WalkerAdmittance(n, dev, cfg.admittance)
         self._substep = 0
@@ -177,6 +178,7 @@ def reset_walker_ahead_of_robot(
     env_ids: torch.Tensor,
     handle_ahead: float = 0.35,
     handle_behind_base: float = 0.395,
+    base_height: float = 0.322,
     asset_name: str = "walker",
 ) -> None:
     """Place the walker in front of the robot, facing its heading, at rest, wheels on the ground.
@@ -185,7 +187,10 @@ def reset_walker_ahead_of_robot(
     ``env.reset_root_pose_w``. The handle centre goes ``handle_ahead`` metres in front of the
     pelvis along the robot's heading (MEASURE: the hands' forward reach at the reset pose). The
     walker base is ``handle_behind_base`` in front of its own handle (asset: handle at x = -0.395).
-    Height comes from the walker's default root pose, which puts the wheels on the ground.
+    ``base_height`` is the root link's (``base_link``) height above the ground with the wheels down:
+    0.320 m measured at rest (handle 0.9325 m minus its 0.6125 m above ``base_link``) plus 2 mm of
+    clearance. Not the default root pose: that is the asset's spawn origin, 0.93 m below
+    ``base_link``, and writing it put the walker half through the ground (2026-10-02 smoke test).
     """
     walker = env.scene[asset_name]
     pose = env.reset_root_pose_w[env_ids]
@@ -193,8 +198,7 @@ def reset_walker_ahead_of_robot(
     yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
     heading = torch.stack((torch.cos(yaw), torch.sin(yaw)), dim=-1)
     base_xy = pose[:, :2] + (handle_ahead + handle_behind_base) * heading
-    default = walker.data.default_root_pose.torch[env_ids]
-    root_z = env.scene.env_origins[env_ids, 2] + default[:, 2]
+    root_z = env.scene.env_origins[env_ids, 2] + base_height
     half = 0.5 * yaw
     quat = torch.stack((torch.zeros_like(half), torch.zeros_like(half), torch.sin(half), torch.cos(half)), dim=-1)
     walker.write_root_pose_to_sim_index(
@@ -222,12 +226,17 @@ class WalkerCouplingActionCfg(ActionTermCfg):
     robot_name: str = "robot"
     hand_body_names: tuple[str, str] = ("left_elbow_link", "right_elbow_link")
     """Left first. The H1 has no hand link; the forearm's distal end is used (MEASURE the names)."""
-    hand_offset_body: tuple[float, float, float] = (0.25, 0.0, 0.0)
-    """Attachment point in each elbow link's frame (MEASURE: the forearm's distal end)."""
+    hand_offset_body: tuple[float, float, float] = (0.318, 0.0, -0.032)
+    """The forearm tip in each elbow link's frame: twice the link's CoM offset, (0.159, 0, -0.016)
+    measured in PhysX, for a 0.32 m forearm (scripts/measure_grip_posture.py, 2026-10-02)."""
     handle_body_name: str = "handle"
     sensor_body_name: str = "ft_sensor_link"
-    half_grip_width: float = 0.20
-    """Grip offset from the handle centre along the bar (MEASURE: H1 hand separation at the reset pose)."""
+    half_grip_width: float = 0.179
+    """Grip offset from the handle centre along the bar: the hands' half-separation at the grip
+    posture (measured 0.179 m; the bar is 0.615 m long)."""
+    grip_height_offset: float = 0.031
+    """Grip points above the handle centre: the handle fitted to the H1's hands at the grip posture
+    (0.964 m against the bar's 0.933 m), as walkers are fitted to the user's wrist height."""
     stiffness: float = 5000.0
     """N/m. Explicit stability at 5 ms needs omega*dt < 2; at 5 kN/m and ~1.5 kg, omega*dt ~ 0.29."""
     damping: float = 120.0
