@@ -88,23 +88,25 @@ def sensor_wrench(
 
 
 def reconstruct_hand_loads(
-    wrench: torch.Tensor, half_grip_width: float, bar_offset_back: float
+    wrench: torch.Tensor, half_grip_width: float, bar_offset_back: float, grip_up: float = 0.0
 ) -> dict[str, torch.Tensor]:
     """Per-hand vertical and drive forces from one sensor wrench (W3), processed frame.
 
-    Assumes point grips at x_p = +d (right) and -d (left), a distance ``bar_offset_back`` behind the
-    sensor (+z_p), with no grip moments. With ``f_i = (fx, fy, fz)`` the user force at grip i:
+    Assumes point grips at ``r = (+-d, u, h)`` from the sensor origin (right hand at +d), with no
+    grip moments: ``d`` the half grip width, ``u`` the grips' height above the sensor axis
+    (``grip_up``; the handle fitting puts it at 0.031 m) and ``h`` the bar's offset behind the
+    sensor. With ``f_i = (fx, fy, fz)`` the user force at grip i, and ``F`` their sum:
 
-        T_z = d (fy_R - fy_L)                    -> vertical split
-        T_y = -d (fz_R - fz_L) + h (fx_R + fx_L) -> drive split, once the lateral sum is removed
-        T_x = -h (fy_R + fy_L)                   -> redundant; returned as a consistency residual
+        T_x = u F_z - h F_y                     -> redundant; returned as a consistency residual
+        T_y = -d (fz_R - fz_L) + h F_x          -> drive split
+        T_z =  d (fy_R - fy_L) - u F_x          -> vertical split
 
-    Returns the user's down and drive forces per hand, in the controller's sign convention
-    (``f_down = -F_y``, ``f_drive = -F_z``), plus the residual of the redundant equation.
+    Lateral forces are recoverable only as their sum. Returns the user's down and drive force per
+    hand in the controller's sign convention (``f_down = -F_y``, ``f_drive = -F_z``).
     """
     fx, fy, fz, tx, ty, tz = wrench.unbind(-1)
-    d, h = half_grip_width, bar_offset_back
-    fy_diff = tz / d  # right - left
+    d, h, u = half_grip_width, bar_offset_back, grip_up
+    fy_diff = (tz + u * fx) / d  # right - left
     fz_diff = (h * fx - ty) / d  # right - left
     fy_r, fy_l = (fy + fy_diff) / 2.0, (fy - fy_diff) / 2.0
     fz_r, fz_l = (fz + fz_diff) / 2.0, (fz - fz_diff) / 2.0
@@ -113,7 +115,7 @@ def reconstruct_hand_loads(
         "down_right": -fy_r,
         "drive_left": -fz_l,
         "drive_right": -fz_r,
-        "tx_residual": tx + h * fy,
+        "tx_residual": tx - u * fz + h * fy,
     }
 
 

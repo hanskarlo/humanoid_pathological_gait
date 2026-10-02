@@ -73,6 +73,7 @@ class WalkerCouplingAction(ActionTerm):
         self._raw = torch.zeros(n, 0, device=dev)
         env.walker_state = {
             "hand_force_w": torch.zeros(n, 2, 3, device=dev),
+            "hand_force_b": torch.zeros(n, 2, 3, device=dev),
             "spring_error": torch.zeros(n, 2, device=dev),
             "sensor_wrench": torch.zeros(n, 6, device=dev),
             "filtered_wrench": torch.zeros(n, 6, device=dev),
@@ -145,10 +146,15 @@ class WalkerCouplingAction(ActionTerm):
         )
 
         state = self._env.walker_state
-        state["hand_force_w"] = force_on_hand
-        state["spring_error"] = torch.linalg.norm(p_grip - p_hand, dim=-1)
-
         if self._substep % self._decimation == 0:
+            # Every recorded quantity is sampled on this tick, so the hand forces and the sensor
+            # wrench describe the same instant. Recording the last substep's hand forces against the
+            # first substep's wrench showed up as 24 N of false W3 reconstruction error (2026-10-02).
+            state["hand_force_w"] = force_on_hand
+            # And in the walker's own frame, which is what "load on the handle" means for the device
+            # and what the sensor measures: with the walker tipped, world z and walker z differ.
+            state["hand_force_b"] = wc.quat_rotate_inverse(root_quat, force_on_hand)
+            state["spring_error"] = torch.linalg.norm(p_grip - p_hand, dim=-1)
             sensor_pos = self._walker.data.body_link_pos_w.torch[:, self._sensor_id]
             wrench = wc.sensor_wrench(user_on_handle, p_grip, sensor_pos, root_quat)
             filtered = self._processor.step(wrench)

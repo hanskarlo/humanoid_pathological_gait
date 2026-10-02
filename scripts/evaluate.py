@@ -156,6 +156,7 @@ from gait_analysis import (  # noqa: E402
     pelvic_obliquity,
     standardize_to_paretic_frame,
 )
+from walker_analysis import summarize_walker  # noqa: E402
 
 from isaaclab.managers import SceneEntityCfg  # noqa: E402
 from isaaclab.utils.math import quat_apply_inverse, yaw_quat  # noqa: E402
@@ -495,6 +496,24 @@ def main() -> int:
         foot_force_ap = quat_apply_inverse(heading.unsqueeze(1).expand(-1, foot_force_w.shape[1], -1), foot_force_w)[
             ..., 0
         ]
+        if "walker" in env.scene.keys():
+            # Walker keys only when the walker is in the scene, so an unassisted evaluation's
+            # rollout.npz is unchanged.
+            walker = env.scene["walker"]
+            wq = walker.data.root_link_quat_w.torch
+            state = env.walker_state
+            recorder.add(
+                walker_hand_force_w=state["hand_force_w"],
+                walker_hand_force_b=state["hand_force_b"],
+                walker_sensor_wrench=state["sensor_wrench"],
+                walker_cmd=state["cmd"],
+                walker_halt=state["halt"],
+                walker_spring_error=state["spring_error"],
+                walker_xy=walker.data.root_link_pos_w.torch[:, :2] - env.scene.env_origins[:, :2],
+                walker_yaw=torch.atan2(
+                    2.0 * (wq[:, 3] * wq[:, 2] + wq[:, 0] * wq[:, 1]), 1.0 - 2.0 * (wq[:, 1] ** 2 + wq[:, 2] ** 2)
+                ),
+            )
         recorder.add(
             joint_pos=robot.data.joint_pos.torch,
             joint_vel=robot.data.joint_vel.torch,
@@ -557,6 +576,32 @@ def main() -> int:
         # Recorded next to the numbers it conditions, not only in the console log.
         metrics["training_config_applied"] = training_config
         metrics["hip_roll_limit_deg"] = hip_roll_limit_deg
+        if "walker_hand_force_w" in data:
+            # Grip geometry relative to the F/T sensor, for the single-sensor reconstruction (W3):
+            # the bar is 0.0825 m behind the sensor (asset: handle x = -0.395, sensor x = -0.3125),
+            # the grips are half_grip_width apart from its centre and grip_up above it.
+            walker_cfg = training_config.get("walker") or {}
+            metrics["walker"] = summarize_walker(
+                data["walker_hand_force_b"],
+                data["walker_sensor_wrench"],
+                data["walker_cmd"],
+                data["walker_halt"],
+                data["walker_xy"],
+                data["walker_yaw"],
+                data["alive"].astype(bool),
+                is_right_paretic,
+                total_mass,
+                dt,
+                geometry={
+                    "half_grip_width": float(walker_cfg.get("half_grip_width", 0.179)),
+                    "bar_offset_back": 0.0825,
+                    "grip_up": float(walker_cfg.get("grip_height_offset", 0.031)),
+                },
+                foot_contact=data["foot_contact"],
+            )
+            metrics["walker"]["spring_error_p99_cm"] = float(
+                100.0 * np.percentile(data["walker_spring_error"][data["alive"].astype(bool)], 99)
+            )
     except NoSurvivingEnvironments as error:
         # A policy that falls in every environment is a legitimate result -- an early
         # checkpoint, or an ablation that does not learn to walk. Report it as a failed

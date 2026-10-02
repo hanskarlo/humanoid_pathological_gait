@@ -42,10 +42,13 @@ D, H = 0.20, 0.0825  # half grip width; bar offset behind the sensor (asset: han
 IDENTITY = torch.tensor([[0.0, 0.0, 0.0, 1.0]], dtype=torch.float64)
 
 
-def grips(quat=IDENTITY):
+U = 0.031  # grips above the sensor axis (handle fitted to the H1's hands)
+
+
+def grips(quat=IDENTITY, up=U):
     """Grip and sensor positions for a walker at the origin with orientation ``quat``."""
-    # Body frame: sensor at the origin, bar H behind it (-x_b), left grip at +y_b.
-    body = torch.tensor([[[-H, D, 0.0], [-H, -D, 0.0]]], dtype=torch.float64)
+    # Body frame: sensor at the origin, bar H behind it (-x_b), left grip at +y_b, grips `up` above.
+    body = torch.tensor([[[-H, D, up], [-H, -D, up]]], dtype=torch.float64)
     x, y, z, w = quat[0]
     # rotate body -> world
     qv = torch.tensor([x, y, z], dtype=torch.float64)
@@ -109,7 +112,7 @@ def test_reconstruction_recovers_each_hand_exactly():
         left = (torch.randn(3, dtype=torch.float64) * 20).tolist()
         right = (torch.randn(3, dtype=torch.float64) * 20).tolist()
         w = wrench_for(left, right)
-        r = wc.reconstruct_hand_loads(w, D, H)
+        r = wc.reconstruct_hand_loads(w, D, H, U)
         # processed-frame user forces: down = body +z pushed down -> f_down = -(body z) ...
         assert r["down_left"].item() == pytest.approx(-left[2], abs=1e-9)
         assert r["down_right"].item() == pytest.approx(-right[2], abs=1e-9)
@@ -129,3 +132,12 @@ def test_the_reading_does_not_depend_on_which_way_the_walker_faces():
 
 def test_asymmetry_index():
     assert wc.asymmetry_index(torch.tensor(30.0), torch.tensor(10.0)).item() == pytest.approx(0.5)
+
+
+def test_ignoring_the_grip_height_biases_the_vertical_split():
+    """The reason grip_up exists: with a lateral push, leaving it out misattributes vertical load."""
+    w = wrench_for([10.0, 15.0, -40.0], [10.0, 15.0, -40.0])  # symmetric down load, sideways push
+    right = wc.reconstruct_hand_loads(w, D, H, U)
+    wrong = wc.reconstruct_hand_loads(w, D, H, 0.0)
+    assert right["down_left"].item() == pytest.approx(right["down_right"].item(), abs=1e-9)
+    assert abs(wrong["down_left"].item() - wrong["down_right"].item()) > 1.0
