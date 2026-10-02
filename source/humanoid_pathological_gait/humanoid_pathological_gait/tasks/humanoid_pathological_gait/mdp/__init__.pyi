@@ -36,6 +36,10 @@ __all__ = [
     "randomize_asymmetric_effort_limits",
     "randomize_asymmetric_leg_mass",
     "push_biased_toward_paretic_side",
+    # walker
+    "WalkerCouplingAction",
+    "WalkerCouplingActionCfg",
+    "reset_walker_ahead_of_robot",
     # curriculums
     "spasticity_ramp",
     "balance_assist_decay",
@@ -78,3 +82,4 @@ from .rewards import (
     track_root_progression,
 )
 from .terminations import reference_tracking_divergence
+from .walker import WalkerCouplingAction, WalkerCouplingActionCfg, reset_walker_ahead_of_robot

@@ -160,6 +160,9 @@ class H1PathologicalSceneCfg(InteractiveSceneCfg):
 
     contact_forces = H1PathologicalContactSensorCfg()
 
+    walker: ArticulationCfg | None = None
+    """The Smart Walker. ``None`` (the scene builder skips it) unless :func:`apply_walker` sets it."""
+
     dome_light = AssetBaseCfg(
         prim_path="/World/DomeLight",
         spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=750.0),
@@ -181,6 +184,9 @@ class ActionsCfg:
         scale=0.25,
         enable_spasticity=True,
     )
+
+    walker: mdp.WalkerCouplingActionCfg | None = None
+    """Grip coupling and the walker's admittance controller; zero policy dimensions. Set by :func:`apply_walker`."""
 
 
 @configclass
@@ -831,3 +837,52 @@ def apply_reference_stride(cfg: H1PathologicalGaitEnvCfg, path: str) -> dict[str
     cfg.reference_stride_path = str(resolved)
     cfg.rewards.paretic_foot_clearance.params["target_height"] = clearance
     return applied
+
+
+def apply_walker(cfg: H1PathologicalGaitEnvCfg) -> dict[str, object]:
+    """Put the Smart Walker in the scene, coupled to the robot's hands (walker plan §2).
+
+    Adds the walker articulation (``data/walker/smart_walker_sim.usda``: primitive colliders,
+    frictionless wheels), the zero-dimensional coupling action term that runs the grip springs and
+    the real walker's admittance law, and a reset event that places the walker in front of the
+    robot after the robot's own reset. Widens env spacing to 4 m for the walker's footprint and a
+    20 s episode of travel. **The policy's observation and action spaces are unchanged**, so a
+    checkpoint trained without the walker can be rolled out or fine-tuned with it.
+
+    Returns what was applied, for ``run_config.json``. ``evaluate.py`` restores it from there: a
+    walker flag that silently failed to reach evaluation would produce uncoupled numbers labelled
+    as coupled ones (the 2026-09-17 synergy lesson).
+    """
+    from isaaclab.actuators import ImplicitActuatorCfg
+
+    from ...assets import DATA_DIR
+
+    usd = DATA_DIR / "walker" / "smart_walker_sim.usda"
+    if not usd.is_file():
+        raise FileNotFoundError(f"walker asset not staged at {usd}; run scripts/build_walker_sim_asset.py")
+    cfg.scene.walker = ArticulationCfg(
+        prim_path="{ENV_REGEX_NS}/Walker",
+        spawn=sim_utils.UsdFileCfg(usd_path=str(usd)),
+        # The asset's wheel bottoms sit 0.61 m below its root; 2 mm of clearance at spawn.
+        init_state=ArticulationCfg.InitialStateCfg(pos=(0.0, 0.0, -0.608)),
+        actuators={
+            "steering": ImplicitActuatorCfg(joint_names_expr=[".*_steering_joint"], stiffness=1.0e4, damping=1.0e2),
+            "wheels": ImplicitActuatorCfg(joint_names_expr=[".*_wheel"], stiffness=0.0, damping=0.0),
+        },
+    )
+    cfg.scene.env_spacing = max(cfg.scene.env_spacing, 4.0)
+    cfg.actions.walker = mdp.WalkerCouplingActionCfg()
+    # Appended last, so it runs after reset_to_reference_pose has written the robot's pose.
+    cfg.events.reset_walker = EventTerm(func=mdp.reset_walker_ahead_of_robot, mode="reset")
+    action = cfg.actions.walker
+    return {
+        "usd": str(usd),
+        "stiffness": action.stiffness,
+        "damping": action.damping,
+        "half_grip_width": action.half_grip_width,
+        "hand_body_names": list(action.hand_body_names),
+        "hand_offset_body": list(action.hand_offset_body),
+        "enforce_halts": action.admittance.enforce_halts,
+        "B_drive": action.admittance.B_drive,
+        "M_drive": action.admittance.M_drive,
+    }

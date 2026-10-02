@@ -66,6 +66,13 @@ parser.add_argument(
     "--stride). Recorded with its sha256 in run_config.json; evaluation restores it.",
 )
 parser.add_argument(
+    "--walker",
+    action="store_true",
+    help="Couple the robot's hands to the Smart Walker (docs/walker_evaluation_plan.md). Observation and "
+    "action spaces are unchanged, so it combines with --resume for walker fine-tuning. Recorded in "
+    "run_config.json as walker_applied; evaluation restores it.",
+)
+parser.add_argument(
     "--legacy_unmirrored_sway",
     action="store_true",
     help="Reproduce the pre-2026-09-24 environment, which handed right-paretic environments the "
@@ -168,6 +175,7 @@ from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import a
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
     apply_reference_stride,
+    apply_walker,
 )
 
 
@@ -566,6 +574,7 @@ def main() -> int:
         # Before the objective: apply_predictive_objective reads its constants from this archive.
         reference_applied = apply_reference_stride(env_cfg, args_cli.reference_stride)
         print(f"[train_amp] reference stride: {reference_applied}", flush=True)
+    walker_applied = apply_walker(env_cfg) if args_cli.walker else None
     objective_applied = None
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)
@@ -620,6 +629,8 @@ def main() -> int:
         "mirror_sway_target_resolved": bool(env.cfg.mirror_sway_target),
         # None for the staged subject-0 stride; path, sha256, subject and clearance otherwise.
         "reference_stride_applied": reference_applied,
+        # None without the walker; the coupling and controller constants otherwise.
+        "walker_applied": walker_applied,
     }
     (log_dir / "run_config.json").write_text(json.dumps(run_config, indent=2, default=str))
 

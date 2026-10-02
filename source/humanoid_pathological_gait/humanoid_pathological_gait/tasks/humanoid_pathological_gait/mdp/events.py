@@ -156,9 +156,7 @@ def _reset_root_to_reference(
     default_velocity = asset.data.default_root_vel.torch[env_ids].clone()
 
     zeros = torch.zeros(num_resets, device=device)
-    yaw = (
-        torch.empty(num_resets, device=device).uniform_(-torch.pi, torch.pi) if randomize_yaw else zeros
-    )
+    yaw = torch.empty(num_resets, device=device).uniform_(-torch.pi, torch.pi) if randomize_yaw else zeros
     yaw_rotation = quat_from_euler_xyz(zeros, zeros, yaw)
 
     position = default_pose[:, 0:3] + env.scene.env_origins[env_ids]
@@ -185,9 +183,14 @@ def _reset_root_to_reference(
     if ang_vel_noise > 0.0:
         velocity[:, 3:6] += ang_vel_noise * torch.randn_like(velocity[:, 3:6])
 
-    asset.write_root_pose_to_sim_index(
-        root_pose=torch.cat([position, orientation], dim=-1), env_ids=env_ids
-    )
+    written = torch.cat([position, orientation], dim=-1)
+    # Recorded for anything placed relative to the robot at reset (the walker): the articulation's
+    # own pose buffers can still hold the previous episode until the next physics step. A plain
+    # buffer write; it consumes no random numbers, so it cannot change a trajectory.
+    if getattr(env, "reset_root_pose_w", None) is None:
+        env.reset_root_pose_w = torch.zeros(env.num_envs, 7, device=device)
+    env.reset_root_pose_w[env_ids] = written
+    asset.write_root_pose_to_sim_index(root_pose=written, env_ids=env_ids)
     asset.write_root_velocity_to_sim_index(root_velocity=velocity, env_ids=env_ids)
 
 
