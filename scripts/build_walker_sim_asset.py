@@ -103,29 +103,43 @@ def main() -> int:
     root_layer.subLayerPaths.insert(0, OVERRIDES.name)
     stage.SetEditTarget(Usd.EditTarget(overrides))
 
-    # 1. Un-instance every instance root, then disable every mesh collider underneath.
-    # Un-instancing invalidates the proxies under it, and instances can nest, so collect the
-    # instance roots visible on each pass and repeat until none are left.
-    while True:
-        roots = [prim.GetPath() for prim in stage.Traverse() if prim.IsInstance()]
-        if not roots:
-            break
-        for path in roots:
-            stage.OverridePrim(path).SetInstanceable(False)
-    disabled = 0
+    # 1. Deactivate all non-physical geometry, keeping instancing intact.
+    #
+    # The first version un-instanced every instance root so it could override the mesh colliders
+    # underneath. That gave every cloned walker its own copy of the meshes: ~2.4 MB of host memory
+    # per environment, ~52 GB at 14,720, and the first walker fine-tune was OOM-killed at 28.2 GB
+    # while building its scene (2026-10-02). Physics needs none of that geometry -- its colliders
+    # were already gone and every mass is explicit -- so instead each instance root and each loose
+    # mesh is deactivated whole, provided nothing physical lives beneath it (no rigid body, no
+    # joint, no primitive collider). Deactivating an instance root is allowed where overriding
+    # inside it is not, and it removes the stray collision-tagged Xform with the rest.
     primitives = (UsdGeom.Cube, UsdGeom.Cylinder, UsdGeom.Sphere, UsdGeom.Capsule)
-    for prim in stage.Traverse():
-        # Anything that is not a primitive shape: the meshes, and one Xform the converter also
-        # tagged with CollisionAPI. Only the converter's own handle/pillar/sensor primitives survive.
-        if prim.HasAPI(UsdPhysics.CollisionAPI) and not any(prim.IsA(kind) for kind in primitives):
-            # Disabled AND the schemas removed. Disabling alone is not enough: the front-right
-            # wheel's collision-tagged Xform still became a triangle-mesh collider in PhysX (logged
-            # as a convex-hull fallback), ignoring collisionEnabled = false. One wheel with friction
-            # on frictionless ground pushed the walker sideways at ~0.09 m/s (2026-09-26).
-            UsdPhysics.CollisionAPI(prim).CreateCollisionEnabledAttr(False)
-            prim.RemoveAPI(UsdPhysics.MeshCollisionAPI)
-            prim.RemoveAPI(UsdPhysics.CollisionAPI)
-            disabled += 1
+
+    def is_physical(prim) -> bool:
+        return (
+            prim.HasAPI(UsdPhysics.RigidBodyAPI)
+            or prim.IsA(UsdPhysics.Joint)
+            or (prim.HasAPI(UsdPhysics.CollisionAPI) and any(prim.IsA(kind) for kind in primitives))
+        )
+
+    def holds_physics(prim) -> bool:
+        return any(is_physical(p) for p in Usd.PrimRange(prim, Usd.TraverseInstanceProxies()))
+
+    targets = [
+        prim.GetPath()
+        for prim in stage.Traverse()
+        if (prim.IsInstance() or prim.IsA(UsdGeom.Mesh)) and not holds_physics(prim)
+    ]
+    for path in targets:
+        stage.OverridePrim(path).SetActive(False)
+    disabled = len(targets)
+    leftover = [
+        p.GetPath()
+        for p in stage.Traverse(Usd.TraverseInstanceProxies())
+        if p.HasAPI(UsdPhysics.CollisionAPI) and not any(p.IsA(kind) for kind in primitives)
+    ]
+    if leftover:
+        raise SystemExit(f"non-primitive colliders survive deactivation: {leftover[:5]}")
 
     # 2. A frictionless physics material for the wheel spheres.
     material_path = Sdf.Path("/smart_walker/SimMaterials/frictionless")
@@ -182,7 +196,7 @@ def main() -> int:
     sim_root.Save()
 
     print(f"total mass {total_mass:.3f} kg (unchanged)")
-    print(f"disabled {disabled} non-primitive colliders")
+    print(f"deactivated {disabled} visual/mesh prims (instance roots and loose meshes); no non-primitive collider left")
     print(f"wheel spheres r = {WHEEL_RADIUS_M} m at {', '.join(WHEELS)}")
     print(f"chassis box centre (base_link frame) {tuple(round(x, 4) for x in chassis_center_local)}")
     print(f"chassis box size {tuple(round(x, 4) for x in chassis_size)}")

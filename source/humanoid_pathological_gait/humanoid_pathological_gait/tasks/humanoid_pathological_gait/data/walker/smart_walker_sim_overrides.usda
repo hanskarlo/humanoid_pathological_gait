@@ -15,69 +15,21 @@ over "smart_walker"
                     over "wheel_v3"
                     {
                         over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
-                            delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            instanceable = false
+                            active = false
                         )
                         {
-                            bool physics:collisionEnabled = 0
-
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material__1_040_kMUhnnCnqn5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
 
                         over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material016_qGMgtWAYmv5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
 
                         over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material015_qGMgtWAYmv5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
                     }
 
@@ -94,24 +46,9 @@ over "smart_walker"
                 }
 
                 over "steering_wheel" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__Material__1_048_kMUhnnCnqn5" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "steering_wheel" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
             }
 
@@ -122,66 +59,21 @@ over "smart_walker"
                     over "wheel_v3"
                     {
                         over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material__1_040_kMUhnnCnqn5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
 
                         over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material016_qGMgtWAYmv5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
 
                         over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material015_qGMgtWAYmv5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
                     }
 
@@ -198,24 +90,9 @@ over "smart_walker"
                 }
 
                 over "steering_wheel" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__Material__1_048_kMUhnnCnqn5" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "steering_wheel" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
             }
 
@@ -226,66 +103,21 @@ over "smart_walker"
                     over "wheel_v3"
                     {
                         over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material__1_040_kMUhnnCnqn5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
 
                         over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material016_qGMgtWAYmv5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
 
                         over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material015_qGMgtWAYmv5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
                     }
 
@@ -302,24 +134,9 @@ over "smart_walker"
                 }
 
                 over "steering_wheel" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__Material__1_048_kMUhnnCnqn5" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "steering_wheel" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
             }
 
@@ -330,66 +147,21 @@ over "smart_walker"
                     over "wheel_v3"
                     {
                         over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material__1_040_kMUhnnCnqn5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshaf9acfa9b4634176b271a801ee728bf1001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
 
                         over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material016_qGMgtWAYmv5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshad0c343e41314d9497d955de50dbf829001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
 
                         over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
-                            instanceable = false
+                            active = false
                         )
                         {
-                            over "VisualMaterials"
-                            {
-                                over "tn__Material015_qGMgtWAYmv5" (
-                                    instanceable = false
-                                )
-                                {
-                                }
-                            }
-
-                            over "tn__meshcd13e477ffe5439dbdb117c13aec3536001_bv0DINSt1" (
-                                delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                            )
-                            {
-                                bool physics:collisionEnabled = 0
-                            }
                         }
                     }
 
@@ -406,5151 +178,1476 @@ over "smart_walker"
                 }
 
                 over "steering_wheel" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__Material__1_048_kMUhnnCnqn5" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "steering_wheel" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
             }
 
             over "ranger_base"
             {
                 over "tn__" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a977debf7f5248209d82009793cdc56d_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "tn__" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_1" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a8bf87ea80c140bc8c7289cd735d7dd7_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_1" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_2" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__d6cb3db4382749e9899786e502eac577_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_2" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_3" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__cd54e640b77843788797ec215edf2951_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_3" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_4" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__af40055ebee94a69aa37d2330dd643e4_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_4" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_5" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__aa6d22596c5b4ecb9c680f0e8665c7f7_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_5" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_6" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a296f01d66c141eb9f48e4bcb70c400f_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_6" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_7" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__ef347aef64f940499e3aeadbf448d602_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_7" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_8" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_8" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_9" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a85990c5e33a4ca7855140c35e51d51b_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_9" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_10" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_10" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_11" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__ecded9e489cb4a9f80605004576a3573_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_11" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_12" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__bd69fa9cc98f487d8c34c588497b360d_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_12" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_13" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_13" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_14" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__afb2a9371db14c5a9b1e010c948fad13_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_14" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_15" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_15" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_16" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_16" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_17" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_17" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_18" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_18" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_19" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_19" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_20" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_20" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_21" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__f1b1b466724245e38b415ca7e92ab7ac_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_21" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_22" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_22" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_23" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_23" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_24" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0e9842d78dc423f94c5e99ff18a7853_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_24" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_25" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_25" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_26" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a8e8c5bcdfcd4a16a49284033ad1ac5b_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_26" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_27" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_27" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_28" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_28" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_29" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_29" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_30" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_30" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_31" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_31" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_32" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_32" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_33" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_33" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_34" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a67b90d3563b473591c4d8dc65bb0950_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_34" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_35" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_35" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_36" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_36" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_37" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__e3bb23c9c5de4c52809f54a50c77ea04_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_37" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_38" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a1ba66f3a90645648852b2a9a4cbed72_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_38" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_39" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_39" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_40" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_40" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_41" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_41" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_42" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__e67b6cb436224749b5b0cef1f4badade_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_42" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_43" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_43" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_44" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_44" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_45" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_45" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_46" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_46" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_47" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_47" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_48" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_48" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_49" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_49" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_50" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a55cbef0f6104462a62f43c1f2207914_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_50" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_51" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_51" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_52" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_52" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_53" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_53" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_54" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_54" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_55" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_55" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_56" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a48faa4ebe5d4c8f92cf9fc53e5806a6_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_56" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_57" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_57" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_58" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a41a952e4a77407e993aa881b58eee87_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_58" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_59" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_59" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_60" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_60" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_61" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_61" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_62" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_62" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_63" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_63" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_64" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_64" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_65" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a368d65518344c51bd4c5ea49029f82c_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_65" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_66" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_66" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_67" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_67" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_68" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_68" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_69" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_69" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_70" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_70" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_71" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_71" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_72" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__fed85beb89e04e75beedc860f5d00d3d_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_72" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_73" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_73" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_74" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_74" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_75" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_75" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_76" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_76" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_77" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_77" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_78" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_78" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_79" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__add614efddb1426a919f798f9f889317_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_79" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_80" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_80" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_81" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_81" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_82" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_82" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_83" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_83" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_84" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a8f113af857648d483342f41d4584002_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_84" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_85" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_85" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_86" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a2d5f35e6044482398b5a43e36759338_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_86" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_87" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__ef3d416d40bc473290adf642cfb6dffc_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_87" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_88" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_88" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_89" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__ddb987ac4e984c14b42688fef9994a97_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_89" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_90" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__c767b11c7a20451aa9b55047c574e599_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_90" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_91" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__b304e5c0dc954eea8d6d0f58f27b276c_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_91" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_92" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_92" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_93" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_93" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_94" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_94" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_95" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_95" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_96" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_96" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_97" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_97" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_98" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_98" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_99" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_99" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_100" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_100" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_101" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_101" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_102" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_102" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_103" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__afb93c17fd88416c8f3c2590b5932a2d_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_103" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_104" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_104" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_105" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__d6dd9c74fde34ebc809907d12c03b5be_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_105" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_106" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_106" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_107" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__d5a0fc29fe0247f38beb0b3d55edd9ca_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_107" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_108" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_108" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_109" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_109" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_110" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_110" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_111" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_111" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_112" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_112" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_113" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_113" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_114" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_114" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_115" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_115" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_116" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_116" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_117" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_117" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_118" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_118" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_119" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_119" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_120" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_120" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_121" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_121" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_122" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_122" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_123" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_123" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_124" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_124" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_125" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_125" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_126" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_126" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_127" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_127" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_128" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_128" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_129" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_129" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_130" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_130" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_131" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_131" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_132" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a5a33b6984d8413d9b051644c505f074_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_132" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_133" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_133" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_134" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_134" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_135" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_135" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_136" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_136" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_137" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_137" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_138" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_138" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_139" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_139" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_140" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_140" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_141" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_141" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_142" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_142" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_143" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_143" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_144" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_144" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_145" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_145" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_146" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_146" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_147" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_147" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_148" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_148" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_149" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__feb8a6e522d94fdba6bc4df806d841e4_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_149" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_150" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_150" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_151" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_151" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_152" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_152" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_153" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_153" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_154" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_154" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_155" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_155" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_156" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_156" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_157" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a92964494ced429eb4d06823aa9550ea_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_157" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_158" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_158" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_159" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_159" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_160" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_160" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_161" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_161" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_162" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__abc28ac0142144a799b18e8f5b98298c_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_162" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_163" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_163" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_164" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__af0a8c560d37454fb56df9e14c04e493_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_164" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_165" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__af0e140404694139b7ae8be5b6738493_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_165" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_166" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_166" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_167" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_167" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_168" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_168" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_169" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_169" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_170" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_170" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_171" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_171" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_172" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_172" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_173" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_173" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_174" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_174" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_175" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_175" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_176" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a14fa2a5d166450388229a819661bd09_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_176" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_177" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_177" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_178" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_178" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_179" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_179" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_180" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_180" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_181" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_181" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_182" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a538979d22cd454f8aaefb52755e34d1_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_182" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_183" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_183" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_184" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_184" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_185" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a5d5834e2b4a4f01985cd9c8affe2f57_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_185" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_186" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_186" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_187" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_187" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_188" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_188" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_189" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a674202df37b438cbb11b101d800d2cf_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_189" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_190" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_190" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_191" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_191" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_192" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a5d93ea027f74d23a4fa193cedb40760_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_192" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_193" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_193" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_194" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_194" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_195" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__aa5bc7b89e3d4c48a838f61e39c97c44_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_195" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_196" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_196" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_197" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_197" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_198" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_198" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_199" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_199" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_200" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_200" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_201" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_201" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_202" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a491438039634a01b5bbe666b4290edf_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_202" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_203" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_203" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_204" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_204" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_205" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_205" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_206" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_206" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_207" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_207" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_208" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_208" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_209" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_209" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_210" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_210" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_211" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_211" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_212" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a19ae655d23947ea8af867f7c3b1a737_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_212" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_213" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_213" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_214" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_214" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_215" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_215" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_216" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_216" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_217" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_217" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_218" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_218" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_219" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_219" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_220" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_220" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_221" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_221" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_222" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_222" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_223" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_223" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_224" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_224" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_225" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a2c0eb2d05184e8e99a1e9e3f4140f3e_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_225" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_226" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_226" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_227" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_227" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_228" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a8a81d9eefe54571869037c63afa00bf_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_228" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_229" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_229" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_230" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_230" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_231" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_231" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_232" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_232" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_233" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a000664c33f54f708b92c181a2cd15c0_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_233" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_234" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_234" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_235" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_235" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_236" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__f4bef243cbe941c1b5b956a079bc14b1_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_236" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_237" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_237" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_238" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__dd2be60b85f94724acb9bc31d42fc9cf_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_238" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_239" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a0000000000000000000000000000000_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_239" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_240" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a672466c7a924a62863cda37bc3e0701_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_240" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_241" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__ad897a40974e47b293c47469146207af_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_241" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_242" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__d64e426c74174162ab8e6da77c5b0d45_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_242" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
 
                 over "_243" (
-                    instanceable = false
+                    active = false
                 )
                 {
-                    over "VisualMaterials"
-                    {
-                        over "tn__a20b1cbbb8624c12bf429fc6fcb361ed_al0DIN" (
-                            instanceable = false
-                        )
-                        {
-                        }
-                    }
-
-                    over "_243" (
-                        delete apiSchemas = ["PhysicsMeshCollisionAPI", "PhysicsCollisionAPI"]
-                    )
-                    {
-                        bool physics:collisionEnabled = 0
-                    }
                 }
             }
 
@@ -5570,25 +1667,25 @@ over "smart_walker"
     over "Materials"
     {
         over "material_1" (
-            instanceable = false
+            active = false
         )
         {
         }
 
         over "gray" (
-            instanceable = false
+            active = false
         )
         {
         }
 
         over "black" (
-            instanceable = false
+            active = false
         )
         {
         }
 
         over "white" (
-            instanceable = false
+            active = false
         )
         {
         }
