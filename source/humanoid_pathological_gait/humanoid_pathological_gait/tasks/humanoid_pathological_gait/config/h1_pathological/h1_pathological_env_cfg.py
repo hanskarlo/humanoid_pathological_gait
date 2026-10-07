@@ -848,7 +848,7 @@ GRIP_POSTURE: dict[str, float] = {"shoulder_pitch": -0.40, "shoulder_roll": 0.0,
 GRIP_REACH_M = 0.316
 
 
-def apply_walker(cfg: H1PathologicalGaitEnvCfg) -> dict[str, object]:
+def apply_walker(cfg: H1PathologicalGaitEnvCfg, grip_stiffness: float | None = None) -> dict[str, object]:
     """Put the Smart Walker in the scene, coupled to the robot's hands (walker plan §2).
 
     Adds the walker articulation (``data/walker/smart_walker_sim.usda``: primitive colliders,
@@ -881,6 +881,11 @@ def apply_walker(cfg: H1PathologicalGaitEnvCfg) -> dict[str, object]:
     )
     cfg.scene.env_spacing = max(cfg.scene.env_spacing, 4.0)
     cfg.actions.walker = mdp.WalkerCouplingActionCfg()
+    if grip_stiffness is not None:
+        # Damping follows at the same damping ratio (0.7) on the same ~1.5 kg effective mass as the
+        # default, so a stiffer grip is not also a differently damped one.
+        cfg.actions.walker.stiffness = float(grip_stiffness)
+        cfg.actions.walker.damping = float(2.0 * 0.7 * (grip_stiffness * 1.5) ** 0.5)
     # The grip posture, measured with scripts/measure_grip_posture.py (2026-10-02): hands 0.316 m
     # ahead of the pelvis, +-0.179 m apart, 0.964 m up, with 18 deg of elbow flexion -- inside the
     # 15-30 deg band walkers are clinically fitted to. The arm reference is held there instead of

@@ -73,6 +73,13 @@ parser.add_argument(
     "run_config.json as walker_applied; evaluation restores it.",
 )
 parser.add_argument(
+    "--walker_grip_stiffness",
+    type=float,
+    default=None,
+    help="Grip spring stiffness in N/m for --walker (default 5000; damping follows at ratio 0.7). "
+    "Recorded in run_config.json under walker_applied; evaluation restores it.",
+)
+parser.add_argument(
     "--legacy_unmirrored_sway",
     action="store_true",
     help="Reproduce the pre-2026-09-24 environment, which handed right-paretic environments the "
@@ -574,7 +581,7 @@ def main() -> int:
         # Before the objective: apply_predictive_objective reads its constants from this archive.
         reference_applied = apply_reference_stride(env_cfg, args_cli.reference_stride)
         print(f"[train_amp] reference stride: {reference_applied}", flush=True)
-    walker_applied = apply_walker(env_cfg) if args_cli.walker else None
+    walker_applied = apply_walker(env_cfg, args_cli.walker_grip_stiffness) if args_cli.walker else None
     objective_applied = None
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)

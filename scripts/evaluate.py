@@ -358,7 +358,10 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
     # The walker changes the dynamics the policy acts in, not its observation, so a missing restore
     # would be silent: a coupled checkpoint evaluated uncoupled. Restore it whenever it was trained.
     if stored.get("walker_applied") or getattr(args_cli, "walker", False):
-        applied["walker"] = apply_walker(env_cfg)
+        # The grip stiffness changes the dynamics, so it is restored with the walker -- a policy
+        # fine-tuned at 20 kN/m evaluated at the 5 kN/m default would be a different controller.
+        stiffness = (stored.get("walker_applied") or {}).get("stiffness")
+        applied["walker"] = apply_walker(env_cfg, stiffness)
         print("[evaluate] restored training scene: Smart Walker coupled to the hands")
 
     # The sway target is in the policy's observation (root_progression_error), so a checkpoint
