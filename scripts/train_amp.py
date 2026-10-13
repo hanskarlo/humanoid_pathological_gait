@@ -106,6 +106,15 @@ parser.add_argument(
     "data. Evaluation reads this back from run_config.json; it changes the observation "
     "dimension, so a checkpoint cannot be rolled out under the other objective.",
 )
+parser.add_argument(
+    "--impairment",
+    choices=("full", "none"),
+    default="full",
+    help="'none' is the unimpaired positive control (forward plan 2026-10-13, Phase 1): no TSRT reflex, "
+    "no paretic effort ceiling, the sound leg's randomisation on both legs, unbiased pushes -- against "
+    "the same patient reference, reward and observation. Recorded in run_config.json as "
+    "impairment_applied; evaluation restores it.",
+)
 parser.add_argument("--lr_policy", type=float, default=3e-4, help="Policy/value learning rate.")
 parser.add_argument("--lr_disc", type=float, default=1e-4, help="Discriminator learning rate.")
 parser.add_argument(
@@ -182,6 +191,7 @@ from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import a
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
     apply_reference_stride,
+    apply_unimpaired,
     apply_walker,
 )
 
@@ -560,6 +570,20 @@ def resolved_hip_roll_limit_deg(env) -> float:
     return float(math.degrees(robot.data.joint_pos_limits.torch[0, joint_ids[0], 1]))
 
 
+def resolved_paretic_effort_scale(env) -> float:
+    """Mean ratio of the paretic leg's current torque limits to nominal, over every environment.
+
+    Read from the articulation after a reset, so it reports what the effort-limit event actually
+    wrote rather than what a flag asked for.
+    """
+    robot = env.scene["robot"]
+    layout = env.joint_layout
+    ratio = robot.data.joint_effort_limits.torch / env.default_joint_effort_limits
+    left = ratio[:, layout.left_leg_ids].mean(dim=-1)
+    right = ratio[:, layout.right_leg_ids].mean(dim=-1)
+    return float(torch.where(env.reference_gait.paretic_side < 0, left, right).mean())
+
+
 def main() -> int:
     env_cfg = load_cfg_from_registry(args_cli.task.split(":")[-1], "env_cfg_entry_point")
     env_cfg = resolve_presets(env_cfg, selected=tuple(args_cli.presets))
@@ -586,6 +610,10 @@ def main() -> int:
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)
         print(f"[train_amp] predictive objective: {objective_applied}", flush=True)
+    impairment_applied = None
+    if args_cli.impairment == "none":
+        impairment_applied = apply_unimpaired(env_cfg)
+        print(f"[train_amp] impairment removed: {impairment_applied}", flush=True)
     if args_cli.seed is not None:
         env_cfg.seed = args_cli.seed
         torch.manual_seed(args_cli.seed)
@@ -638,6 +666,10 @@ def main() -> int:
         "reference_stride_applied": reference_applied,
         # None without the walker; the coupling and controller constants otherwise.
         "walker_applied": walker_applied,
+        # None with the impairment model in place; what was removed otherwise.
+        "impairment_applied": impairment_applied,
+        # Measured after the first reset, not taken from the flag: 0.4 with the impairment, ~1.0 without.
+        "paretic_effort_scale_resolved": resolved_paretic_effort_scale(env),
     }
     (log_dir / "run_config.json").write_text(json.dumps(run_config, indent=2, default=str))
 

@@ -165,6 +165,7 @@ from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
     apply_reference_stride,
+    apply_unimpaired,
     apply_walker,
 )
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.h1_joints import (  # noqa: E402
@@ -280,7 +281,7 @@ def assign_phase_offsets(env, num_envs: int) -> None:
 #: trajectory. ``synergy_rank`` is: it projects the paretic leg's residual onto a rank-k
 #: subspace *inside the action term*, leaving the action dimension unchanged -- so omitting it
 #: does not raise, it silently hands the policy authority it never had while training.
-DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank", "hip_roll_limit_deg", "reference_stride", "objective")
+DYNAMICS_FLAGS: tuple[str, ...] = ("synergy_rank", "hip_roll_limit_deg", "reference_stride", "objective", "impairment")
 # Order matters: reference_stride before objective, because apply_predictive_objective reads its
 # constants from whichever archive is set when it runs.
 
@@ -326,6 +327,8 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
         applied[flag] = value
         if flag == "objective" and value in (None, "imitation"):
             continue
+        if flag == "impairment" and value in (None, "full"):
+            continue
         if override is not None and stored.get(flag) != override:
             print(f"[evaluate] WARNING: --{flag}={override} overrides the run's own {stored.get(flag)!r}")
         if value is None:
@@ -354,6 +357,12 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
             if str(value) == "predictive":
                 applied["objective_detail"] = apply_predictive_objective(env_cfg)
                 print("[evaluate] restored training objective: predictive (reference terms removed)")
+        elif flag == "impairment":
+            # The unimpaired control changes the plant, not the observation, so a missing restore
+            # would be silent: an unimpaired policy evaluated in the impaired robot.
+            if str(value) == "none":
+                applied["impairment_detail"] = apply_unimpaired(env_cfg)
+                print("[evaluate] restored training plant: impairment removed (unimpaired control)")
 
     # The walker changes the dynamics the policy acts in, not its observation, so a missing restore
     # would be silent: a coupled checkpoint evaluated uncoupled. Restore it whenever it was trained.

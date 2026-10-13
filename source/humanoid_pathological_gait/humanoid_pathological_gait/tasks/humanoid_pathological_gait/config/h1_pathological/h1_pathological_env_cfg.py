@@ -783,6 +783,84 @@ def apply_predictive_objective(
     }
 
 
+# ---------------------------------------------------------------------------------------
+# Unimpaired control (forward plan 2026-10-13, Phase 1)
+# ---------------------------------------------------------------------------------------
+
+
+def apply_unimpaired(cfg: H1PathologicalGaitEnvCfg) -> dict[str, object]:
+    """Remove the impairment model and keep everything else: the positive control.
+
+    Forward plan 2026-10-13, Phase 1. Every patient model fails all four structural criteria, and
+    no run had ever trained without the impairment, so nothing could say whether the impairment
+    produces that failure or whether imitating this stride on this robot produces it anyway. This
+    makes the robot whole and changes nothing it is asked to do.
+
+    Removed, which together are the impairment model:
+
+    * the TSRT reflex torque on the paretic leg (``enable_spasticity=False``; the spasticity
+      ramp then scales a torque that is never applied);
+    * the paretic effort ceiling: the paretic leg's limits are jittered exactly like the sound
+      leg's, instead of being cut to 0.4;
+    * the asymmetric randomisation: the paretic leg's stiffness, damping and link masses get the
+      sound leg's ranges;
+    * the push bias: pushes toward the paretic side are no longer amplified.
+
+    Kept, because they are the *task* and not the plant: the patient's reference stride (still
+    asymmetric, still mirrored per environment by the drawn paretic side), every reward term
+    including the paretic-weighted ones, the observation including the paretic-side flag, RSI and
+    the push schedule. "Paretic" below still names the limb that tracks the patient's paretic
+    trajectory; with this applied it is no weaker than the other.
+
+    The sound-leg ranges are read from the event terms' own parameters (falling back to the
+    functions' defaults), so the two legs cannot drift apart through a later edit of one of them.
+    Terms the evaluation config removes (gains, masses, pushes) are skipped when absent. Returns
+    what it applied, for the run's provenance.
+    """
+    import inspect
+
+    def sound_value(term: EventTerm, name: str):
+        params = term.params or {}
+        if name in params:
+            return params[name]
+        return inspect.signature(term.func).parameters[name].default
+
+    applied: dict[str, object] = {"impairment": "none", "enable_spasticity": False}
+    cfg.actions.joint_pos.enable_spasticity = False
+
+    effort = cfg.events.asymmetric_effort_limits
+    if effort is None:
+        raise ValueError("asymmetric_effort_limits is absent; the paretic ceiling has moved and this is out of date")
+    sound_effort = sound_value(effort, "sound_range")
+    effort.params = {**(effort.params or {}), "paretic_effort_scale": 1.0, "paretic_range": sound_effort}
+    applied["paretic_effort_scale"] = 1.0
+    applied["paretic_effort_range"] = list(sound_effort)
+
+    gains = cfg.events.asymmetric_joint_gains
+    if gains is not None:
+        stiffness = sound_value(gains, "sound_stiffness_range")
+        damping = sound_value(gains, "sound_damping_range")
+        gains.params = {
+            **(gains.params or {}),
+            "paretic_stiffness_range": stiffness,
+            "paretic_damping_range": damping,
+        }
+        applied["paretic_stiffness_range"] = list(stiffness)
+        applied["paretic_damping_range"] = list(damping)
+
+    mass = cfg.events.asymmetric_leg_mass
+    if mass is not None:
+        sound_mass = sound_value(mass, "sound_range")
+        mass.params = {**(mass.params or {}), "paretic_range": sound_mass}
+        applied["paretic_mass_range"] = list(sound_mass)
+
+    if cfg.events.push_robot is not None:
+        cfg.events.push_robot.params["paretic_bias"] = 1.0
+        applied["push_paretic_bias"] = 1.0
+
+    return applied
+
+
 def apply_reference_stride(cfg: H1PathologicalGaitEnvCfg, path: str) -> dict[str, object]:
     """Point the task at a different patient's reference stride (forward plan H4).
 
