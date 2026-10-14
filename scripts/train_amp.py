@@ -115,6 +115,15 @@ parser.add_argument(
     "the same patient reference, reward and observation. Recorded in run_config.json as "
     "impairment_applied; evaluation restores it.",
 )
+parser.add_argument(
+    "--action_std_max",
+    type=float,
+    default=None,
+    help="Cap on the policy's learned exploration std, in action units (forward plan 2026-10-13, Phase 2-0). "
+    "The std is projected onto the cap at construction, after every optimizer step and after a resume, so "
+    "it is the std actually sampled with. Omit for the uncapped default, under which it grows to 3-4 by "
+    "iteration 1200 (~0.8 rad of joint-target noise at action scale 0.25). Recorded in run_config.json.",
+)
 parser.add_argument("--lr_policy", type=float, default=3e-4, help="Policy/value learning rate.")
 parser.add_argument("--lr_disc", type=float, default=1e-4, help="Discriminator learning rate.")
 parser.add_argument(
@@ -317,6 +326,9 @@ class PPOAMPTrainer:
             critic_hidden_dims=(512, 256, 128),
         ).to(device)
         self.optimizer_policy = torch.optim.Adam(self.policy.parameters(), lr=args_cli.lr_policy)
+        # None leaves the std free, which is the frozen behaviour; a cap is a projection, not a penalty.
+        self.log_std_max = math.log(args_cli.action_std_max) if args_cli.action_std_max is not None else None
+        self.cap_action_std()
 
         self.rollout_buffer = RolloutBuffer(
             num_steps=self.num_steps,
@@ -445,6 +457,7 @@ class PPOAMPTrainer:
                 loss.backward()
                 nn.utils.clip_grad_norm_(self.policy.parameters(), max_norm=1.0)
                 self.optimizer_policy.step()
+                self.cap_action_std()
 
                 # detach() before the scalar conversion: these are live graph nodes, and
                 # float() on one warns on every mini-batch of every iteration.
@@ -486,6 +499,12 @@ class PPOAMPTrainer:
             **{key: total / term_counts[key] for key, total in term_totals.items()},
         }
 
+    def cap_action_std(self) -> None:
+        """Project the learned exploration std onto ``--action_std_max``; a no-op without the flag."""
+        if self.log_std_max is not None:
+            with torch.no_grad():
+                self.policy.log_std.clamp_(max=self.log_std_max)
+
     def load_checkpoint(self, path: Path) -> int:
         """Restore policy, discriminator and both optimizers. Returns the stored iteration.
 
@@ -496,6 +515,7 @@ class PPOAMPTrainer:
         checkpoint = torch.load(path, map_location=self.device, weights_only=False)
         self.policy.load_state_dict(checkpoint["policy_state_dict"])
         self.optimizer_policy.load_state_dict(checkpoint["optimizer_policy"])
+        self.cap_action_std()
         self.discriminator.load_state_dict(checkpoint["discriminator_state_dict"])
         self.disc_loss_mgr.optimizer.load_state_dict(checkpoint["optimizer_disc"])
 
