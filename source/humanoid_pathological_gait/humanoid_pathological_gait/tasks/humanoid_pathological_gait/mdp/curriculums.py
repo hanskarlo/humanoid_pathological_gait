@@ -96,3 +96,19 @@ def push_magnitude_ramp(
     }
     env.event_manager.set_term_cfg(term_name, term_cfg)
     return scale
+
+
+def swing_constraint_ramp(
+    env: H1PathologicalGaitEnv,
+    env_ids: torch.Tensor,
+    start_step: int = 0,
+    num_steps: int = 12_000,
+    end_p: float = 0.1,
+) -> float:
+    """Ramp the swing-load constraint's termination probability ``p_max`` from 0 to ``end_p``.
+
+    Returns the current value so the curriculum manager logs it.
+    """
+    p_max = _linear_ramp(env.common_step_counter, start_step, num_steps, 0.0, end_p)
+    env.swing_constraint_p_max = p_max
+    return p_max

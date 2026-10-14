@@ -861,6 +861,55 @@ def apply_unimpaired(cfg: H1PathologicalGaitEnvCfg) -> dict[str, object]:
     return applied
 
 
+def apply_swing_load_constraint(
+    cfg: H1PathologicalGaitEnvCfg,
+    p_max: float = 0.1,
+    ramp_steps: int = 12_000,
+    epsilon: float = 0.05,
+    c_max: float = 0.25,
+    margin_s: float = 0.04,
+) -> dict[str, object]:
+    """Add the swing-load constraint (Constraints as Terminations) and its curriculum.
+
+    Forward plan 2026-10-13, Phase 2. See :mod:`...swing_constraint`. A foot that carries more than
+    ``epsilon`` of body weight in the core of its scheduled swing ends the episode with probability
+    up to ``p_max`` per control step. ``p_max`` ramps in from 0 over ``ramp_steps`` env steps (12,000
+    is 500 iterations at 24 steps each).
+
+    ``termination_penalty`` is rewired to penalise every *other* termination cause only. A
+    constraint termination costs the policy its future reward, as in CaT, not the -200 that a fall
+    costs. Without this, a constraint violation would be priced like falling over.
+
+    Training only; ``evaluate.py`` does not restore it. Returns what it applied, for provenance.
+    """
+    others = [
+        name
+        for name in vars(cfg.terminations)
+        if not name.startswith("_") and isinstance(getattr(cfg.terminations, name), DoneTerm) and name != "time_out"
+    ]
+    cfg.terminations.swing_load = DoneTerm(
+        func=mdp.swing_load_constraint,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
+            "epsilon": epsilon,
+            "c_max": c_max,
+            "margin_s": margin_s,
+        },
+    )
+    cfg.curriculum.swing_constraint = CurrTerm(
+        func=mdp.swing_constraint_ramp, params={"start_step": 0, "num_steps": ramp_steps, "end_p": p_max}
+    )
+    cfg.rewards.termination_penalty = RewTerm(func=mdp.is_terminated_term, weight=-200.0, params={"term_keys": others})
+    return {
+        "p_max": p_max,
+        "ramp_steps": ramp_steps,
+        "epsilon_bw": epsilon,
+        "c_max_bw": c_max,
+        "margin_s": margin_s,
+        "termination_penalty_terms": others,
+    }
+
+
 def apply_reference_stride(cfg: H1PathologicalGaitEnvCfg, path: str) -> dict[str, object]:
     """Point the task at a different patient's reference stride (forward plan H4).
 

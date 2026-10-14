@@ -124,6 +124,14 @@ parser.add_argument(
     "it is the std actually sampled with. Omit for the uncapped default, under which it grows to 3-4 by "
     "iteration 1200 (~0.8 rad of joint-target noise at action scale 0.25). Recorded in run_config.json.",
 )
+parser.add_argument(
+    "--swing_load_constraint",
+    type=float,
+    default=None,
+    help="Constraints as Terminations on load in a foot's scheduled swing (forward plan 2026-10-13, Phase 2): "
+    "the termination probability at full violation, per control step, ramped in over 500 iterations. Omit for "
+    "none. Training only; evaluation does not restore it. Recorded in run_config.json.",
+)
 parser.add_argument("--lr_policy", type=float, default=3e-4, help="Policy/value learning rate.")
 parser.add_argument("--lr_disc", type=float, default=1e-4, help="Discriminator learning rate.")
 parser.add_argument(
@@ -200,6 +208,7 @@ from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import a
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
     apply_reference_stride,
+    apply_swing_load_constraint,
     apply_unimpaired,
     apply_walker,
 )
@@ -630,6 +639,10 @@ def main() -> int:
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)
         print(f"[train_amp] predictive objective: {objective_applied}", flush=True)
+    swing_constraint_applied = None
+    if args_cli.swing_load_constraint is not None:
+        swing_constraint_applied = apply_swing_load_constraint(env_cfg, p_max=args_cli.swing_load_constraint)
+        print(f"[train_amp] swing-load constraint: {swing_constraint_applied}", flush=True)
     impairment_applied = None
     if args_cli.impairment == "none":
         impairment_applied = apply_unimpaired(env_cfg)
@@ -688,6 +701,8 @@ def main() -> int:
         "walker_applied": walker_applied,
         # None with the impairment model in place; what was removed otherwise.
         "impairment_applied": impairment_applied,
+        # None without the constraint; its parameters otherwise. Training only.
+        "swing_constraint_applied": swing_constraint_applied,
         # Measured after the first reset, not taken from the flag: 0.4 with the impairment, ~1.0 without.
         "paretic_effort_scale_resolved": resolved_paretic_effort_scale(env),
     }

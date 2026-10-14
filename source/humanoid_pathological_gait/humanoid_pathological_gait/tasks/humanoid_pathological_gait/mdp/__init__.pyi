@@ -30,6 +30,7 @@ __all__ = [
     "metabolic_cost",
     # terminations
     "reference_tracking_divergence",
+    "swing_load_constraint",
     # events
     "reset_to_reference_pose",
     "randomize_asymmetric_joint_gains",
@@ -44,13 +45,14 @@ __all__ = [
     "spasticity_ramp",
     "balance_assist_decay",
     "push_magnitude_ramp",
+    "swing_constraint_ramp",
 ]
 
 # Forward stable MDP terms lazily, then override with environment-specific terms below.
 from isaaclab.envs.mdp import *  # noqa: F401, F403
 
 from .actions import ReferenceResidualSpasticAction, ReferenceResidualSpasticActionCfg
-from .curriculums import balance_assist_decay, push_magnitude_ramp, spasticity_ramp
+from .curriculums import balance_assist_decay, push_magnitude_ramp, spasticity_ramp, swing_constraint_ramp
 from .events import (
     push_biased_toward_paretic_side,
     randomize_asymmetric_effort_limits,
@@ -81,5 +83,5 @@ from .rewards import (
     track_forward_velocity,
     track_root_progression,
 )
-from .terminations import reference_tracking_divergence
+from .terminations import reference_tracking_divergence, swing_load_constraint
 from .walker import WalkerCouplingAction, WalkerCouplingActionCfg, reset_walker_ahead_of_robot
