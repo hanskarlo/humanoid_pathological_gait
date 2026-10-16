@@ -101,3 +101,43 @@ def swing_load_constraint(
         c_max,
     )
     return torch.rand_like(probability) < probability
+
+
+def stance_unload_constraint(
+    env: H1PathologicalGaitEnv,
+    sensor_cfg: SceneEntityCfg,
+    epsilon: float = 0.05,
+    margin_s: float = 0.04,
+) -> torch.Tensor:
+    """Constraint as termination: a foot (nearly) unloaded in the core of its scheduled stance.
+
+    The companion of :func:`swing_load_constraint`; see :mod:`..swing_constraint`. The probability
+    is ``env.stance_constraint_p_max * clip((epsilon - load / body weight) / epsilon, 0, 1)``, the
+    worse foot deciding. It is set by the ``stance_constraint_ramp`` curriculum, and is 0 until
+    that runs. Training only; ``evaluate.py`` does not restore it.
+    """
+    from ..swing_constraint import core_stance_mask, unload_probability
+
+    reference = env.reference_gait
+    if reference.ref_contact is None:
+        return torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
+    cache = getattr(env, "_stance_constraint_cache", None)
+    if cache is None:
+        sample_dt = float(reference.stride_duration_s) / (reference.num_samples - 1)
+        core = core_stance_mask(reference.ref_contact > 0.5, int(round(margin_s / sample_dt)))
+        body_weight = env.default_body_mass.to(env.device).sum(dim=-1) * 9.81
+        cache = env._stance_constraint_cache = (core, body_weight)
+    core, body_weight = cache
+
+    index = torch.round(reference.gait_phase * (reference.num_samples - 1)).long().clamp_(0, reference.num_samples - 1)
+    in_core_stance = core[index]  # (N, 2), (paretic, sound)
+
+    sensor = env.scene[sensor_cfg.name]
+    force = torch.norm(sensor.data.net_forces_w.torch[:, sensor_cfg.body_ids], dim=-1)
+    is_right_paretic = (reference.paretic_side > 0).unsqueeze(-1)
+    force = torch.where(is_right_paretic, force.flip(-1), force)
+
+    probability = unload_probability(
+        force / body_weight.unsqueeze(-1), in_core_stance, float(getattr(env, "stance_constraint_p_max", 0.0)), epsilon
+    )
+    return torch.rand_like(probability) < probability

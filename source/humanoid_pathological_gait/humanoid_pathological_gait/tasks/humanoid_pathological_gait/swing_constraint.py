@@ -17,7 +17,13 @@ attractor is made unreachable rather than merely expensive. The probability is r
 by a curriculum, because applied at full strength to a policy with no single-support skill it would
 end every episode (2026-09-07).
 
-Pure torch, no Isaac Lab, so the two functions below are testable on synthetic data
+Its companion, the **stance-unload constraint**, is the other half (2026-10-15). With swing load
+removed, single support still broke into 60 ms pieces, because the stance foot unloaded and
+reloaded inside its own stance. A quarter of single supports ended in flight. So a foot that
+carries almost nothing in the core of its scheduled stance is a violation too
+(``research_log/2026-10-15-the-swing-constraint-works-and-exposes-the-bouncing-stance.md``).
+
+Pure torch, no Isaac Lab, so the functions below are testable on synthetic data
 (``tests/test_swing_constraint.py``).
 """
 
@@ -67,3 +73,33 @@ def violation_probability(
     """
     violation = torch.clamp(load_fraction - epsilon, min=0.0) * in_core_swing.float()
     return p_max * torch.clamp(violation / c_max, 0.0, 1.0).amax(dim=-1)
+
+
+def core_stance_mask(contact: torch.Tensor, margin: int) -> torch.Tensor:
+    """Scheduled stance, minus ``margin`` samples at each end, treating the stride as a cycle.
+
+    The mirror image of :func:`core_swing_mask`. Unloading at heel strike and toe-off is part of a
+    normal step; unloading in mid-stance is the bouncing this constraint targets.
+    """
+    return core_swing_mask(~contact.bool(), margin)
+
+
+def unload_probability(
+    load_fraction: torch.Tensor,
+    in_core_stance: torch.Tensor,
+    p_max: float,
+    epsilon: float = 0.05,
+) -> torch.Tensor:
+    """Per-environment termination probability for a foot left (nearly) unloaded in its core stance.
+
+    ``p_max * clip((epsilon - load) / epsilon, 0, 1)``: no penalty at or above ``epsilon`` of body
+    weight, ``p_max`` for a foot carrying nothing. The worse foot decides.
+
+    Args:
+        load_fraction: ``(N, 2)`` foot load as a fraction of body weight, (paretic, sound).
+        in_core_stance: ``(N, 2)`` boolean, the foot's reference phase is inside its core stance.
+        p_max: Termination probability for a fully unloaded foot, per control step.
+        epsilon: Load below which a stance foot counts as unloaded, as a fraction of body weight.
+    """
+    deficit = torch.clamp((epsilon - load_fraction) / epsilon, 0.0, 1.0) * in_core_stance.float()
+    return p_max * deficit.amax(dim=-1)

@@ -882,11 +882,6 @@ def apply_swing_load_constraint(
 
     Training only; ``evaluate.py`` does not restore it. Returns what it applied, for provenance.
     """
-    others = [
-        name
-        for name in vars(cfg.terminations)
-        if not name.startswith("_") and isinstance(getattr(cfg.terminations, name), DoneTerm) and name != "time_out"
-    ]
     cfg.terminations.swing_load = DoneTerm(
         func=mdp.swing_load_constraint,
         params={
@@ -899,12 +894,70 @@ def apply_swing_load_constraint(
     cfg.curriculum.swing_constraint = CurrTerm(
         func=mdp.swing_constraint_ramp, params={"start_step": 0, "num_steps": ramp_steps, "end_p": p_max}
     )
-    cfg.rewards.termination_penalty = RewTerm(func=mdp.is_terminated_term, weight=-200.0, params={"term_keys": others})
+    others = _penalise_only_non_constraint_terminations(cfg)
     return {
         "p_max": p_max,
         "ramp_steps": ramp_steps,
         "epsilon_bw": epsilon,
         "c_max_bw": c_max,
+        "margin_s": margin_s,
+        "termination_penalty_terms": others,
+    }
+
+
+#: Terminations that are constraints (CaT): they end an episode without the -200 a fall costs.
+CONSTRAINT_TERMINATIONS: tuple[str, ...] = ("swing_load", "stance_unload")
+
+
+def _penalise_only_non_constraint_terminations(cfg: H1PathologicalGaitEnvCfg) -> list[str]:
+    """Point ``termination_penalty`` at every termination except time-outs and the constraints.
+
+    Recomputed by each constraint's ``apply_*``, so the result does not depend on the order in
+    which they are applied. Returns the penalised terms, for provenance.
+    """
+    others = [
+        name
+        for name in vars(cfg.terminations)
+        if not name.startswith("_")
+        and isinstance(getattr(cfg.terminations, name), DoneTerm)
+        and name != "time_out"
+        and name not in CONSTRAINT_TERMINATIONS
+    ]
+    cfg.rewards.termination_penalty = RewTerm(func=mdp.is_terminated_term, weight=-200.0, params={"term_keys": others})
+    return others
+
+
+def apply_stance_unload_constraint(
+    cfg: H1PathologicalGaitEnvCfg,
+    p_max: float = 0.1,
+    ramp_steps: int = 12_000,
+    epsilon: float = 0.05,
+    margin_s: float = 0.04,
+) -> dict[str, object]:
+    """Add the stance-unload constraint (Constraints as Terminations) and its curriculum.
+
+    The companion of :func:`apply_swing_load_constraint`, registered to run with it
+    (``research_log/2026-10-16-preregistration-stance-and-swing-constraints.md``). A foot carrying
+    less than ``epsilon`` of body weight in the core of its scheduled stance ends the episode with
+    probability up to ``p_max`` per control step, ramped in from 0 over ``ramp_steps`` env steps.
+    Training only. Returns what it applied, for provenance.
+    """
+    cfg.terminations.stance_unload = DoneTerm(
+        func=mdp.stance_unload_constraint,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
+            "epsilon": epsilon,
+            "margin_s": margin_s,
+        },
+    )
+    cfg.curriculum.stance_constraint = CurrTerm(
+        func=mdp.stance_constraint_ramp, params={"start_step": 0, "num_steps": ramp_steps, "end_p": p_max}
+    )
+    others = _penalise_only_non_constraint_terminations(cfg)
+    return {
+        "p_max": p_max,
+        "ramp_steps": ramp_steps,
+        "epsilon_bw": epsilon,
         "margin_s": margin_s,
         "termination_penalty_terms": others,
     }

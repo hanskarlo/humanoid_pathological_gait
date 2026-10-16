@@ -79,3 +79,22 @@ def test_the_worse_foot_decides(sc) -> None:
 def test_zero_p_max_is_inert(sc) -> None:
     load = torch.tensor([[1.0, 1.0]])
     assert sc.violation_probability(load, torch.tensor([[True, True]]), p_max=0.0).item() == 0.0
+
+
+def test_core_stance_is_the_complement_trimmed_at_both_ends(sc) -> None:
+    core = sc.core_stance_mask(schedule(), margin=5)
+    # foot 0 is down outside [40, 70): its core stance is [75, 100) and [0, 35), cyclically
+    assert core[:, 0].nonzero().flatten().tolist() == [*range(0, 35), *range(75, 100)]
+    assert core[:, 1].all(), "a foot that is always down is always in core stance"
+
+
+def test_unload_probability_follows_its_mapping(sc) -> None:
+    in_stance = torch.tensor([[True, False]] * 4)
+    load = torch.tensor([[0.0, 0.0], [0.025, 0.0], [0.05, 0.0], [0.5, 0.0]])
+    p = sc.unload_probability(load, in_stance, p_max=0.1, epsilon=0.05)
+    assert torch.allclose(p, torch.tensor([0.1, 0.05, 0.0, 0.0]))
+
+
+def test_unloading_outside_core_stance_never_terminates(sc) -> None:
+    p = sc.unload_probability(torch.tensor([[0.0, 0.0]]), torch.tensor([[False, False]]), p_max=0.25)
+    assert p.item() == 0.0
