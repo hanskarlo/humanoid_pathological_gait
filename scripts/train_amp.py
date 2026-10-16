@@ -141,6 +141,19 @@ parser.add_argument(
     "unloaded foot, per control step, ramped in over 500 iterations. Omit for none. Training only. Recorded in "
     "run_config.json.",
 )
+parser.add_argument(
+    "--stance_constraint_start_iteration",
+    type=int,
+    default=0,
+    help="Iteration at which --stance_unload_constraint starts ramping in (default 0). Set it to the resume "
+    "iteration to introduce the constraint to a policy that already walks.",
+)
+parser.add_argument(
+    "--stance_constraint_ramp_iterations",
+    type=int,
+    default=500,
+    help="Iterations over which --stance_unload_constraint ramps from 0 to its p_max (default 500).",
+)
 parser.add_argument("--lr_policy", type=float, default=3e-4, help="Policy/value learning rate.")
 parser.add_argument("--lr_disc", type=float, default=1e-4, help="Discriminator learning rate.")
 parser.add_argument(
@@ -655,7 +668,12 @@ def main() -> int:
         print(f"[train_amp] swing-load constraint: {swing_constraint_applied}", flush=True)
     stance_constraint_applied = None
     if args_cli.stance_unload_constraint is not None:
-        stance_constraint_applied = apply_stance_unload_constraint(env_cfg, p_max=args_cli.stance_unload_constraint)
+        stance_constraint_applied = apply_stance_unload_constraint(
+            env_cfg,
+            p_max=args_cli.stance_unload_constraint,
+            ramp_steps=args_cli.stance_constraint_ramp_iterations * args_cli.num_steps_per_env,
+            start_step=args_cli.stance_constraint_start_iteration * args_cli.num_steps_per_env,
+        )
         print(f"[train_amp] stance-unload constraint: {stance_constraint_applied}", flush=True)
     impairment_applied = None
     if args_cli.impairment == "none":

@@ -933,14 +933,18 @@ def apply_stance_unload_constraint(
     ramp_steps: int = 12_000,
     epsilon: float = 0.05,
     margin_s: float = 0.04,
+    start_step: int = 0,
 ) -> dict[str, object]:
     """Add the stance-unload constraint (Constraints as Terminations) and its curriculum.
 
     The companion of :func:`apply_swing_load_constraint`, registered to run with it
     (``research_log/2026-10-16-preregistration-stance-and-swing-constraints.md``). A foot carrying
     less than ``epsilon`` of body weight in the core of its scheduled stance ends the episode with
-    probability up to ``p_max`` per control step, ramped in from 0 over ``ramp_steps`` env steps.
-    Training only. Returns what it applied, for provenance.
+    probability up to ``p_max`` per control step, ramped in from 0 over ``ramp_steps`` env steps
+    beginning at ``start_step``. ``start_step`` exists because, ramped from step 0, the constraint
+    ends almost every episode of a policy that cannot yet walk
+    (``research_log/2026-10-16-the-stance-constraint-collapses-learning.md``). It can instead be
+    introduced once a resumed policy walks. Training only. Returns what it applied, for provenance.
     """
     cfg.terminations.stance_unload = DoneTerm(
         func=mdp.stance_unload_constraint,
@@ -951,12 +955,13 @@ def apply_stance_unload_constraint(
         },
     )
     cfg.curriculum.stance_constraint = CurrTerm(
-        func=mdp.stance_constraint_ramp, params={"start_step": 0, "num_steps": ramp_steps, "end_p": p_max}
+        func=mdp.stance_constraint_ramp, params={"start_step": start_step, "num_steps": ramp_steps, "end_p": p_max}
     )
     others = _penalise_only_non_constraint_terminations(cfg)
     return {
         "p_max": p_max,
         "ramp_steps": ramp_steps,
+        "start_step": start_step,
         "epsilon_bw": epsilon,
         "margin_s": margin_s,
         "termination_penalty_terms": others,
