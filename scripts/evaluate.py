@@ -148,7 +148,6 @@ import torch
 from isaaclab_tasks.utils import load_cfg_from_registry, resolve_presets
 
 importlib.import_module("humanoid_pathological_gait.tasks")
-
 from gait_analysis import (  # noqa: E402
     NUM_CYCLE_BINS,
     contact_gait_metrics,
@@ -162,6 +161,7 @@ from isaaclab.managers import SceneEntityCfg  # noqa: E402
 from isaaclab.utils.math import quat_apply_inverse, yaw_quat  # noqa: E402
 
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
+from humanoid_pathological_gait.tasks.humanoid_pathological_gait import asset_mirror  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
     apply_reference_stride,
@@ -403,6 +403,9 @@ def main() -> int:
     torch.manual_seed(args_cli.seed)
     np.random.seed(args_cli.seed)
 
+    # Before the scene builds: serve the robot and ground-plane USDs from the local mirror, so a
+    # network outage cannot fail (or, for the ground plane, silently empty) the scene.
+    asset_mirror.install()
     env = gym.make(args_cli.task, cfg=env_cfg).unwrapped
     robot = env.scene["robot"]
     layout = env.joint_layout

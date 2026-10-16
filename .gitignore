@@ -18,3 +18,4 @@ source/humanoid_pathological_gait/humanoid_pathological_gait/tasks/humanoid_path
 
 # Backups written by scripts/add_reference_mos.py before it augments an archive.
 *.npz.bak
+assets_mirror/

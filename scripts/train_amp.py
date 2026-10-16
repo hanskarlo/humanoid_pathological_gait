@@ -193,7 +193,6 @@ import torch.nn as nn
 from isaaclab_tasks.utils import load_cfg_from_registry, resolve_presets
 
 importlib.import_module("humanoid_pathological_gait.tasks")
-
 from humanoid_pathological_gait.algorithms.amp import (  # noqa: E402
     AMP_TRANSITION_DIM,
     AMPAgentReplayBuffer,
@@ -204,6 +203,7 @@ from humanoid_pathological_gait.algorithms.amp import (  # noqa: E402
     to_paretic_frame,
 )
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic, RolloutBuffer  # noqa: E402
+from humanoid_pathological_gait.tasks.humanoid_pathological_gait import asset_mirror  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_predictive_objective,
@@ -658,6 +658,9 @@ def main() -> int:
         log_dir = Path(args_cli.log_dir).absolute() / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     log_dir.mkdir(parents=True, exist_ok=True)
 
+    # Before the scene builds: serve the robot and ground-plane USDs from the local mirror, so a
+    # network outage cannot fail (or, for the ground plane, silently empty) the scene.
+    asset_mirror_applied = asset_mirror.install()
     env = gym.make(args_cli.task, cfg=env_cfg).unwrapped
     trainer = PPOAMPTrainer(env, log_dir, torch.device(env.device))
 
@@ -703,6 +706,8 @@ def main() -> int:
         "impairment_applied": impairment_applied,
         # None without the constraint; its parameters otherwise. Training only.
         "swing_constraint_applied": swing_constraint_applied,
+        # None when the assets came from the network; the mirror's root and manifest hash otherwise.
+        "asset_mirror_applied": asset_mirror_applied,
         # Measured after the first reset, not taken from the flag: 0.4 with the impairment, ~1.0 without.
         "paretic_effort_scale_resolved": resolved_paretic_effort_scale(env),
     }
