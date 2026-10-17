@@ -124,6 +124,13 @@ parser.add_argument(
     help="Proceed when the checkpoint has no run_config.json instead of refusing. The resulting "
     "numbers are only trustworthy for runs that used the config defaults.",
 )
+parser.add_argument(
+    "--record_contact_substeps",
+    action="store_true",
+    help="Also record each foot's net contact force after every physics substep "
+    "(foot_force_substeps_w, foot_force_ap_substeps in rollout.npz), read without touching the "
+    "contact sensor; see SubstepContactObserver. Every other output is unchanged. Off by default.",
+)
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
@@ -179,6 +186,50 @@ GRAVITY = 9.81
 
 class NoSurvivingEnvironments(RuntimeError):
     """Raised when every environment fell, leaving no gait to summarize."""
+
+
+class SubstepContactObserver:
+    """Each foot's net contact force after every physics substep, read without touching the sensor.
+
+    ``foot_force`` is one sample per 20 ms control step. Isaac Lab 3.0 updates sensors lazily
+    (``InteractiveSceneCfg.lazy_sensor_update`` defaults to True): the contact sensor's buffers,
+    its history included, are filled only when ``.data`` is read, which the managers first do
+    after the last of the four physics substeps. ``net_forces_w_history`` therefore holds the last
+    three *control steps*, not substeps, and cannot say whether a one-step load "dropout" is the
+    foot unloading or the force oscillating between substeps.
+
+    This reads PhysX's contact report itself after every ``scene.update`` in the decimation loop,
+    with the call and ``dt`` the sensor's own ``_update_buffers_impl`` uses, and copies the foot
+    rows out. It never calls into the sensor, so the sensor's buffers, history and air-time
+    tracking are what they would be without it. Its last substep is the sample ``foot_force`` is
+    taken from, which ``main`` checks on every recorded step.
+    """
+
+    def __init__(self, env, sensor_cfg: SceneEntityCfg):
+        self._sensor = env.scene[sensor_cfg.name]
+        self._body_ids = sensor_cfg.body_ids
+        self._num_envs = env.num_envs
+        self._decimation = int(env.cfg.decimation)
+        self._samples: list[torch.Tensor] = []
+        self._scene_update = env.scene.update
+        # An instance attribute shadows the bound method, so the env's decimation loop calls this.
+        env.scene.update = self._observe
+
+    def _observe(self, dt: float) -> None:
+        self._scene_update(dt)
+        # The view hands back a buffer it reuses on the next call, so copy the rows out now.
+        forces = wp.to_torch(self._sensor.contact_view.get_net_contact_forces(dt=self._sensor._sim_physics_dt))
+        self._samples.append(forces.reshape(self._num_envs, -1, 3)[:, self._body_ids].clone())
+
+    def take(self) -> torch.Tensor:
+        """``(num_envs, num_feet, decimation, 3)`` world-frame forces of the control step just taken."""
+        if len(self._samples) != self._decimation:
+            raise RuntimeError(
+                f"observed {len(self._samples)} physics substeps in one control step, expected {self._decimation}"
+            )
+        forces = torch.stack(self._samples, dim=2)
+        self._samples.clear()
+        return forces
 
 
 class RolloutRecorder:
@@ -459,6 +510,8 @@ def main() -> int:
     obs, _ = env.reset()
     assign_phase_offsets(env, num_envs)
     obs = obs["policy"]
+    # Installed after the reset, so every scene update it sees is one of a control step's substeps.
+    substep_observer = SubstepContactObserver(env, foot_sensor_cfg) if args_cli.record_contact_substeps else None
 
     recorder = RolloutRecorder()
     # An environment that terminates once is excluded from every later step: post-fall
@@ -488,6 +541,8 @@ def main() -> int:
         obs, reward, terminated, truncated, _ = env.step(actions)
         obs = obs["policy"]
         ever_terminated |= terminated
+        # Taken every step, warmup included, so each step's substeps are its own.
+        substeps_w = substep_observer.take() if substep_observer is not None else None
 
         if step < args_cli.warmup_steps:
             continue
@@ -511,6 +566,21 @@ def main() -> int:
         foot_force_ap = quat_apply_inverse(heading.unsqueeze(1).expand(-1, foot_force_w.shape[1], -1), foot_force_w)[
             ..., 0
         ]
+        if substeps_w is not None:
+            # The observer's last substep must be the sample foot_force is read from. Checked on
+            # every environment still walking: the sensor clears a just-reset environment's
+            # buffers, while the observer saw its contact before the reset.
+            walking = ~ever_terminated
+            if not torch.equal(substeps_w[walking][:, :, -1], foot_force_w[walking]):
+                raise RuntimeError("the substep observer's last substep disagrees with the contact sensor's sample")
+            feet, substeps = substeps_w.shape[1], substeps_w.shape[2]
+            recorder.add(
+                foot_force_substeps_w=substeps_w,
+                # Rotated by this step's heading, as foot_force_ap is; yaw moves little in 20 ms.
+                foot_force_ap_substeps=quat_apply_inverse(
+                    heading[:, None, None, :].expand(-1, feet, substeps, -1).reshape(-1, 4), substeps_w.reshape(-1, 3)
+                )[:, 0].reshape(-1, feet, substeps),
+            )
         if "walker" in env.scene.keys():
             # Walker keys only when the walker is in the scene, so an unassisted evaluation's
             # rollout.npz is unchanged.

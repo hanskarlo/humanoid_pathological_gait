@@ -245,6 +245,46 @@ def contact_gait_metrics(
     }
 
 
+#: Ways to reduce a control step's physics substeps to one load per foot; see substep_foot_load.
+SUBSTEP_REDUCTIONS = ("last", "max", "mean", "min")
+
+
+def substep_foot_load(force_substeps_w: np.ndarray, reduction: str) -> np.ndarray:
+    """One load per foot per control step, from its net contact force at every physics substep.
+
+    ``foot_force`` in an evaluation rollout is a single sample per 20 ms control step: the force
+    after the last of the four physics substeps. A foot whose force oscillates between substeps
+    can then read as unloaded while it is planted. The other reductions take every substep into
+    account, so the timing metrics can be recomputed with contact thresholded on them instead.
+
+    Args:
+        force_substeps_w: ``(steps, num_envs, num_feet, substeps, 3)``, each foot's world-frame net
+            contact force after each physics substep of the step, in time order
+            (``foot_force_substeps_w`` from ``evaluate.py --record_contact_substeps``).
+        reduction: one of :data:`SUBSTEP_REDUCTIONS`:
+
+            * ``last``: the final substep's magnitude, i.e. ``foot_force`` itself;
+            * ``max`` / ``min``: the largest / smallest substep magnitude. Thresholded, they mean
+              "loaded at any substep" / "loaded at every substep", and so bracket the contact any
+              single-substep sample would give;
+            * ``mean``: the magnitude of the substep-mean force, i.e. the step's contact impulse
+              divided by its duration. Opposing substep forces cancel here, as impulses do.
+
+    Returns:
+        ``(steps, num_envs, num_feet)`` loads in newtons.
+    """
+    if reduction == "mean":
+        return np.linalg.norm(force_substeps_w.mean(axis=-2), axis=-1)
+    magnitude = np.linalg.norm(force_substeps_w, axis=-1)
+    if reduction == "last":
+        return magnitude[..., -1]
+    if reduction == "max":
+        return magnitude.max(axis=-1)
+    if reduction == "min":
+        return magnitude.min(axis=-1)
+    raise ValueError(f"unknown substep reduction {reduction!r}; expected one of {SUBSTEP_REDUCTIONS}")
+
+
 def cycle_normalize(values: np.ndarray, phase: np.ndarray, valid: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Bin a signal onto 0-100% of the gait cycle.
 
