@@ -186,6 +186,35 @@ def swing_timing(
     return (agreement * class_weight * foot_weight).sum(dim=-1) / foot_weight.sum()
 
 
+def track_ankle_height(
+    env: H1PathologicalGaitEnv,
+    asset_cfg: SceneEntityCfg,
+    std: float = 0.03,
+) -> torch.Tensor:
+    """RBF reward on each ankle link's height above the plane against the reference's, at its phase.
+
+    Forward plan 2026-10-13, Phase 2a; research_log/2026-10-18-preregistration-foot-height-tracking.md.
+    Joint tracking leaves the vertical free: on the grounded healthy stride the capped policies still
+    launch off the stance foot just after the other foot's toe-off, a flight that splits the stance
+    while every joint angle stays near its target. Pelvis height is tracked with a 0.15 m kernel,
+    flat beyond about 80 mm. This charges a stance ankle that leaves the plane and a swing ankle that
+    drops early, in the world frame, densely -- not as a termination, which collapsed learning twice
+    as a stance constraint.
+
+    The table is ``reference_ankle_height`` in the stride archive. Without it this raises rather than
+    returning zeros: a flag that silently does nothing is the failure mode this project keeps meeting.
+    Mean of the two feet's RBFs, in [0, 1].
+    """
+    target = env.reference_gait.sample_ankle_height()
+    if target is None:
+        raise RuntimeError("track_ankle_height needs reference_ankle_height in the stride archive")
+    asset: Articulation = env.scene[asset_cfg.name]
+    height = asset.data.body_link_pos_w.torch[:, asset_cfg.body_ids, 2] - env.scene.env_origins[:, 2:3]
+    is_right_paretic = (env.reference_gait.paretic_side > 0).unsqueeze(-1)
+    height = torch.where(is_right_paretic, height.flip(-1), height)  # (left, right) -> (paretic, sound)
+    return torch.exp(-torch.square(height - target) / std**2).mean(dim=-1)
+
+
 def track_root_progression(
     env: H1PathologicalGaitEnv,
     std: float = 0.15,

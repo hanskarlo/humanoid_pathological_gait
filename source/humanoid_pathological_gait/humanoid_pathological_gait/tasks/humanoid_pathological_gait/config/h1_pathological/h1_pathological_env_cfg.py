@@ -909,6 +909,24 @@ def apply_swing_load_constraint(
 CONSTRAINT_TERMINATIONS: tuple[str, ...] = ("swing_load", "stance_unload")
 
 
+def apply_foot_height_tracking(cfg: H1PathologicalGaitEnvCfg, weight: float, std: float = 0.03) -> dict[str, object]:
+    """Add world-frame ankle-height tracking (forward plan 2026-10-13, Phase 2a).
+
+    research_log/2026-10-18-preregistration-foot-height-tracking.md. The reference stride must carry
+    ``reference_ankle_height`` (``scripts/add_reference_ankle_height.py``); the reward raises without it.
+    Reward only, so evaluation needs nothing restored. Returns what it applied, for provenance.
+    """
+    cfg.rewards.ankle_height_tracking = RewTerm(
+        func=mdp.track_ankle_height,
+        weight=weight,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names=list(FOOT_BODY_NAMES), preserve_order=True),
+            "std": std,
+        },
+    )
+    return {"weight": weight, "std_m": std, "bodies": list(FOOT_BODY_NAMES)}
+
+
 def _penalise_only_non_constraint_terminations(cfg: H1PathologicalGaitEnvCfg) -> list[str]:
     """Point ``termination_penalty`` at every termination except time-outs and the constraints.
 

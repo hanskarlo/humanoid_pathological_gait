@@ -136,6 +136,21 @@ class ReferenceGaitManager:
         #: lifts a foot. See ``mdp.rewards.swing_timing``.
         self.contact_stance_fraction = self.ref_contact.mean(dim=0) if self.ref_contact is not None else None
 
+        #: ``(T, 2)`` reference ankle-link height above the plane, **paretic/sound** order, or ``None``
+        #: when the archive predates ``reference_ankle_height`` (``scripts/add_reference_ankle_height.py``).
+        #: Only ``mdp.rewards.track_ankle_height`` reads it, so every existing archive is unaffected.
+        self.ref_ankle_height = None
+        with np.load(Path(stride_path), allow_pickle=True) as archive:
+            if "reference_ankle_height" in archive.files:
+                ankle = np.asarray(archive["reference_ankle_height"], dtype=np.float32)
+                if ankle.shape != (self.num_samples, 2):
+                    raise ValueError(
+                        f"reference_ankle_height has shape {ankle.shape}, expected {(self.num_samples, 2)}"
+                    )
+                if self.impaired_side == "right":
+                    ankle = ankle[:, ::-1].copy()
+                self.ref_ankle_height = torch.tensor(ankle, dtype=torch.float32, device=self.device)
+
         #: ``(T, 2)`` planar displacement of the reference root from the start of the
         #: stride, in the stride's own heading frame. This is what pins *cadence and stride
         #: length*: the joint reference alone says which pose to hold at each phase, which a
@@ -425,6 +440,23 @@ class ReferenceGaitManager:
         position = self.gait_phase[env_ids] * (self.num_samples - 1)
         index = torch.round(position).long().clamp_(0, self.num_samples - 1)
         return self.ref_contact[index]
+
+    def sample_ankle_height(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
+        """Reference ankle-link height at each environment's phase, ``(N, 2)`` in **paretic/sound** order.
+
+        Interpolated like the pelvis height. ``None`` when the archive carries no ankle table. As
+        with ``sample_contact``, the caller swaps the robot's ``(left, right)`` columns for
+        right-paretic environments before comparing.
+        """
+        if self.ref_ankle_height is None:
+            return None
+        if env_ids is None:
+            env_ids = slice(None)
+        position = self.gait_phase[env_ids] * (self.num_samples - 1)
+        lower = torch.floor(position).long().clamp_(0, self.num_samples - 1)
+        upper = (lower + 1).clamp_(max=self.num_samples - 1)
+        alpha = (position - lower.float()).clamp_(0.0, 1.0).unsqueeze(-1)
+        return torch.lerp(self.ref_ankle_height[lower], self.ref_ankle_height[upper], alpha)
 
     def sample_mos_target(self, env_ids: torch.Tensor | slice | None = None) -> torch.Tensor | None:
         """Reference mediolateral margin of stability at each environment's phase, in metres.

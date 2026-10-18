@@ -133,6 +133,14 @@ parser.add_argument(
     "none. Training only; evaluation does not restore it. Recorded in run_config.json.",
 )
 parser.add_argument(
+    "--foot_height_tracking",
+    type=float,
+    default=None,
+    help="Weight of a world-frame ankle-height tracking reward against the reference's ankle heights "
+    "(forward plan 2026-10-13, Phase 2a; std 0.03 m). The reference stride must carry reference_ankle_height "
+    "(scripts/add_reference_ankle_height.py). Omit for none. Recorded in run_config.json.",
+)
+parser.add_argument(
     "--stance_unload_constraint",
     type=float,
     default=None,
@@ -228,6 +236,7 @@ from humanoid_pathological_gait.algorithms.ppo import ActorCritic, RolloutBuffer
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait import asset_mirror  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
+    apply_foot_height_tracking,
     apply_predictive_objective,
     apply_reference_stride,
     apply_stance_unload_constraint,
@@ -662,6 +671,10 @@ def main() -> int:
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)
         print(f"[train_amp] predictive objective: {objective_applied}", flush=True)
+    foot_height_applied = None
+    if args_cli.foot_height_tracking is not None:
+        foot_height_applied = apply_foot_height_tracking(env_cfg, weight=args_cli.foot_height_tracking)
+        print(f"[train_amp] foot-height tracking: {foot_height_applied}", flush=True)
     swing_constraint_applied = None
     if args_cli.swing_load_constraint is not None:
         swing_constraint_applied = apply_swing_load_constraint(env_cfg, p_max=args_cli.swing_load_constraint)
@@ -737,6 +750,7 @@ def main() -> int:
         # None with the impairment model in place; what was removed otherwise.
         "impairment_applied": impairment_applied,
         # None without the constraint; its parameters otherwise. Training only.
+        "foot_height_tracking_applied": foot_height_applied,
         "swing_constraint_applied": swing_constraint_applied,
         "stance_constraint_applied": stance_constraint_applied,
         # None when the assets came from the network; the mirror's root and manifest hash otherwise.
