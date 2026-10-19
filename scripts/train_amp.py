@@ -133,6 +133,13 @@ parser.add_argument(
     "none. Training only; evaluation does not restore it. Recorded in run_config.json.",
 )
 parser.add_argument(
+    "--symmetry_augmentation",
+    action="store_true",
+    help="Mirror-symmetry data augmentation in PPO (forward plan 2026-10-13, Phase 2b; Mittal et al. ICRA 2024): "
+    "every mini-batch is extended with its left/right mirror image, advantages, returns and old log-probs "
+    "repeated. Logs the actor's mirror error as symmetry_error. Recorded in run_config.json.",
+)
+parser.add_argument(
     "--future_reference",
     action="store_true",
     help="Append the reference pose and contact schedule 0.1 and 0.2 s ahead to the observation (forward plan "
@@ -239,6 +246,7 @@ from humanoid_pathological_gait.algorithms.amp import (  # noqa: E402
     to_paretic_frame,
 )
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic, RolloutBuffer  # noqa: E402
+from humanoid_pathological_gait.algorithms.ppo.symmetry import MirrorAugmentation  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait import asset_mirror  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
@@ -377,6 +385,9 @@ class PPOAMPTrainer:
         # None leaves the std free, which is the frozen behaviour; a cap is a projection, not a penalty.
         self.log_std_max = math.log(args_cli.action_std_max) if args_cli.action_std_max is not None else None
         self.cap_action_std()
+        # Phase 2b. Built from the observation manager's own term list; a term without a defined
+        # mirror raises here, at construction, rather than augmenting with a wrong image.
+        self.mirror = MirrorAugmentation.from_env(env) if args_cli.symmetry_augmentation else None
 
         self.rollout_buffer = RolloutBuffer(
             num_steps=self.num_steps,
@@ -470,10 +481,22 @@ class PPOAMPTrainer:
 
         # -- PPO update
         self.policy.train()
-        policy_losses, value_losses, entropies, kls = [], [], [], []
+        policy_losses, value_losses, entropies, kls, symmetry_errors = [], [], [], [], []
         for _ in range(self.num_epochs):
             for batch in self.rollout_buffer.get_mini_batch_generator(self.num_mini_batches):
                 batch_obs, batch_actions, batch_old_log_probs, batch_advantages, batch_returns, _ = batch
+                if self.mirror is not None:
+                    # The mirror image of each sample is an equally valid sample of the mirrored
+                    # environment; its advantage, return and old log-prob are repeated (rsl_rl).
+                    with torch.no_grad():
+                        mean = self.policy.actor(batch_obs)
+                        mirrored_mean = self.policy.actor(self.mirror.obs(batch_obs))
+                        symmetry_errors.append(float((mirrored_mean - self.mirror.actions(mean)).abs().mean()))
+                    batch_obs = torch.cat([batch_obs, self.mirror.obs(batch_obs)])
+                    batch_actions = torch.cat([batch_actions, self.mirror.actions(batch_actions)])
+                    batch_old_log_probs = batch_old_log_probs.repeat(2)
+                    batch_advantages = batch_advantages.repeat(2)
+                    batch_returns = batch_returns.repeat(2)
                 log_probs, entropy, values = self.policy.evaluate(batch_obs, batch_actions)
 
                 ratio = torch.exp(log_probs - batch_old_log_probs)
@@ -543,6 +566,8 @@ class PPOAMPTrainer:
             # and the LR being cut in response, which is what makes the damping auditable.
             "approx_kl": float(np.mean(kls)) if kls else float("nan"),
             "learning_rate": self.learning_rate,
+            # Mean |pi(M o) - M pi(o)| over the mini-batches, before each update; only with the flag.
+            **({"symmetry_error": float(np.mean(symmetry_errors))} if symmetry_errors else {}),
             **disc_metrics,
             **{key: total / term_counts[key] for key, total in term_totals.items()},
         }
@@ -762,6 +787,10 @@ def main() -> int:
         # None without the constraint; its parameters otherwise. Training only.
         "foot_height_tracking_applied": foot_height_applied,
         "future_reference_applied": future_reference_applied,
+        # None when off, like every other optional ingredient, so the freeze gate sees no new value.
+        "symmetry_augmentation_applied": {"method": "mirror data augmentation (Mittal et al. 2024)"}
+        if args_cli.symmetry_augmentation
+        else None,
         "swing_constraint_applied": swing_constraint_applied,
         "stance_constraint_applied": stance_constraint_applied,
         # None when the assets came from the network; the mirror's root and manifest hash otherwise.
