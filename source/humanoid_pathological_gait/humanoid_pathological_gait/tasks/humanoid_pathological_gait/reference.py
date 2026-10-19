@@ -381,6 +381,33 @@ class ReferenceGaitManager:
             v_ref[:, columns] = 0.0
         return q_ref, v_ref
 
+    def sample_ahead(self, lead_s: float) -> tuple[torch.Tensor, torch.Tensor | None]:
+        """Reference joint positions and contact schedule ``lead_s`` seconds of stride time ahead.
+
+        Forward plan 2026-10-13, Phase 2a: the policy otherwise sees only the current phase's target
+        and cannot anticipate a contact transition. Same interpolation, mirroring and arm override as
+        :meth:`sample`; contact is nearest-neighbour as in :meth:`sample_contact`. Returns
+        ``(q_ref (N, 19), contact (N, 2) in paretic/sound order or None)``. Phase is not advanced.
+        """
+        phase = torch.remainder(self.gait_phase + lead_s / self.stride_duration, 1.0)
+        position = phase * (self.num_samples - 1)
+        lower = torch.floor(position).long().clamp_(0, self.num_samples - 1)
+        upper = torch.clamp(lower + 1, max=self.num_samples - 1)
+        blend = (position - lower.float()).unsqueeze(-1)
+        is_right_paretic = (self.paretic_side > 0).unsqueeze(-1)
+        q_ref = torch.where(
+            is_right_paretic,
+            torch.lerp(self.ref_q_mirrored[lower], self.ref_q_mirrored[upper], blend),
+            torch.lerp(self.ref_q[lower], self.ref_q[upper], blend),
+        )
+        if self._arm_override is not None:
+            columns, values = self._arm_override
+            q_ref[:, columns] = values
+        contact = None
+        if self.ref_contact is not None:
+            contact = self.ref_contact[torch.round(position).long().clamp_(0, self.num_samples - 1)]
+        return q_ref, contact
+
     def set_cycle_anchor(self, position_xy: torch.Tensor, yaw: torch.Tensor, env_ids=None) -> None:
         """Re-anchor the root-displacement origin, recording the phase it was laid at."""
         if env_ids is None:

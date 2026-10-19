@@ -170,6 +170,7 @@ from isaaclab.utils.math import quat_apply_inverse, yaw_quat  # noqa: E402
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait import asset_mirror  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
+    apply_future_reference,
     apply_predictive_objective,
     apply_reference_stride,
     apply_unimpaired,
@@ -417,6 +418,12 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
 
     # The walker changes the dynamics the policy acts in, not its observation, so a missing restore
     # would be silent: a coupled checkpoint evaluated uncoupled. Restore it whenever it was trained.
+    if stored.get("future_reference_applied"):
+        # Changes the observation size, so the checkpoint loads only with it; the key is added only
+        # here, leaving every earlier evaluation's training_config_applied unchanged.
+        leads = tuple(stored["future_reference_applied"]["leads_s"])
+        applied["future_reference"] = apply_future_reference(env_cfg, leads)
+        print(f"[evaluate] restored future reference frames {leads}")
     if stored.get("walker_applied") or getattr(args_cli, "walker", False):
         # The grip stiffness changes the dynamics, so it is restored with the walker -- a policy
         # fine-tuned at 20 kN/m evaluated at the 5 kN/m default would be a different controller.

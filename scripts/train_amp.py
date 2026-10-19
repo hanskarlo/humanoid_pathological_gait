@@ -133,6 +133,12 @@ parser.add_argument(
     "none. Training only; evaluation does not restore it. Recorded in run_config.json.",
 )
 parser.add_argument(
+    "--future_reference",
+    action="store_true",
+    help="Append the reference pose and contact schedule 0.1 and 0.2 s ahead to the observation (forward plan "
+    "2026-10-13, Phase 2a; +42 dims). evaluate.py restores it from run_config.json. Recorded there.",
+)
+parser.add_argument(
     "--foot_height_tracking",
     type=float,
     default=None,
@@ -237,6 +243,7 @@ from humanoid_pathological_gait.tasks.humanoid_pathological_gait import asset_mi
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_foot_height_tracking,
+    apply_future_reference,
     apply_predictive_objective,
     apply_reference_stride,
     apply_stance_unload_constraint,
@@ -671,6 +678,9 @@ def main() -> int:
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)
         print(f"[train_amp] predictive objective: {objective_applied}", flush=True)
+    future_reference_applied = apply_future_reference(env_cfg) if args_cli.future_reference else None
+    if future_reference_applied is not None:
+        print(f"[train_amp] future reference frames: {future_reference_applied}", flush=True)
     foot_height_applied = None
     if args_cli.foot_height_tracking is not None:
         foot_height_applied = apply_foot_height_tracking(env_cfg, weight=args_cli.foot_height_tracking)
@@ -751,6 +761,7 @@ def main() -> int:
         "impairment_applied": impairment_applied,
         # None without the constraint; its parameters otherwise. Training only.
         "foot_height_tracking_applied": foot_height_applied,
+        "future_reference_applied": future_reference_applied,
         "swing_constraint_applied": swing_constraint_applied,
         "stance_constraint_applied": stance_constraint_applied,
         # None when the assets came from the network; the mirror's root and manifest hash otherwise.

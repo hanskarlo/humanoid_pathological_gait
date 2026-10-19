@@ -39,6 +39,22 @@ def reference_joint_pos_error(env: H1PathologicalGaitEnv) -> torch.Tensor:
     return env.scene["robot"].data.joint_pos.torch - q_ref
 
 
+def reference_future(env: H1PathologicalGaitEnv, leads_s: tuple[float, ...] = (0.1, 0.2)) -> torch.Tensor:
+    """Reference joint positions and contact schedule at each lead time ahead. Shape ``(N, 21 * len(leads_s))``.
+
+    Forward plan 2026-10-13, Phase 2a; research_log/2026-10-18-preregistration-future-reference-frames.md.
+    Contact columns are (paretic, sound), the schedule's own order, as the current phase's are in
+    ``swing_timing``; with ``paretic_side`` in the observation the policy can map them.
+    """
+    parts = []
+    for lead in leads_s:
+        q_ref, contact = env.reference_gait.sample_ahead(lead)
+        if contact is None:
+            contact = torch.zeros((env.num_envs, 2), device=env.device)
+        parts += [q_ref, contact]
+    return torch.cat(parts, dim=-1)
+
+
 def paretic_side(env: H1PathologicalGaitEnv) -> torch.Tensor:
     """Which side is paretic: ``-1`` left, ``+1`` right. Shape ``(num_envs, 1)``."""
     return env.reference_gait.paretic_side.unsqueeze(-1)

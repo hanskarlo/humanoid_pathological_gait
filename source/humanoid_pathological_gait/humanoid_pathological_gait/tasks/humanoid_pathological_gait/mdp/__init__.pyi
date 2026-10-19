@@ -9,6 +9,7 @@ __all__ = [
     "ReferenceResidualSpasticActionCfg",
     # observations
     "reference_joint_pos",
+    "reference_future",
     "reference_joint_vel",
     "reference_joint_pos_error",
     "paretic_side",
@@ -72,6 +73,7 @@ from .events import (
 from .observations import (
     gait_phase,
     paretic_side,
+    reference_future,
     reference_joint_pos,
     reference_joint_pos_error,
     reference_joint_vel,

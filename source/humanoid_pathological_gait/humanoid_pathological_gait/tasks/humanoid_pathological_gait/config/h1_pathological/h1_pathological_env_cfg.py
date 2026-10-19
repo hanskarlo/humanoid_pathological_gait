@@ -927,6 +927,17 @@ def apply_foot_height_tracking(cfg: H1PathologicalGaitEnvCfg, weight: float, std
     return {"weight": weight, "std_m": std, "bodies": list(FOOT_BODY_NAMES)}
 
 
+def apply_future_reference(cfg: H1PathologicalGaitEnvCfg, leads_s: tuple[float, ...] = (0.1, 0.2)) -> dict[str, object]:
+    """Append the reference pose and contact schedule ``leads_s`` ahead to the policy observation.
+
+    Forward plan 2026-10-13, Phase 2a. Adds 21 dimensions per lead, so a checkpoint trained with it
+    only loads into an environment that has it: ``evaluate.py`` restores it from run_config.json.
+    Actor and critic share the policy group, so both see it. Returns what it applied.
+    """
+    cfg.observations.policy.reference_future = ObsTerm(func=mdp.reference_future, params={"leads_s": tuple(leads_s)})
+    return {"leads_s": list(leads_s), "dims": 21 * len(leads_s)}
+
+
 def _penalise_only_non_constraint_terminations(cfg: H1PathologicalGaitEnvCfg) -> list[str]:
     """Point ``termination_penalty`` at every termination except time-outs and the constraints.
 
