@@ -140,6 +140,12 @@ parser.add_argument(
     "repeated. Logs the actor's mirror error as symmetry_error. Recorded in run_config.json.",
 )
 parser.add_argument(
+    "--log_symmetry_error",
+    action="store_true",
+    help="Log symmetry_error / symmetry_error_rel (the actor's mirror error) without augmenting -- the "
+    "diagnostic --symmetry_augmentation logs, for a control run. Changes no update.",
+)
+parser.add_argument(
     "--future_reference",
     action="store_true",
     help="Append the reference pose and contact schedule 0.1 and 0.2 s ahead to the observation (forward plan "
@@ -387,7 +393,9 @@ class PPOAMPTrainer:
         self.cap_action_std()
         # Phase 2b. Built from the observation manager's own term list; a term without a defined
         # mirror raises here, at construction, rather than augmenting with a wrong image.
-        self.mirror = MirrorAugmentation.from_env(env) if args_cli.symmetry_augmentation else None
+        need_mirror = args_cli.symmetry_augmentation or args_cli.log_symmetry_error
+        self.mirror = MirrorAugmentation.from_env(env) if need_mirror else None
+        self.augment = bool(args_cli.symmetry_augmentation)
 
         self.rollout_buffer = RolloutBuffer(
             num_steps=self.num_steps,
@@ -481,17 +489,20 @@ class PPOAMPTrainer:
 
         # -- PPO update
         self.policy.train()
-        policy_losses, value_losses, entropies, kls, symmetry_errors = [], [], [], [], []
+        policy_losses, value_losses, entropies, kls, symmetry_errors, symmetry_scales = [], [], [], [], [], []
         for _ in range(self.num_epochs):
             for batch in self.rollout_buffer.get_mini_batch_generator(self.num_mini_batches):
                 batch_obs, batch_actions, batch_old_log_probs, batch_advantages, batch_returns, _ = batch
                 if self.mirror is not None:
-                    # The mirror image of each sample is an equally valid sample of the mirrored
-                    # environment; its advantage, return and old log-prob are repeated (rsl_rl).
+                    # Diagnostic: the actor's mirror error on this mini-batch, before the update.
                     with torch.no_grad():
                         mean = self.policy.actor(batch_obs)
                         mirrored_mean = self.policy.actor(self.mirror.obs(batch_obs))
                         symmetry_errors.append(float((mirrored_mean - self.mirror.actions(mean)).abs().mean()))
+                        symmetry_scales.append(float(mean.abs().mean()))
+                if self.mirror is not None and self.augment:
+                    # The mirror image of each sample is an equally valid sample of the mirrored
+                    # environment; its advantage, return and old log-prob are repeated (rsl_rl).
                     batch_obs = torch.cat([batch_obs, self.mirror.obs(batch_obs)])
                     batch_actions = torch.cat([batch_actions, self.mirror.actions(batch_actions)])
                     batch_old_log_probs = batch_old_log_probs.repeat(2)
@@ -567,7 +578,15 @@ class PPOAMPTrainer:
             "approx_kl": float(np.mean(kls)) if kls else float("nan"),
             "learning_rate": self.learning_rate,
             # Mean |pi(M o) - M pi(o)| over the mini-batches, before each update; only with the flag.
-            **({"symmetry_error": float(np.mean(symmetry_errors))} if symmetry_errors else {}),
+            **(
+                {
+                    "symmetry_error": float(np.mean(symmetry_errors)),
+                    # Relative to the action size: an untrained actor outputs ~0, so it is trivially symmetric.
+                    "symmetry_error_rel": float(np.mean(symmetry_errors) / max(np.mean(symmetry_scales), 1e-8)),
+                }
+                if symmetry_errors
+                else {}
+            ),
             **disc_metrics,
             **{key: total / term_counts[key] for key, total in term_totals.items()},
         }
