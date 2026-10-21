@@ -140,6 +140,12 @@ parser.add_argument(
     "repeated. Logs the actor's mirror error as symmetry_error. Recorded in run_config.json.",
 )
 parser.add_argument(
+    "--frontal_freedom",
+    action="store_true",
+    help="Free the frontal plane (forward plan 2026-10-13): hip-roll tracking x0.2, the orientation penalty on "
+    "pitch only, no cross-track root term. Recorded in run_config.json.",
+)
+parser.add_argument(
     "--log_symmetry_error",
     action="store_true",
     help="Log symmetry_error / symmetry_error_rel (the actor's mirror error) without augmenting -- the "
@@ -257,6 +263,7 @@ from humanoid_pathological_gait.tasks.humanoid_pathological_gait import asset_mi
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.assets import amp_expert_prior_path  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_foot_height_tracking,
+    apply_frontal_freedom,
     apply_future_reference,
     apply_predictive_objective,
     apply_reference_stride,
@@ -722,6 +729,9 @@ def main() -> int:
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)
         print(f"[train_amp] predictive objective: {objective_applied}", flush=True)
+    frontal_freedom_applied = apply_frontal_freedom(env_cfg) if args_cli.frontal_freedom else None
+    if frontal_freedom_applied is not None:
+        print(f"[train_amp] frontal freedom: {frontal_freedom_applied}", flush=True)
     future_reference_applied = apply_future_reference(env_cfg) if args_cli.future_reference else None
     if future_reference_applied is not None:
         print(f"[train_amp] future reference frames: {future_reference_applied}", flush=True)
@@ -806,6 +816,7 @@ def main() -> int:
         # None without the constraint; its parameters otherwise. Training only.
         "foot_height_tracking_applied": foot_height_applied,
         "future_reference_applied": future_reference_applied,
+        "frontal_freedom_applied": frontal_freedom_applied,
         # None when off, like every other optional ingredient, so the freeze gate sees no new value.
         "symmetry_augmentation_applied": {"method": "mirror data augmentation (Mittal et al. 2024)"}
         if args_cli.symmetry_augmentation

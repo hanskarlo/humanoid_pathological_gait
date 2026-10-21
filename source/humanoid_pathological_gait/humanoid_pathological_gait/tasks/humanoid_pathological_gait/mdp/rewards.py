@@ -43,6 +43,7 @@ def joint_pos_tracking(
     min_std: float = 0.05,
     max_std: float = 0.35,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    weight_scale: dict[str, float] | None = None,
 ) -> torch.Tensor:
     """Clinically weighted RBF reward on joint position tracking error, in ``[0, 1]``.
 
@@ -71,7 +72,7 @@ def joint_pos_tracking(
     asset: Articulation = env.scene[asset_cfg.name]
     q_ref, _ = env.reference_gait.sample()
     error_sq = torch.square(asset.data.joint_pos.torch - q_ref)
-    weights = env.joint_layout.tracking_weights
+    weights = env.joint_layout.scaled_tracking_weights(weight_scale)
 
     if rom_scale is None:
         width_sq = std**2
@@ -81,13 +82,16 @@ def joint_pos_tracking(
 
 
 def joint_vel_tracking(
-    env: H1PathologicalGaitEnv, std: float = 2.0, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+    env: H1PathologicalGaitEnv,
+    std: float = 2.0,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    weight_scale: dict[str, float] | None = None,
 ) -> torch.Tensor:
     """Clinically weighted RBF reward on joint velocity tracking error, in ``[0, 1]``."""
     asset: Articulation = env.scene[asset_cfg.name]
     _, v_ref = env.reference_gait.sample()
     error_sq = torch.square(asset.data.joint_vel.torch - v_ref)
-    weights = env.joint_layout.tracking_weights
+    weights = env.joint_layout.scaled_tracking_weights(weight_scale)
     return torch.sum(torch.exp(-error_sq / std**2) * weights, dim=-1) / torch.sum(weights)
 
 
@@ -213,6 +217,19 @@ def track_ankle_height(
     is_right_paretic = (env.reference_gait.paretic_side > 0).unsqueeze(-1)
     height = torch.where(is_right_paretic, height.flip(-1), height)  # (left, right) -> (paretic, sound)
     return torch.exp(-torch.square(height - target) / std**2).mean(dim=-1)
+
+
+def pitch_orientation_l2(
+    env: H1PathologicalGaitEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+) -> torch.Tensor:
+    """``flat_orientation_l2`` on the sagittal (pitch) component only: the pelvis may tilt in roll.
+
+    Forward plan 2026-10-13; research_log/2026-10-21-preregistration-frontal-freedom.md. The H1's
+    ankle has no roll joint, so its leg and foot are rigid in the frontal plane. The body can get
+    over the stance foot only by tilting the pelvis or leaning, which the full penalty charges.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    return torch.square(asset.data.projected_gravity_b.torch[:, 0])
 
 
 def track_root_progression(

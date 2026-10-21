@@ -191,6 +191,21 @@ class H1JointLayout:
         """Mirror a ``(..., 19)`` simulation-order tensor across the sagittal plane."""
         return self.mirror_sign * values[..., self.mirror_index]
 
+    def scaled_tracking_weights(self, scale: dict[str, float] | None) -> torch.Tensor:
+        """``tracking_weights`` with each joint whose name ends in a key of ``scale`` multiplied by it.
+
+        ``None`` returns ``tracking_weights`` itself, so the default reward path is untouched. Forward
+        plan 2026-10-13: ``{"hip_roll": 0.2}`` frees the frontal plane (research_log/2026-10-21-...).
+        """
+        if not scale:
+            return self.tracking_weights
+        factor = torch.ones_like(self.tracking_weights)
+        for i, name in enumerate(self.sim_names):
+            for suffix, value in scale.items():
+                if name.endswith(suffix):
+                    factor[i] = value
+        return self.tracking_weights * factor
+
     def index_of(self, name: str) -> int:
         """Simulation-order index of a named joint."""
         return self.sim_names.index(name)

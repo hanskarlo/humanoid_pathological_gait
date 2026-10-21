@@ -938,6 +938,25 @@ def apply_future_reference(cfg: H1PathologicalGaitEnvCfg, leads_s: tuple[float, 
     return {"leads_s": list(leads_s), "dims": 21 * len(leads_s)}
 
 
+def apply_frontal_freedom(cfg: H1PathologicalGaitEnvCfg, hip_roll_scale: float = 0.2) -> dict[str, object]:
+    """Free the frontal plane (forward plan 2026-10-13; research_log/2026-10-21-preregistration-frontal-freedom.md).
+
+    The H1's leg and foot are rigid in roll, so the body can get over the stance foot only by tilting
+    the pelvis or leaning. Three terms pin the frontal plane to the reference, and this relaxes them:
+
+    * hip-roll tracking (position and velocity) is scaled by ``hip_roll_scale``;
+    * ``flat_orientation_l2`` charges pitch only;
+    * root progression charges along-track error only (cross-track weight 0).
+
+    Returns what it applied, for provenance.
+    """
+    cfg.rewards.joint_pos_tracking.params["weight_scale"] = {"hip_roll": hip_roll_scale}
+    cfg.rewards.joint_vel_tracking.params["weight_scale"] = {"hip_roll": hip_roll_scale}
+    cfg.rewards.flat_orientation_l2.func = mdp.pitch_orientation_l2
+    cfg.rewards.root_progression.params["cross_track_weight"] = 0.0
+    return {"hip_roll_tracking_scale": hip_roll_scale, "orientation_penalty": "pitch only", "cross_track_weight": 0.0}
+
+
 def _penalise_only_non_constraint_terminations(cfg: H1PathologicalGaitEnvCfg) -> list[str]:
     """Point ``termination_penalty`` at every termination except time-outs and the constraints.
 
