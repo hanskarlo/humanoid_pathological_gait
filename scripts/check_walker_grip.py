@@ -45,6 +45,7 @@ import gymnasium as gym
 import torch
 
 from isaaclab.sim.utils import get_current_stage
+
 from isaaclab_tasks.utils import load_cfg_from_registry
 
 importlib.import_module("humanoid_pathological_gait.tasks")
