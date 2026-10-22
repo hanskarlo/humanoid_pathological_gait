@@ -119,6 +119,13 @@ parser.add_argument(
     "evaluation, walker plan condition C-zs).",
 )
 parser.add_argument(
+    "--walker_grip",
+    choices=("explicit", "implicit"),
+    default=None,
+    help="Override the restored grip model (zero-shot transfer of a policy to the other grip). Default: "
+    "the run's recorded grip, explicit for every run to 2026-10-22.",
+)
+parser.add_argument(
     "--ignore_run_config",
     action="store_true",
     help="Proceed when the checkpoint has no run_config.json instead of refusing. The resulting "
@@ -439,7 +446,17 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
         # The damping is restored as recorded, not re-derived from the stiffness: re-deriving it
         # gave 121.24 N s/m for runs trained at 120.0 (2026-10-07 to 2026-10-22).
         stored_walker = stored.get("walker_applied") or {}
-        applied["walker"] = apply_walker(env_cfg, stored_walker.get("stiffness"), stored_walker.get("damping"))
+        # --walker_grip moves a policy to the other grip model; it then gets that model's defaults,
+        # not the stiffness and damping recorded for the grip it was trained on.
+        trained_grip = stored_walker.get("grip", "explicit")
+        grip = args_cli.walker_grip or trained_grip
+        same = grip == trained_grip
+        applied["walker"] = apply_walker(
+            env_cfg,
+            stored_walker.get("stiffness") if same else None,
+            stored_walker.get("damping") if same else None,
+            grip=grip,
+        )
         print("[evaluate] restored training scene: Smart Walker coupled to the hands")
 
     # The sway target is in the policy's observation (root_progression_error), so a checkpoint

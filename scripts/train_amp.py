@@ -80,6 +80,14 @@ parser.add_argument(
     "Recorded in run_config.json under walker_applied; evaluation restores it.",
 )
 parser.add_argument(
+    "--walker_grip",
+    choices=("explicit", "implicit"),
+    default="explicit",
+    help="Grip model for --walker: 'explicit' external spring forces (default, every run to 2026-10-22) or "
+    "'implicit' D6 joint drives (forward plan Phase 4a; default 50 kN/m). Recorded under walker_applied; "
+    "evaluation restores it.",
+)
+parser.add_argument(
     "--legacy_unmirrored_sway",
     action="store_true",
     help="Reproduce the pre-2026-09-24 environment, which handed right-paretic environments the "
@@ -724,7 +732,9 @@ def main() -> int:
         # Before the objective: apply_predictive_objective reads its constants from this archive.
         reference_applied = apply_reference_stride(env_cfg, args_cli.reference_stride)
         print(f"[train_amp] reference stride: {reference_applied}", flush=True)
-    walker_applied = apply_walker(env_cfg, args_cli.walker_grip_stiffness) if args_cli.walker else None
+    walker_applied = (
+        apply_walker(env_cfg, args_cli.walker_grip_stiffness, grip=args_cli.walker_grip) if args_cli.walker else None
+    )
     objective_applied = None
     if args_cli.objective == "predictive":
         objective_applied = apply_predictive_objective(env_cfg)

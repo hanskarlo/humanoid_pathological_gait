@@ -19,6 +19,12 @@ Each physics substep:
 3. the walker base is held to the admittance command: planar velocity ``(v_x, omega_z)`` in the
    walker's heading, vertical velocity and roll/pitch rates left to physics (walker plan §2.2).
 
+**With the implicit grip** (``grip="implicit"``, forward plan Phase 4a), step 2 applies nothing: the
+same spring is a PhysX D6 joint drive between the hand and the handle (``walker_grip.py``), which
+the solver integrates implicitly, so it can be stiff. The force is still *computed* by the same
+formula, from the state at the start of the substep (the drive's force over the last solve), for
+the recorder and the sensor. Everything downstream is unchanged.
+
 On every ``decimation``-th substep (50 Hz), the user's force on the handle becomes the mid-bar
 sensor wrench (``walker_coupling.sensor_wrench``), passes through the processor and controller
 ports (``walker_admittance``), and updates the command. The latest quantities are kept on the
@@ -52,6 +58,8 @@ class WalkerCouplingAction(ActionTerm):
 
     def __init__(self, cfg: WalkerCouplingActionCfg, env: H1PathologicalGaitEnv):
         super().__init__(cfg, env)
+        if cfg.grip not in ("explicit", "implicit"):
+            raise ValueError(f"grip must be 'explicit' or 'implicit', not {cfg.grip!r}")
         self._robot = env.scene[cfg.robot_name]
         self._walker = env.scene[cfg.asset_name]
         hand_ids, hand_names = self._robot.find_bodies(list(cfg.hand_body_names), preserve_order=True)
@@ -128,22 +136,23 @@ class WalkerCouplingAction(ActionTerm):
         force_on_hand = wc.grip_spring_forces(p_hand, v_hand, p_grip, v_grip, self.cfg.stiffness, self.cfg.damping)
         user_on_handle = -force_on_hand
 
-        self._robot.permanent_wrench_composer.set_forces_and_torques_index(
-            forces=force_on_hand,
-            torques=torch.zeros_like(force_on_hand),
-            positions=p_hand,
-            body_ids=self._hand_ids,
-            is_global=True,
-        )
-        handle_com = self._walker.data.body_com_pos_w.torch[:, self._handle_id]
-        net = user_on_handle.sum(dim=1, keepdim=True)
-        moment = torch.cross(p_grip - handle_com.unsqueeze(1), user_on_handle, dim=-1).sum(dim=1, keepdim=True)
-        self._walker.permanent_wrench_composer.set_forces_and_torques_index(
-            forces=net,
-            torques=moment,
-            body_ids=[self._handle_id],
-            is_global=True,
-        )
+        if self.cfg.grip == "explicit":
+            self._robot.permanent_wrench_composer.set_forces_and_torques_index(
+                forces=force_on_hand,
+                torques=torch.zeros_like(force_on_hand),
+                positions=p_hand,
+                body_ids=self._hand_ids,
+                is_global=True,
+            )
+            handle_com = self._walker.data.body_com_pos_w.torch[:, self._handle_id]
+            net = user_on_handle.sum(dim=1, keepdim=True)
+            moment = torch.cross(p_grip - handle_com.unsqueeze(1), user_on_handle, dim=-1).sum(dim=1, keepdim=True)
+            self._walker.permanent_wrench_composer.set_forces_and_torques_index(
+                forces=net,
+                torques=moment,
+                body_ids=[self._handle_id],
+                is_global=True,
+            )
 
         state = self._env.walker_state
         if self._substep % self._decimation == 0:
@@ -243,6 +252,10 @@ class WalkerCouplingActionCfg(ActionTermCfg):
     grip_height_offset: float = 0.031
     """Grip points above the handle centre: the handle fitted to the H1's hands at the grip posture
     (0.964 m against the bar's 0.933 m), as walkers are fitted to the user's wrist height."""
+    grip: str = "explicit"
+    """``"explicit"``: the spring is applied here as external forces (the default, and every walker run to
+    2026-10-22). ``"implicit"``: the spring is a D6 joint drive authored by ``walker_grip.py``, and
+    this term only computes its force for the recorder and the sensor."""
     stiffness: float = 5000.0
     """N/m. Explicit stability at 5 ms needs omega*dt < 2; at 5 kN/m and ~1.5 kg, omega*dt ~ 0.29."""
     damping: float = 120.0

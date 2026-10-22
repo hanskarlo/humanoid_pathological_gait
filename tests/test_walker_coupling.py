@@ -141,3 +141,28 @@ def test_ignoring_the_grip_height_biases_the_vertical_split():
     wrong = wc.reconstruct_hand_loads(w, D, H, 0.0)
     assert right["down_left"].item() == pytest.approx(right["down_right"].item(), abs=1e-9)
     assert abs(wrong["down_left"].item() - wrong["down_right"].item()) > 1.0
+
+
+def _quat_z(angle):
+    """(1, 4) xyzw quaternion for a rotation about z."""
+    import math
+
+    return torch.tensor([[0.0, 0.0, math.sin(angle / 2), math.cos(angle / 2)]])
+
+
+def test_grip_offset_in_body_frame_is_the_offset_when_the_handle_is_aligned_with_the_root():
+    offset = torch.tensor([[0.0, 0.179, 0.031], [0.0, -0.179, 0.031]])
+    q = _quat_z(0.7)
+    assert torch.allclose(wc.grip_offset_in_body_frame(q, q, offset), offset, atol=1e-6)
+
+
+def test_grip_offset_in_body_frame_maps_back_to_the_same_world_point():
+    # A handle body turned 90 deg about z from the root: the local offset rotated back by the
+    # handle's rotation has to be the root-frame offset rotated by the root's -- one world point.
+    offset = torch.tensor([[0.0, 0.179, 0.031], [0.0, -0.179, 0.031]])
+    root, handle = _quat_z(0.3), _quat_z(0.3 + 1.5707963)
+    local = wc.grip_offset_in_body_frame(handle, root, offset)
+    assert torch.allclose(local, torch.tensor([[0.179, 0.0, 0.031], [-0.179, 0.0, 0.031]]), atol=1e-5)
+    world_from_local = -wc.quat_rotate_inverse(handle * torch.tensor([[-1.0, -1.0, -1.0, 1.0]]), -local)
+    world_from_root = -wc.quat_rotate_inverse(root * torch.tensor([[-1.0, -1.0, -1.0, 1.0]]), -offset)
+    assert torch.allclose(world_from_local, world_from_root, atol=1e-5)

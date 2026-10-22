@@ -163,6 +163,10 @@ class H1PathologicalSceneCfg(InteractiveSceneCfg):
     walker: ArticulationCfg | None = None
     """The Smart Walker. ``None`` (the scene builder skips it) unless :func:`apply_walker` sets it."""
 
+    walker_grip: AssetBaseCfg | None = None
+    """The implicit grip's joints (``walker_grip.py``). After ``walker`` on purpose: the spawner needs
+    the robot and the walker prims to exist. ``None`` unless :func:`apply_walker` sets ``grip="implicit"``."""
+
     dome_light = AssetBaseCfg(
         prim_path="/World/DomeLight",
         spawn=sim_utils.DomeLightCfg(color=(0.9, 0.9, 0.9), intensity=750.0),
@@ -1081,8 +1085,18 @@ GRIP_POSTURE: dict[str, float] = {"shoulder_pitch": -0.40, "shoulder_roll": 0.0,
 GRIP_REACH_M = 0.316
 
 
+IMPLICIT_GRIP_STIFFNESS = 50_000.0
+"""N/m for the implicit grip: ten times the explicit 5 kN/m, which left the hands a median 2.4 cm and
+p99 9 cm off the handle (2026-10-22). Pinned by the Phase 4a smoke test, not by a physiological figure."""
+IMPLICIT_GRIP_DAMPING = 2.0 * 0.7 * (IMPLICIT_GRIP_STIFFNESS * 1.5) ** 0.5
+"""N s/m: the same 0.7 damping ratio on the same nominal 1.5 kg as the explicit default's derivation."""
+
+
 def apply_walker(
-    cfg: H1PathologicalGaitEnvCfg, grip_stiffness: float | None = None, grip_damping: float | None = None
+    cfg: H1PathologicalGaitEnvCfg,
+    grip_stiffness: float | None = None,
+    grip_damping: float | None = None,
+    grip: str = "explicit",
 ) -> dict[str, object]:
     """Put the Smart Walker in the scene, coupled to the robot's hands (walker plan §2).
 
@@ -1096,6 +1110,11 @@ def apply_walker(
     Returns what was applied, for ``run_config.json``. ``evaluate.py`` restores it from there: a
     walker flag that silently failed to reach evaluation would produce uncoupled numbers labelled
     as coupled ones (the 2026-09-17 synergy lesson).
+
+    ``grip="implicit"`` (forward plan Phase 4a) ties the hands to the handle with D6 joint drives
+    instead of external forces (``walker_grip.py``), at :data:`IMPLICIT_GRIP_STIFFNESS` /
+    :data:`IMPLICIT_GRIP_DAMPING` unless given. ``"explicit"`` is the default and every walker run
+    to 2026-10-22.
 
     ``grip_damping`` is for restoring a recorded grip exactly. Without it, a given stiffness gets
     the damping formula below. Restoring the stiffness alone re-derived 121.24 N s/m for runs
@@ -1126,6 +1145,27 @@ def apply_walker(
         # default, so a stiffer grip is not also a differently damped one.
         cfg.actions.walker.stiffness = float(grip_stiffness)
         cfg.actions.walker.damping = float(2.0 * 0.7 * (grip_stiffness * 1.5) ** 0.5)
+    if grip == "implicit":
+        from ...walker_grip import GripJointsCfg
+
+        action = cfg.actions.walker
+        action.grip = "implicit"
+        action.stiffness = float(grip_stiffness) if grip_stiffness is not None else IMPLICIT_GRIP_STIFFNESS
+        action.damping = IMPLICIT_GRIP_DAMPING if grip_stiffness is None else action.damping
+        cfg.scene.walker_grip = AssetBaseCfg(
+            prim_path="{ENV_REGEX_NS}/WalkerGrip",
+            spawn=GripJointsCfg(
+                stiffness=action.stiffness,
+                damping=action.damping if grip_damping is None else float(grip_damping),
+                hand_body_names=tuple(action.hand_body_names),
+                handle_body_name=action.handle_body_name,
+                hand_offset_body=tuple(action.hand_offset_body),
+                half_grip_width=action.half_grip_width,
+                grip_height_offset=action.grip_height_offset,
+            ),
+        )
+    elif grip != "explicit":
+        raise ValueError(f"grip must be 'explicit' or 'implicit', not {grip!r}")
     if grip_damping is not None:
         cfg.actions.walker.damping = float(grip_damping)
     # The grip posture, measured with scripts/measure_grip_posture.py (2026-10-02): hands 0.316 m
@@ -1151,5 +1191,6 @@ def apply_walker(
         "arm_posture": dict(GRIP_POSTURE),
         "handle_ahead": GRIP_REACH_M,
         "grip_height_offset": action.grip_height_offset,
+        "grip": action.grip,
         "M_drive": action.admittance.M_drive,
     }

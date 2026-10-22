@@ -65,6 +65,23 @@ def quat_rotate_inverse(quat_xyzw: torch.Tensor, vec: torch.Tensor) -> torch.Ten
     return vec + w.unsqueeze(-1) * t + torch.cross(q_vec.expand_as(vec), t, dim=-1)
 
 
+def grip_offset_in_body_frame(
+    body_quat_xyzw: torch.Tensor, root_quat_xyzw: torch.Tensor, offset_root: torch.Tensor
+) -> torch.Tensor:
+    """A grip offset given in the walker's root frame, re-expressed in the handle body's own frame.
+
+    The explicit coupling places each grip at ``p_handle + R_root offset``: the offset is in the
+    root frame, applied at the handle body's origin. A joint attached to the handle body needs the
+    same point as a ``localPos`` in that body's frame, ``R_handle^T R_root offset``. Quaternions
+    ``(1, 4)`` or ``(N, 4)``, ``(x, y, z, w)``; offsets ``(N, 3)``.
+    """
+    q = root_quat_xyzw[:, :3].expand_as(offset_root)
+    w = root_quat_xyzw[:, 3:4]
+    t = 2.0 * torch.cross(q, offset_root, dim=-1)
+    offset_w = offset_root + w * t + torch.cross(q, t, dim=-1)
+    return quat_rotate_inverse(body_quat_xyzw.expand(offset_root.shape[0], 4), offset_w)
+
+
 def sensor_wrench(
     user_force_on_handle_w: torch.Tensor,
     grip_pos_w: torch.Tensor,
