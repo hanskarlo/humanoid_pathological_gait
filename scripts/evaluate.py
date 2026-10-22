@@ -436,8 +436,10 @@ def apply_training_config(env_cfg, checkpoint: str | None) -> dict[str, object]:
     if stored.get("walker_applied") or getattr(args_cli, "walker", False):
         # The grip stiffness changes the dynamics, so it is restored with the walker -- a policy
         # fine-tuned at 20 kN/m evaluated at the 5 kN/m default would be a different controller.
-        stiffness = (stored.get("walker_applied") or {}).get("stiffness")
-        applied["walker"] = apply_walker(env_cfg, stiffness)
+        # The damping is restored as recorded, not re-derived from the stiffness: re-deriving it
+        # gave 121.24 N s/m for runs trained at 120.0 (2026-10-07 to 2026-10-22).
+        stored_walker = stored.get("walker_applied") or {}
+        applied["walker"] = apply_walker(env_cfg, stored_walker.get("stiffness"), stored_walker.get("damping"))
         print("[evaluate] restored training scene: Smart Walker coupled to the hands")
 
     # The sway target is in the policy's observation (root_progression_error), so a checkpoint
