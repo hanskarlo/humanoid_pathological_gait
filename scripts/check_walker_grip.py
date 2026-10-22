@@ -73,10 +73,26 @@ def check_cloning(num_envs: int) -> int:
             b0, b1 = joint.GetBody0Rel().GetTargets(), joint.GetBody1Rel().GetTargets()
             ok = len(b0) == 1 and len(b1) == 1 and all(str(t).startswith(env + "/") for t in (*b0, *b1))
             if i < 2 or not ok:
-                print(f"[clone] env {i} {side}: body0 {[str(t) for t in b0]} body1 {[str(t) for t in b1]} {'ok' if ok else 'WRONG'}")
+                verdict = "ok" if ok else "WRONG"
+                print(f"[clone] env {i} {side}: body0 {[str(t) for t in b0]} body1 {[str(t) for t in b1]} {verdict}")
             bad += 0 if ok else 1
     print(f"[clone] {num_envs} environments, {bad} joints missing or mis-targeted")
     return bad
+
+
+def report_reset_mismatch(env) -> None:
+    """Grip point minus hand point right after reset, in the walker frame (x forward, y left, z up)."""
+    term = env.action_manager.get_term("walker")
+    p_hand, _, p_grip, _, root_quat = term._points()
+    q = -root_quat[:, :3].unsqueeze(1).expand(-1, 2, -1)
+    w = root_quat[:, 3:4].unsqueeze(1)
+    d = p_grip - p_hand
+    t = 2.0 * torch.cross(q, d, dim=-1)
+    d_b = (d + w * t + torch.cross(q, t, dim=-1)) * 100
+    for side, k in (("left", 0), ("right", 1)):
+        m, sd = d_b[:, k].mean(0), d_b[:, k].std(0)
+        mean, spread = [round(x, 2) for x in m.tolist()], [round(x, 2) for x in sd.tolist()]
+        print(f"[reset] {side} hand: grip - hand in walker frame (fwd, left, up) cm: mean {mean} sd {spread}")
 
 
 def main() -> int:
@@ -88,6 +104,7 @@ def main() -> int:
     env = gym.make(TASK, cfg=env_cfg).unwrapped
     bad = check_cloning(env.num_envs) if args_cli.grip == "implicit" else 0
     env.reset()
+    report_reset_mismatch(env)
 
     actions = torch.zeros(env.num_envs, env.action_manager.total_action_dim, device=env.device)
     errors, finite = [], True
@@ -101,13 +118,15 @@ def main() -> int:
             print(
                 f"[hold] step {step:3d}: hand-handle error mean {s['spring_error'].mean().item() * 100:5.2f} cm"
                 f" max {s['spring_error'].max().item() * 100:5.2f} cm, grip force mean"
-                f" {torch.linalg.norm(s['hand_force_w'], dim=-1).mean().item():7.1f} N, v_cmd {s['cmd'][:, 0].mean().item():+.3f}"
+                f" {torch.linalg.norm(s['hand_force_w'], dim=-1).mean().item():7.1f} N,"
+                f" v_cmd {s['cmd'][:, 0].mean().item():+.3f}"
             )
     e = torch.stack(errors) * 100  # (T, N, 2) cm
     per_env_max = e.amax(dim=(0, 2))
     offset = walker.data.root_link_pos_w.torch[:, :2] - env.scene.env_origins[:, :2]
     print(f"[hold] per-environment max error, cm: {[round(x, 2) for x in per_env_max.tolist()]}")
-    print(f"[hold] error over all steps: median {e.median().item():.2f} cm, p99 {torch.quantile(e.flatten(), 0.99).item():.2f} cm")
+    p99 = torch.quantile(e.flatten(), 0.99).item()
+    print(f"[hold] error over all steps: median {e.median().item():.2f} cm, p99 {p99:.2f} cm")
     print(f"[hold] walker distance from its own env origin, m: {[round(x, 2) for x in offset.norm(dim=-1).tolist()]}")
     print(f"[hold] finite throughout: {finite}")
     env.close()

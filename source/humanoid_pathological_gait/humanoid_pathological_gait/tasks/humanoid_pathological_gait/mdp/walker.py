@@ -25,6 +25,14 @@ the solver integrates implicitly, so it can be stiff. The force is still *comput
 formula, from the state at the start of the substep (the drive's force over the last solve), for
 the recorder and the sensor. Everything downstream is unchanged.
 
+**Seating the hands (implicit grip only).** The reset places the walker for the hands' walking
+height. At the reset pose the hands are ~9 cm lower (the pelvis starts at the reference's height
+and rises in the first second), and a 50 kN/m drive closes that gap with a ~4.7 kN pull that
+felled 6 of 64 environments in the Phase 4a smoke test. So for ``seat_substeps`` substeps after a
+reset, the arm joints are moved by one damped-least-squares step on the hands' Jacobian toward
+the grip points: the hands start on the handle, as a user's do. The arm's PD target, and the
+policy's observation of it, are unchanged.
+
 On every ``decimation``-th substep (50 Hz), the user's force on the handle becomes the mid-bar
 sensor wrench (``walker_coupling.sensor_wrench``), passes through the processor and controller
 ports (``walker_admittance``), and updates the command. The latest quantities are kept on the
@@ -49,6 +57,8 @@ from .. import walker_coupling as wc
 
 if TYPE_CHECKING:
     from ..h1_pathological_env import H1PathologicalGaitEnv
+
+ARM_JOINTS = ("shoulder_pitch", "shoulder_roll", "shoulder_yaw", "elbow")
 
 
 class WalkerCouplingAction(ActionTerm):
@@ -78,6 +88,11 @@ class WalkerCouplingAction(ActionTerm):
         self._controller = wa.WalkerAdmittance(n, dev, cfg.admittance)
         self._substep = 0
         self._decimation = env.cfg.decimation
+        self._seat = torch.zeros(n, dtype=torch.long, device=dev)
+        self._arm_joint_ids = [
+            self._robot.find_joints([f"{side}_{j}" for j in ARM_JOINTS], preserve_order=True)[0]
+            for side in ("left", "right")
+        ]
         self._raw = torch.zeros(n, 0, device=dev)
         env.walker_state = {
             "hand_force_w": torch.zeros(n, 2, 3, device=dev),
@@ -109,6 +124,40 @@ class WalkerCouplingAction(ActionTerm):
         ids = slice(None) if env_ids is None else env_ids
         self._processor.reset(ids)
         self._controller.reset(ids)
+        if self.cfg.grip == "implicit":
+            self._seat[ids] = self.cfg.seat_substeps
+
+    def _seat_hands(self) -> None:
+        """One damped-least-squares step of the arm joints toward the grip points, for envs just reset."""
+        ids = (self._seat > 0).nonzero(as_tuple=False).squeeze(-1)
+        p_hand, _, p_grip, _, _ = self._points()
+        err = (p_grip - p_hand)[ids]
+        data = self._robot.data
+        jac = data.body_com_jacobian_w.torch[ids]
+        com = data.body_com_pos_w.torch[ids][:, self._hand_ids]
+        q = data.joint_pos.torch[ids].clone()
+        lam2 = self.cfg.seat_damping**2
+        for k, (hand, joints) in enumerate(zip(self._hand_ids, self._arm_joint_ids)):
+            j = jac[:, hand]
+            r = p_hand[ids, k] - com[:, k]
+            # Linear Jacobian of the attachment point: v_point = v_com + w x r = J_lin - [r]x J_ang.
+            rx = torch.zeros(len(ids), 3, 3, device=q.device)
+            rx[:, 0, 1], rx[:, 0, 2], rx[:, 1, 2] = -r[:, 2], r[:, 1], -r[:, 0]
+            rx = rx - rx.transpose(1, 2)
+            j_point = j[:, :3] - rx @ j[:, 3:]
+            j_arm = j_point[:, :, [6 + i for i in joints]]
+            eye = torch.eye(3, device=q.device).expand(len(ids), 3, 3)
+            dq = j_arm.transpose(1, 2) @ torch.linalg.solve(
+                j_arm @ j_arm.transpose(1, 2) + lam2 * eye, err[:, k].unsqueeze(-1)
+            )
+            q[:, joints] += dq.squeeze(-1)
+        limits = data.joint_pos_limits.torch[ids]
+        q = torch.max(torch.min(q, limits[..., 1]), limits[..., 0])
+        arm = [i for joints in self._arm_joint_ids for i in joints]
+        self._robot.write_joint_state_to_sim_index(
+            position=q[:, arm], velocity=torch.zeros(len(ids), len(arm), device=q.device), joint_ids=arm, env_ids=ids
+        )
+        self._seat[ids] -= 1
 
     # -- the coupling -------------------------------------------------------------------------
     def _points(self):
@@ -132,6 +181,8 @@ class WalkerCouplingAction(ActionTerm):
         return p_hand, v_hand, p_grip, v_grip, root_quat
 
     def apply_actions(self) -> None:
+        if self.cfg.grip == "implicit" and bool((self._seat > 0).any()):
+            self._seat_hands()
         p_hand, v_hand, p_grip, v_grip, root_quat = self._points()
         force_on_hand = wc.grip_spring_forces(p_hand, v_hand, p_grip, v_grip, self.cfg.stiffness, self.cfg.damping)
         user_on_handle = -force_on_hand
@@ -256,6 +307,10 @@ class WalkerCouplingActionCfg(ActionTermCfg):
     """``"explicit"``: the spring is applied here as external forces (the default, and every walker run to
     2026-10-22). ``"implicit"``: the spring is a D6 joint drive authored by ``walker_grip.py``, and
     this term only computes its force for the recorder and the sensor."""
+    seat_substeps: int = 3
+    """Implicit grip: substeps after a reset over which the arms are stepped toward the handle."""
+    seat_damping: float = 0.05
+    """Implicit grip: the damped-least-squares damping (m) of that step."""
     stiffness: float = 5000.0
     """N/m. Explicit stability at 5 ms needs omega*dt < 2; at 5 kN/m and ~1.5 kg, omega*dt ~ 0.29."""
     damping: float = 120.0
