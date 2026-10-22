@@ -101,3 +101,39 @@ def test_paretic_stance_load_ratio():
     r["hand_force_b"][::2, ..., 2] *= 2.0  # twice the handle load during paretic stance
     m = wa.summarize_walker(**r, foot_contact=contact)
     assert m["paretic_stance_load_ratio"] == pytest.approx(2.0)
+
+
+def test_stance_load_difference_is_paretic_signed_and_in_body_weight():
+    # Two environments, one left- and one right-paretic, each loading the handle with 60 N in its own
+    # paretic single support and 20 N in its sound single support: +40 N, i.e. +8 % of a 50 kg / 490.5 N robot.
+    steps, envs = 300, 2
+    hand = np.zeros((steps, envs, 2, 3))
+    contact = np.zeros((steps, envs, 2), dtype=bool)
+    right = np.array([False, True])
+    for env in range(envs):
+        paretic, sound = (1, 0) if right[env] else (0, 1)
+        contact[::2, env, paretic] = True
+        contact[1::2, env, sound] = True
+        hand[::2, env, paretic, 2], hand[::2, env, sound, 2] = 40.0, 20.0  # paretic stance: 60 N total
+        hand[1::2, env, paretic, 2], hand[1::2, env, sound, 2] = 5.0, 15.0  # sound stance: 20 N total
+    valid = np.ones((steps, envs), dtype=bool)
+    m = wa.stance_load_difference(hand, contact, valid, right, body_mass_kg=50.0, dt=DT)
+    weight = 50.0 * wa.GRAVITY
+    assert m["stance_load_difference_pct_bw"] == pytest.approx(100.0 * 40.0 / weight)
+    assert m["paretic_stance_load_pct_bw"] == pytest.approx(100.0 * 60.0 / weight)
+    # Sound minus paretic hand, averaged over both stances: ((20 - 40) + (15 - 5)) / 2 = -5 N.
+    assert m["hand_load_difference_pct_bw"] == pytest.approx(100.0 * -5.0 / weight)
+
+
+def test_stance_load_difference_is_defined_when_the_mean_load_is_zero():
+    # The handle pushed down in paretic stance and pulled up in sound stance: zero on average, where a
+    # ratio of totals is undefined, and the difference is not.
+    steps = 300
+    hand = np.zeros((steps, 1, 2, 3))
+    contact = np.zeros((steps, 1, 2), dtype=bool)
+    contact[::2, 0, 0] = True
+    contact[1::2, 0, 1] = True
+    hand[::2, 0, :, 2], hand[1::2, 0, :, 2] = 10.0, -10.0
+    m = wa.stance_load_difference(hand, contact, np.ones((steps, 1), dtype=bool), np.array([False]), 50.0, DT)
+    assert m["handle_load_pct_bw_mean"] == pytest.approx(0.0, abs=1e-12)
+    assert m["stance_load_difference_pct_bw"] == pytest.approx(100.0 * 40.0 / (50.0 * wa.GRAVITY))

@@ -147,3 +147,40 @@ def summarize_walker(
         else:
             out["paretic_stance_load_ratio"] = float("nan")
     return out
+
+
+def stance_load_difference(
+    hand_force_b: np.ndarray,
+    foot_contact: np.ndarray,
+    valid: np.ndarray,
+    is_right_paretic: np.ndarray,
+    body_mass_kg: float,
+    dt: float,
+    settle_s: float = 2.0,
+) -> dict[str, float]:
+    """Handle down-load in paretic single support minus sound single support, in % body weight.
+
+    The difference, not the ratio, because it stays defined when the handle carries almost no
+    load on average (a ratio of two near-zero totals does not; 2026-10-22). Positive means more
+    handle support while the paretic leg alone is on the ground: what a hemiparetic walker user
+    is expected to show. Also the per-hand split over the whole steady window (sound minus paretic
+    hand), and the mean total. Shapes as :func:`summarize_walker`.
+    """
+    window = valid.copy()
+    window[: min(window.shape[0], int(round(settle_s / dt)))] = False
+    down = paretic_first(hand_force_b[..., 2], is_right_paretic, axis=2)
+    contact = paretic_first(foot_contact.astype(bool), is_right_paretic, axis=2)
+    total = down[..., 0] + down[..., 1]
+    weight = body_mass_kg * GRAVITY
+    single_p = contact[..., 0] & ~contact[..., 1] & window
+    single_s = contact[..., 1] & ~contact[..., 0] & window
+    nan = float("nan")
+    p_load = float(100.0 * total[single_p].mean() / weight) if single_p.any() else nan
+    s_load = float(100.0 * total[single_s].mean() / weight) if single_s.any() else nan
+    return {
+        "paretic_stance_load_pct_bw": p_load,
+        "sound_stance_load_pct_bw": s_load,
+        "stance_load_difference_pct_bw": p_load - s_load,
+        "hand_load_difference_pct_bw": float(100.0 * (down[..., 1][window] - down[..., 0][window]).mean() / weight),
+        "handle_load_pct_bw_mean": float(100.0 * total[window].mean() / weight),
+    }
