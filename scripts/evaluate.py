@@ -125,6 +125,14 @@ parser.add_argument(
     "numbers are only trustworthy for runs that used the config defaults.",
 )
 parser.add_argument(
+    "--mirror_from",
+    choices=("left", "right"),
+    default=None,
+    help="Make the policy symmetric from one paretic side: environments on the other side act with "
+    "M pi(M o), the chosen side's behaviour mirrored (research_log/2026-10-22-preregistration-mirror-best-side.md). "
+    "Evaluation only; recorded as mirror_from in metrics.json. Off by default.",
+)
+parser.add_argument(
     "--record_contact_substeps",
     action="store_true",
     help="Also record each foot's net contact force after every physics substep "
@@ -168,6 +176,7 @@ from isaaclab.managers import SceneEntityCfg  # noqa: E402
 from isaaclab.utils.math import quat_apply_inverse, yaw_quat  # noqa: E402
 
 from humanoid_pathological_gait.algorithms.ppo import ActorCritic  # noqa: E402
+from humanoid_pathological_gait.algorithms.ppo.symmetry import MirrorAugmentation  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait import asset_mirror  # noqa: E402
 from humanoid_pathological_gait.tasks.humanoid_pathological_gait.config.h1_pathological.h1_pathological_env_cfg import (  # noqa: E402
     apply_future_reference,
@@ -470,6 +479,11 @@ def main() -> int:
     dt = float(env.step_dt)
 
     paretic_side = assign_balanced_paretic_sides(env, num_envs)
+    # --mirror_from: the other side's environments act with the chosen side's policy, mirrored.
+    mirror = MirrorAugmentation.from_env(env) if args_cli.mirror_from else None
+    mirrored_envs = None
+    if mirror is not None:
+        mirrored_envs = paretic_side < 0 if args_cli.mirror_from == "right" else paretic_side > 0
     is_right_paretic = (paretic_side > 0).cpu().numpy()
 
     policy = ActorCritic(
@@ -533,6 +547,10 @@ def main() -> int:
                 actions = torch.zeros_like(env.action_manager.action)
             else:
                 actions = policy.act(obs)[0] if args_cli.stochastic else policy.actor(obs)
+                if mirror is not None:
+                    # M pi(M o): the mirrored observation flips the paretic flag too, so the network acts
+                    # as on the chosen side; its action is mirrored back.
+                    actions[mirrored_envs] = mirror.actions(policy.actor(mirror.obs(obs[mirrored_envs])))
 
         q_ref, v_ref = env.reference_gait.sample()
         gait_phase = env.reference_gait.gait_phase.clone()
@@ -668,6 +686,9 @@ def main() -> int:
         # Recorded next to the numbers it conditions, not only in the console log.
         metrics["training_config_applied"] = training_config
         metrics["hip_roll_limit_deg"] = hip_roll_limit_deg
+        if args_cli.mirror_from:
+            # Only when set, so every other evaluation's metrics.json keeps its key set.
+            metrics["mirror_from"] = args_cli.mirror_from
         if "walker_hand_force_w" in data:
             # Grip geometry relative to the F/T sensor, for the single-sensor reconstruction (W3):
             # the bar is 0.0825 m behind the sensor (asset: handle x = -0.395, sensor x = -0.3125),
